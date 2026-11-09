@@ -37,7 +37,7 @@ apt-get update -qq
 apt-get install -y -qq curl ca-certificates xz-utils jq >/dev/null
 
 say "Checking outbound connections"
-for url in https://api.github.com https://nodejs.org/dist/ https://influxdb.sendlab.nl/ping; do
+for url in https://api.github.com https://nodejs.org/dist/; do
   if curl -fsS --max-time 10 -o /dev/null "$url"; then echo "    ok   $url"; else warn "cannot reach $url"; fi
 done
 
@@ -54,6 +54,16 @@ else
   sed -i "s/^TRUST_PROXY=.*/TRUST_PROXY=$PROXY_IP/" /etc/p1-meter-app/env
   chown root:p1meter /etc/p1-meter-app/env
   chmod 640 /etc/p1-meter-app/env
+fi
+
+# InfluxDB as the app will reach it: the URL from the env file (often an internal address).
+influx_url="$(grep -oP '^INFLUX_URL=\K.*' /etc/p1-meter-app/env || true)"
+if [ -n "$influx_url" ]; then
+  if curl -fsS --max-time 10 -o /dev/null "$influx_url/ping"; then
+    echo "    ok   $influx_url/ping"
+  else
+    warn "cannot reach $influx_url/ping (INFLUX_URL in /etc/p1-meter-app/env)"
+  fi
 fi
 
 say "Installing update script and systemd units"
@@ -85,13 +95,18 @@ if command -v ufw >/dev/null; then
   fi
 fi
 
-cat <<NEXT
+# Only list what is still needed.
+steps=()
+grep -qE '^INFLUX_TOKEN=.+' /etc/p1-meter-app/env ||
+  steps+=("Put the read-only InfluxDB token in /etc/p1-meter-app/env:\n       sudo nano /etc/p1-meter-app/env        (INFLUX_TOKEN=...)")
+[ -L /opt/p1-meter-app/current ] ||
+  steps+=("Install the current build now (the timer would do it within 2 minutes):\n       sudo p1-meter-update")
 
-Done. Next steps:
-  1. Put the read-only InfluxDB token in /etc/p1-meter-app/env:
-       sudo nano /etc/p1-meter-app/env        (INFLUX_TOKEN=...)
-  2. Install the current build now (the timer would do it within 2 minutes):
-       sudo p1-meter-update
-  3. Follow the logs:
-       journalctl -u p1-meter-app -u p1-meter-update -f
-NEXT
+echo
+if [ ${#steps[@]} -eq 0 ]; then
+  echo "Done. Everything is set up; new builds of main are installed automatically."
+else
+  echo "Done. Next steps:"
+  for i in "${!steps[@]}"; do printf "  %d. %b\n" "$((i + 1))" "${steps[$i]}"; done
+fi
+echo "Logs: journalctl -u p1-meter-app -u p1-meter-update -f"

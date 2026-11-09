@@ -14,6 +14,8 @@ import { healthRoutes } from './routes/health';
 import { HistoryService } from './history/service';
 import { historyRoutes } from './routes/history';
 import { liveRoutes } from './routes/live';
+import { PriceJob, httpFetchers } from './prices/job';
+import { InfluxPriceStore } from './prices/store';
 import { sessionRoutes } from './routes/session';
 import { LivePoller } from './live/poller';
 import { LiveService } from './live/service';
@@ -91,6 +93,33 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   const live = new LiveService(source);
   const poller = new LivePoller(source, live, app.log, deps.pollIntervalMs);
   app.addHook('onClose', () => poller.stop());
+
+  // Day-ahead price ingestion (costs phase 1, #33); not in tests.
+  const { INFLUX_URL, INFLUX_ORG, PRICES_INFLUX_BUCKET, PRICES_INFLUX_TOKEN, ENTSOE_TOKEN } =
+    config;
+  if (
+    config.NODE_ENV !== 'test' &&
+    INFLUX_URL &&
+    INFLUX_ORG &&
+    PRICES_INFLUX_BUCKET &&
+    PRICES_INFLUX_TOKEN &&
+    ENTSOE_TOKEN
+  ) {
+    const store = new InfluxPriceStore({
+      url: INFLUX_URL,
+      org: INFLUX_ORG,
+      bucket: PRICES_INFLUX_BUCKET,
+      token: PRICES_INFLUX_TOKEN,
+    });
+    const job = new PriceJob(store, httpFetchers(ENTSOE_TOKEN), app.log, { pauseMs: 2_000 });
+    job.start();
+    app.addHook('onClose', async () => {
+      job.stop();
+      await store.close();
+    });
+  } else if (config.NODE_ENV !== 'test') {
+    app.log.info('price job disabled (PRICES_INFLUX_* or ENTSOE_TOKEN not set)');
+  }
 
   await app.register(
     async (api) => {
