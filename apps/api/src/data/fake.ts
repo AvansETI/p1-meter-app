@@ -16,6 +16,9 @@ export interface FakeHousehold {
   deltas?: CounterDeltas;
   recent?: PowerWindow[];
   gas?: GasData;
+  /** Counter values per instant (ms) for countersAt. */
+  counters?: Map<number, Partial<Record<CounterField, number>>>;
+  firstPoint?: Date;
 }
 
 /** In-memory data source for tests and UI work without InfluxDB. */
@@ -67,6 +70,20 @@ export class FakeDataSource implements HouseholdDataSource {
       const deltas = this.households[signature]?.deltas ?? {};
       return Object.fromEntries(fields.flatMap((f) => (f in deltas ? [[f, deltas[f]]] : [])));
     });
+  }
+
+  countersAt(
+    signature: string,
+    _fields: CounterField[],
+    instants: Date[],
+  ): Promise<Array<Partial<Record<CounterField, number>>>> {
+    return this.run(() =>
+      instants.map((instant) => this.households[signature]?.counters?.get(instant.getTime()) ?? {}),
+    );
+  }
+
+  firstPoint(signature: string): Promise<Date | null> {
+    return this.run(() => this.households[signature]?.firstPoint ?? null);
   }
 
   gasHourly(signature: string): Promise<GasData> {

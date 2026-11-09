@@ -21,3 +21,16 @@ if (typeof window !== 'undefined')
       dispatchEvent: vi.fn(),
     })),
   });
+
+// jsdom has no ResizeObserver; charts use it to follow their container size.
+if (typeof window !== 'undefined' && !('ResizeObserver' in window)) {
+  Object.defineProperty(window, 'ResizeObserver', {
+    writable: true,
+    configurable: true, // tests may stub it themselves
+    value: class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  });
+}

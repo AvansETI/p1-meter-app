@@ -20,10 +20,19 @@ export const css = (name: string) =>
  * on iOS sometimes did not run the animated clip path until the chart was tapped, leaving it
  * empty (#26); `buildOption` therefore always gets `animate = false`.
  */
-export function useEChart(buildOption: (animate: boolean) => EChartsCoreOption) {
+export function useEChart(
+  buildOption: (animate: boolean) => EChartsCoreOption,
+  /** Called with the data index of a clicked bar or point. */
+  onClick?: (dataIndex: number) => void,
+) {
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | undefined>(undefined);
   const buildRef = useRef(buildOption);
+  const clickRef = useRef(onClick);
+  // Keep the latest handler without re-registering the chart listener.
+  useEffect(() => {
+    clickRef.current = onClick;
+  });
 
   const option = () => buildRef.current(false);
 
@@ -32,6 +41,9 @@ export function useEChart(buildOption: (animate: boolean) => EChartsCoreOption) 
     if (!element) return;
     const chart = echarts.init(element, undefined, { renderer: 'svg' });
     chartRef.current = chart;
+    chart.on('click', (params) => {
+      if (typeof params.dataIndex === 'number') clickRef.current?.(params.dataIndex);
+    });
 
     const resize = () => {
       if (element.clientWidth > 0) chart.resize();

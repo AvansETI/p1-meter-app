@@ -394,3 +394,61 @@ ion-menu.app-side-menu ion-item.selected {
   height: 24px;
   width: auto;
 }
+
+/* History (docs/design/2026-11-09-history.md §6) */
+.history {
+  display: grid;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.history-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.history-nav__label {
+  font-weight: 800;
+  font-size: 16px;
+  --color: var(--ion-text-color);
+  text-transform: none;
+}
+.history-change {
+  font-size: 11px;
+  font-weight: 700;
+}
+.history-change--good {
+  color: var(--ion-color-success);
+}
+.history-change--bad {
+  color: var(--ion-color-warning);
+}
+.history-change--neutral {
+  color: var(--app-text-muted);
+}
+.history-charts {
+  display: grid;
+  gap: 16px;
+  touch-action: pan-y;
+}
+@media (min-width: 992px) {
+  .history-charts:has(> section + section) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.history-chart {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--app-radius);
+  background: var(--app-surface);
+}
+@media (min-width: 992px) {
+  .history-chart {
+    height: 300px;
+  }
+}
+.history-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--app-text-muted);
+}

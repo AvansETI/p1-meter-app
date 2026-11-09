@@ -75,7 +75,7 @@
         font-weight: 600;
         opacity: 0.75;
       }
-      /* Loading bar: fills over the 5 s minimum splash time (SPLASH_MIN_MS in src/splash.ts). */
+      /* Loading bar: fills over the 3.5 s minimum splash time (SPLASH_MIN_MS in src/splash.ts). */
       .splash__progress {
         position: relative;
         width: min(40vw, 160px);
@@ -92,7 +92,7 @@
         border-radius: inherit;
         background: #1cab7d;
         transform-origin: left;
-        animation: splash-progress 5000ms cubic-bezier(0.3, 0.1, 0.3, 1) both;
+        animation: splash-progress 3500ms cubic-bezier(0.3, 0.1, 0.3, 1) both;
       }
       @keyframes splash-progress {
         from {

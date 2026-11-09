@@ -11,6 +11,8 @@ import { InfluxDataSource } from './data/influx';
 import type { HouseholdDataSource } from './data/source';
 import { loggerOptions } from './logging';
 import { healthRoutes } from './routes/health';
+import { HistoryService } from './history/service';
+import { historyRoutes } from './routes/history';
 import { liveRoutes } from './routes/live';
 import { sessionRoutes } from './routes/session';
 import { LivePoller } from './live/poller';
@@ -93,6 +95,11 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   await app.register(
     async (api) => {
       await api.register(healthRoutes, { source });
+      await api.register(historyRoutes, {
+        sessions,
+        capabilities,
+        history: new HistoryService(source),
+      });
       await api.register(liveRoutes, {
         sessions,
         capabilities,

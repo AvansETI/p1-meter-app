@@ -153,11 +153,11 @@ phones.
   "Lectoraat Smart Energy" and "Avans · HZ" as muted text, plus its own inline CSS using
   the light/dark splash colours. It paints before any JavaScript loads.
 - `splash.ts` exports `hideSplash()`. `main.tsx` calls it after the first React render;
-  it waits until `performance.now() ≥ 5000` (time since navigation start), then adds a
+  it waits until `performance.now() ≥ 3500` (time since navigation start), then adds a
   `.splash--hide` class (250 ms opacity transition) and removes the element on
   `transitionend`. With `prefers-reduced-motion: reduce` the element is removed without
   the transition.
-- Because the 5 s is measured from navigation start, it overlaps with loading: a slow
+- Because the 3.5 s is measured from navigation start, it overlaps with loading: a slow
   load adds nothing.
 - The logo is animated with CSS keyframes (green strokes fly in, letters and subtitle fade in;
   see visual design §6); disabled with `prefers-reduced-motion`.
