@@ -11,7 +11,7 @@ export interface CachedDay {
 
 /**
  * Cache of computed daily costs (docs/design/2026-11-09-costs.md §5). Rows belong to one
- * tariff version; rows of other versions are ignored and replaced.
+ * tariff version; rows of older versions are removed with the next write.
  */
 export class CostCache {
   constructor(private readonly db: DatabaseSync) {}
@@ -48,6 +48,9 @@ export class CostCache {
     );
     this.db.exec('BEGIN');
     try {
+      this.db
+        .prepare('DELETE FROM daily_costs WHERE signature = ? AND tariff_version <> ?')
+        .run(signature, version);
       for (const { day, ...value } of days) {
         insert.run(signature, profile, day, version, JSON.stringify(value));
       }

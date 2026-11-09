@@ -4,6 +4,7 @@ import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { TariffPeriod } from '@p1/shared';
 import { describe, expect, it } from 'vitest';
+import { CostCache } from './costs';
 import { backupDaily, migrate, openDatabase } from './database';
 import { TariffRepository, VersionConflictError } from './tariffs';
 
@@ -98,5 +99,31 @@ describe('database file and backups', () => {
     ]);
     const copy = new DatabaseSync(path.join(dir, 'backups', 'p1-2026-11-05.db'));
     expect(new TariffRepository(copy).get(SIG).version).toBe(1);
+  });
+});
+
+describe('CostCache', () => {
+  const day = (cost: number) => ({
+    cost: {
+      electricityEur: cost,
+      gasEur: 0,
+      fixedEur: 0,
+      taxReductionEur: 0,
+      totalEur: cost,
+      estimated: false,
+    },
+    balance: { year: 2026, total: 0, normal: 0, offPeak: 0 },
+  });
+
+  it('returns days of the current tariff version and drops older versions on write', () => {
+    const db = openDatabase(':memory:');
+    const cache = new CostCache(db);
+    cache.put(SIG, 'own', 1, [{ day: '2026-01-01', ...day(1) }]);
+    expect(cache.get(SIG, 'own', 1, '2026-01-01', '2026-01-02').get('2026-01-01')).toEqual(day(1));
+    expect(cache.get(SIG, 'own', 2, '2026-01-01', '2026-01-02').size).toBe(0);
+
+    cache.put(SIG, 'own', 2, [{ day: '2026-01-02', ...day(2) }]);
+    const count = db.prepare('SELECT COUNT(*) AS n FROM daily_costs').get() as { n: number };
+    expect(count.n).toBe(1);
   });
 });
