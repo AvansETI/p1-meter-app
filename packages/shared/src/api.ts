@@ -15,8 +15,8 @@ export const HealthResponseSchema = z.object({
   /** Price job status per source; absent when the job is disabled. */
   prices: z
     .object({
-      electricity: z.enum(['pending', 'ok', 'backoff']),
-      gas: z.enum(['pending', 'ok', 'backoff']),
+      electricity: z.enum(['pending', 'ok', 'backoff', 'retrying']),
+      gas: z.enum(['pending', 'ok', 'backoff', 'retrying']),
     })
     .optional(),
 });
