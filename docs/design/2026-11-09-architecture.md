@@ -424,16 +424,17 @@ Provisioning is done step by step together in a later issue.
 
 ## 15. Open questions and decisions
 
-| #   | Topic                                                     | Proposal                                                  |
-| --- | --------------------------------------------------------- | --------------------------------------------------------- |
-| 1   | Swapped energy counters                                   | Auto-detect per household (§6.2). Cause unknown.          |
-| 2   | Gaps                                                      | One "not broken down" block (§7.4). Accepted 2026-11-09.  |
-| 3   | Other prefixes (`2005-POK-EMON-V00`, `DIY-SMARTMETER-V2`) | Not supported in MVP.                                     |
-| 4   | Future fields (voltage, current, per phase)               | Not in MVP; add via device profile + capability.          |
-| 5   | Neutral response vs. helpful UX                           | Same 404 for unknown and inactive (> 30 days) signatures. |
-| 6   | Chart library                                             | ECharts.                                                  |
-| 7   | Reverse proxy and hostname                                | To be decided at deployment.                              |
-| 8   | Dev without live data                                     | Optional replay data source that replays history as live. |
+| #   | Topic                                                     | Proposal                                                                                       |
+| --- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | Swapped energy counters                                   | Auto-detect per household (§6.2). Cause unknown.                                               |
+| 2   | Gaps                                                      | One "not broken down" block (§7.4). Accepted 2026-11-09.                                       |
+| 3   | Other prefixes (`2005-POK-EMON-V00`, `DIY-SMARTMETER-V2`) | Not supported in MVP.                                                                          |
+| 4   | Future fields (voltage, current, per phase)               | Not in MVP; add via device profile + capability.                                               |
+| 5   | Neutral response vs. helpful UX                           | Same 404 for unknown and inactive (> 30 days) signatures.                                      |
+| 6   | Chart library                                             | ECharts.                                                                                       |
+| 7   | Reverse proxy and hostname                                | To be decided at deployment.                                                                   |
+| 8   | Dev without live data                                     | Optional replay data source that replays history as live.                                      |
+| 9   | Native apps (Google Play, App Store), nice to have — #4   | Capacitor around `apps/web`; requires a configurable API base URL and CORS for the app origin. |
 
 ## 16. Glossary
 
