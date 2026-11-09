@@ -248,7 +248,9 @@
     "invalidDate": "Vul een datum in die nog niet in gebruik is.",
     "namePeriodPlaceholder": "Bijv. Vattenfall vast 2026",
     "namePeriodHelp": "Om deze periode in de lijst te herkennen.",
-    "fromLower": "vanaf {{date}}"
+    "fromLower": "vanaf {{date}}",
+    "compareEnabled": "Vergelijking tonen in de app",
+    "compareOffNote": "De vergelijking staat uit: de tariefperiodes blijven bewaard, maar Live en Historie tonen geen vergelijking."
   },
   "costs": {
     "today": "Kosten vandaag",

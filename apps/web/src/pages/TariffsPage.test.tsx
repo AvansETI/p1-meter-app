@@ -134,3 +134,18 @@ describe('TariffsPage period names', () => {
     expect(screen.getByText(/vanaf 1 januari 2026 · Enkel tarief/)).toBeInTheDocument();
   });
 });
+
+describe('TariffsPage comparison switch', () => {
+  it('offers the switch and explains when the comparison is off', async () => {
+    setup({
+      profiles: {
+        own: { periods: [period] },
+        compare: { name: 'Dynamisch', enabled: false, periods: [] },
+      },
+      version: 2,
+      updatedAt: '2026-11-09T10:00:00Z',
+    });
+    expect(await screen.findByText('Vergelijking tonen in de app')).toBeInTheDocument();
+    expect(screen.getByText(/De vergelijking staat uit/)).toBeInTheDocument();
+  });
+});
