@@ -64,6 +64,15 @@ describe('LivePage', () => {
     expect(screen.getByText(/^live · /)).toBeInTheDocument();
   });
 
+  it('shows power below 1 kW in watts', async () => {
+    setup({ hasExport: true });
+    const source = await stream();
+    act(() => source.emit('live', snapshot({ importKw: 0, exportKw: 0.93, netKw: -0.93 })));
+    expect(await screen.findByText('Terug aan het net')).toBeInTheDocument();
+    expect(screen.getByText(/^930/)).toBeInTheDocument();
+    expect(screen.getByText('W')).toBeInTheDocument();
+  });
+
   it('shows net export as "terug aan het net"', async () => {
     setup({ hasExport: true });
     const source = await stream();

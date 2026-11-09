@@ -45,8 +45,8 @@
     "todayGas": "Gas",
     "recent": "Afgelopen 24 uur",
     "chartLabel": "Grafiek van het netto vermogen in de afgelopen 24 uur",
-    "chartImport": "{{value}} kW van het net",
-    "chartExport": "{{value}} kW terug",
+    "chartImport": "{{value}} van het net",
+    "chartExport": "{{value}} terug",
     "loadError": "Kon de gegevens niet ophalen.",
     "retry": "Opnieuw"
   },

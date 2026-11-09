@@ -5,7 +5,7 @@ import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatKw } from '../format';
+import { formatKw, formatPowerText } from '../format';
 import { recentChartOption } from './chartOption';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, SVGRenderer]);
@@ -46,7 +46,7 @@ export default function RecentChart({
           },
           {
             net: (net) =>
-              t(net < 0 ? 'live.chartExport' : 'live.chartImport', { value: formatKw(net) }),
+              t(net < 0 ? 'live.chartExport' : 'live.chartImport', { value: formatPowerText(net) }),
             formatKw,
             formatTime: (date) => hourMinute.format(date),
           },

@@ -10,7 +10,7 @@ import {
 import type { LiveSnapshot, LiveStatus, TodayTotals } from '@p1/shared';
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatKw, formatKwh, formatM3, formatMoment } from '../format';
+import { formatKwh, formatM3, formatMoment, formatPower } from '../format';
 import { useRecentSeries, useTodayTotals } from '../live/queries';
 import { useLiveSnapshot } from '../live/useLiveSnapshot';
 import { useSession } from '../session/context';
@@ -41,6 +41,7 @@ function StatusLine({ status, snapshot }: { status: LiveStatus; snapshot: LiveSn
 function NetTile({ snapshot, muted }: { snapshot: LiveSnapshot; muted: boolean }) {
   const { t } = useTranslation();
   const exporting = snapshot.netKw < 0;
+  const power = formatPower(snapshot.netKw);
   return (
     <section className={`net-tile ${muted ? 'net-tile--muted' : ''}`} aria-live="off">
       <p className="net-tile__label">
@@ -53,8 +54,8 @@ function NetTile({ snapshot, muted }: { snapshot: LiveSnapshot; muted: boolean }
         {exporting ? t('live.toGrid') : t('live.fromGrid')}
       </p>
       <p className="net-tile__value">
-        {formatKw(snapshot.netKw)}
-        <small>kW</small>
+        {power.value}
+        <small>{power.unit}</small>
       </p>
     </section>
   );
