@@ -1,10 +1,14 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterAll, afterEach, vi } from 'vitest';
 
 afterEach(() => {
   cleanup();
 });
+
+// <ion-app> starts its focus and keyboard helpers in a 32 ms timer after it loads. In a short
+// test file that timer could fire after jsdom was torn down ("window is not defined").
+afterAll(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
 // jsdom has no matchMedia; Ionic and the splash logic query it. (Skipped in node-environment tests.)
 if (typeof window !== 'undefined')

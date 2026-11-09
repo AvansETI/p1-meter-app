@@ -82,16 +82,14 @@ describe('PeriodEditor', () => {
   const renderEditor = (initial = toDraft(period), takenDates: string[] = []) => {
     const onSave = vi.fn();
     render(
-      <IonApp>
-        <PeriodEditor
-          initial={initial}
-          hasExport
-          hasGas
-          takenDates={takenDates}
-          onCancel={() => {}}
-          onSave={onSave}
-        />
-      </IonApp>,
+      <PeriodEditor
+        initial={initial}
+        hasExport
+        hasGas
+        takenDates={takenDates}
+        onCancel={() => {}}
+        onSave={onSave}
+      />,
     );
     return onSave;
   };
@@ -111,16 +109,14 @@ describe('PeriodEditor', () => {
 
   it('shows gas fields only for households with gas', () => {
     render(
-      <IonApp>
-        <PeriodEditor
-          initial={emptyDraft('2026-01-01', false)}
-          hasExport={false}
-          hasGas={false}
-          takenDates={[]}
-          onCancel={() => {}}
-          onSave={() => {}}
-        />
-      </IonApp>,
+      <PeriodEditor
+        initial={emptyDraft('2026-01-01', false)}
+        hasExport={false}
+        hasGas={false}
+        takenDates={[]}
+        onCancel={() => {}}
+        onSave={() => {}}
+      />,
     );
     expect(screen.queryByText('Gas')).toBeNull();
     expect(screen.queryByText('Teruglevering')).toBeNull();
