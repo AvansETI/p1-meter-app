@@ -207,6 +207,33 @@ from(bucket: ${literal(this.options.bucket)})
     return result;
   }
 
+  async quarterCounters(
+    signature: string,
+    fields: CounterField[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<CounterField, Map<number, number>>> {
+    assertNormalized(signature);
+    const fieldFilter = fields.map((f) => `r._field == ${literal(f)}`).join(' or ');
+    // Quarter windows in UTC coincide with local quarters (the offset is whole hours).
+    const rows = await this.query(`
+from(bucket: ${literal(this.options.bucket)})
+  |> range(start: ${from.toISOString()}, stop: ${to.toISOString()})
+  |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
+  |> filter(fn: (r) => ${fieldFilter})
+  |> aggregateWindow(every: 15m, fn: last, createEmpty: false, timeSrc: "_start")
+  |> keep(columns: ["_time", "_field", "_value"])`);
+    const result = new Map<CounterField, Map<number, number>>(fields.map((f) => [f, new Map()]));
+    for (const row of rows) {
+      const value = num(row._value);
+      const target = result.get(row._field as CounterField);
+      if (target && typeof row._time === 'string' && value !== null) {
+        target.set(Date.parse(row._time), value);
+      }
+    }
+    return result;
+  }
+
   async firstPoint(signature: string): Promise<Date | null> {
     assertNormalized(signature);
     const rows = await this.query(`

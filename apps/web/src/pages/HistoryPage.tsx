@@ -29,6 +29,7 @@ import {
 import { chevronBack, chevronForward } from 'ionicons/icons';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ToolbarLogo from '../components/ToolbarLogo';
 import { useSearchParams } from 'react-router-dom';
 import { formatKwh, formatM3 } from '../format';
 import { compare, type Stream } from '../history/comparison';
@@ -240,6 +241,7 @@ export default function HistoryPage() {
       <IonHeader>
         <IonToolbar>
           <IonTitle>{t('history.title')}</IonTitle>
+          <ToolbarLogo />
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">

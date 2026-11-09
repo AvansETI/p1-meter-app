@@ -1,4 +1,5 @@
 import { InfluxDB, Point, type QueryApi, type WriteApi } from '@influxdata/influxdb-client';
+import { UpstreamError } from '../data/source';
 import type { PricePoint } from './entsoe';
 import type { GasPricePoint } from './energyzero';
 
@@ -17,7 +18,17 @@ export interface PriceStore {
   pointsPerDay(kind: PriceKind, from: Date, to: Date): Promise<Map<number, number>>;
 }
 
-export class InfluxPriceStore implements PriceStore {
+/** Reads prices for the cost engine (docs/design/2026-11-09-costs.md §6.2). */
+export interface PriceReader {
+  /** Quarter start (ms) → EUR/kWh excl. VAT in [from, to); hourly prices fill four quarters. */
+  electricityPrices(from: Date, to: Date): Promise<Map<number, number>>;
+  /** Hour start (ms) → EUR/m³ excl. VAT and energy tax in [from, to). */
+  gasPrices(from: Date, to: Date): Promise<Map<number, number>>;
+}
+
+const QUARTER_MS = 15 * 60_000;
+
+export class InfluxPriceStore implements PriceStore, PriceReader {
   private readonly writeApi: WriteApi;
   private readonly queryApi: QueryApi;
 
@@ -71,6 +82,38 @@ from(bucket: ${JSON.stringify(this.options.bucket)})
       }
     }
     return result;
+  }
+
+  async electricityPrices(from: Date, to: Date): Promise<Map<number, number>> {
+    const result = new Map<number, number>();
+    for (const row of await this.read('electricity', from, to)) {
+      const time = Date.parse(String(row._time));
+      const quarters = row.resolution === 'PT60M' ? 4 : 1;
+      for (let i = 0; i < quarters; i++) {
+        const start = time + i * QUARTER_MS;
+        if (start < to.getTime()) result.set(start, Number(row._value));
+      }
+    }
+    return result;
+  }
+
+  async gasPrices(from: Date, to: Date): Promise<Map<number, number>> {
+    const rows = await this.read('gas', from, to);
+    return new Map(rows.map((row) => [Date.parse(String(row._time)), Number(row._value)]));
+  }
+
+  private async read(kind: PriceKind, from: Date, to: Date) {
+    try {
+      return await this.queryApi.collectRows<Record<string, unknown>>(`
+from(bucket: ${JSON.stringify(this.options.bucket)})
+  |> range(start: ${from.toISOString()}, stop: ${to.toISOString()})
+  |> filter(fn: (r) => r._measurement == ${JSON.stringify(MEASUREMENT[kind])})
+  |> keep(columns: ["_time", "_value", "resolution"])`);
+    } catch (error) {
+      throw new UpstreamError(
+        `price query failed: ${error instanceof Error ? error.message.slice(0, 200) : String(error)}`,
+      );
+    }
   }
 
   async close(): Promise<void> {

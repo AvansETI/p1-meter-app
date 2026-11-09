@@ -470,3 +470,17 @@ ion-menu.app-side-menu ion-item.selected {
   margin: 16px 20px 0;
   color: var(--ion-color-danger);
 }
+
+/* MNEXT logo in the title bar of the main pages (#43); the side menu shows it on desktop. */
+.toolbar-logo img {
+  display: block;
+  height: 28px;
+  width: auto;
+  margin-inline-end: 12px;
+}
+
+@media (min-width: 992px) {
+  .toolbar-logo {
+    display: none;
+  }
+}

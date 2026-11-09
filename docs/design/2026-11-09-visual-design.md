@@ -228,6 +228,11 @@ Behaviour:
 └─────────────────────────────┘
 ```
 
+**Title bar logo (#43):** on narrow screens the main pages (Live, Historie, Instellingen) show the
+MNEXT logo on the right of the title bar, 28 px high. The toolbar is navy (light) or dark grey (dark),
+so it always uses the white logo. From 992 px the side menu shows the logo instead. Sub-pages,
+the welcome screen and pop-ups have no title bar logo.
+
 ### 7.2 Live — mobile
 
 ```

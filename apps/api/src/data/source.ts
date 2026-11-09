@@ -45,6 +45,13 @@ export interface HouseholdDataSource {
     instants: Date[],
     lookbackMs: number,
   ): Promise<Array<Partial<Record<CounterField, number>>>>;
+  /** Last value per quarter hour (key: quarter start ms) of each counter in [from, to). */
+  quarterCounters(
+    signature: string,
+    fields: CounterField[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<CounterField, Map<number, number>>>;
   /** Time of the household's first data point, or null. */
   firstPoint(signature: string): Promise<Date | null>;
   /** Gas counter per hour since `from`, and its increase times. */

@@ -72,6 +72,7 @@ describe('HistoryPage', () => {
       hasGas: true,
     });
     expect(await screen.findByText('week 46, 2026')).toBeInTheDocument();
+    expect(screen.getByAltText('MNEXT')).toBeInTheDocument(); // title bar logo (#43)
     await waitFor(() => expect(requests).toContain('/api/v1/history?period=week&date=2026-11-09'));
   });
 
