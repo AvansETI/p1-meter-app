@@ -12,6 +12,13 @@ export const HealthResponseSchema = z.object({
   uptimeSec: z.number(),
   /** Last known InfluxDB status; 'unknown' until the first background check finished. */
   influx: z.enum(['ok', 'unavailable', 'unknown']).optional(),
+  /** Price job status per source; absent when the job is disabled. */
+  prices: z
+    .object({
+      electricity: z.enum(['pending', 'ok', 'backoff']),
+      gas: z.enum(['pending', 'ok', 'backoff']),
+    })
+    .optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 

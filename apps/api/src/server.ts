@@ -117,6 +117,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   app.addHook('onClose', () => db.close());
 
   // Day-ahead price ingestion (costs phase 1, #33); not in tests.
+  let priceJob: PriceJob | undefined;
   const { INFLUX_URL, INFLUX_ORG, PRICES_INFLUX_BUCKET, PRICES_INFLUX_TOKEN, ENTSOE_TOKEN } =
     config;
   if (
@@ -135,6 +136,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
     });
     const job = new PriceJob(store, httpFetchers(ENTSOE_TOKEN), app.log, { pauseMs: 2_000 });
     job.start();
+    priceJob = job;
     app.addHook('onClose', async () => {
       job.stop();
       await store.close();
@@ -145,7 +147,10 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
 
   await app.register(
     async (api) => {
-      await api.register(healthRoutes, { source });
+      await api.register(healthRoutes, {
+        source,
+        ...(priceJob && { prices: () => priceJob.status() }),
+      });
       await api.register(tariffRoutes, {
         sessions,
         capabilities,
