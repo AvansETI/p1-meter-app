@@ -43,6 +43,27 @@ function toPowerPoints(rows: Record<string, unknown>[]): Map<string, PowerPoint>
 /** Flux string literal; JSON escaping is a valid subset of Flux string escaping. */
 const literal = (value: string) => JSON.stringify(value);
 
+/**
+ * Short, log-safe description of a query error: name, HTTP status and message, plus the
+ * underlying cause (e.g. ECONNREFUSED, certificate errors). Never the query text, which
+ * contains the signature; any signature in a message is masked by the logger as well.
+ */
+export function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const status = (error as { statusCode?: unknown }).statusCode;
+  const cause = error.cause instanceof Error ? error.cause : undefined;
+  const causeCode = (cause as { code?: unknown } | undefined)?.code;
+  const parts = [
+    error.name,
+    typeof status === 'number' ? `HTTP ${status}` : undefined,
+    error.message.slice(0, 200),
+    cause
+      ? `cause: ${typeof causeCode === 'string' ? causeCode + ' ' : ''}${cause.message.slice(0, 200)}`
+      : undefined,
+  ];
+  return parts.filter(Boolean).join(' — ');
+}
+
 /** Values are inlined into Flux (OSS has no query parameters), so only normalized IDs pass. */
 function assertNormalized(signature: string): void {
   if (!SIGNATURE_PATTERN.test(signature)) throw new Error('signature must be normalized');
@@ -219,9 +240,7 @@ data
     try {
       return await this.queryApi.collectRows<Record<string, unknown>>(flux);
     } catch (error) {
-      // Never pass on the query text: it contains the signature.
-      const reason = error instanceof Error ? error.name : 'unknown';
-      throw new UpstreamError(`InfluxDB query failed (${reason})`);
+      throw new UpstreamError(`InfluxDB query failed: ${describeError(error)}`);
     }
   }
 }
