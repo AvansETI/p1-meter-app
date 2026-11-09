@@ -76,6 +76,30 @@
         font-weight: 600;
         opacity: 0.75;
       }
+      /* Loading bar: fills over the 5 s minimum splash time (SPLASH_MIN_MS in src/splash.ts). */
+      .splash__progress {
+        position: relative;
+        width: min(40vw, 160px);
+        height: 3px;
+        margin-top: 12px;
+        border-radius: 2px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--splash-text) 15%, transparent);
+      }
+      .splash__progress::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: #1cab7d;
+        transform-origin: left;
+        animation: splash-progress 5000ms cubic-bezier(0.3, 0.1, 0.3, 1) both;
+      }
+      @keyframes splash-progress {
+        from {
+          transform: scaleX(0);
+        }
+      }
       .splash__co {
         margin: 0;
         font-size: 13px;
@@ -137,7 +161,8 @@
         .splash__ink,
         .splash__slash-long,
         .splash__slash-short,
-        .splash__text {
+        .splash__text,
+        .splash__progress::after {
           animation: none;
         }
       }
@@ -174,6 +199,7 @@
           <p class="splash__sub">Lectoraat Smart Energy</p>
           <p class="splash__author">Arno Broeders</p>
         </div>
+        <div class="splash__progress" role="progressbar" aria-label="Laden"></div>
       </div>
       <p class="splash__co">Avans · HZ</p>
     </div>
