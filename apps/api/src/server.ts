@@ -16,7 +16,7 @@ import { historyRoutes } from './routes/history';
 import { backupDaily, openDatabase } from './db/database';
 import { TariffRepository } from './db/tariffs';
 import { liveRoutes } from './routes/live';
-import { tariffRoutes } from './routes/tariffs';
+import { TARIFF_WRITES_PER_HOUR, tariffRoutes } from './routes/tariffs';
 import { PriceJob, httpFetchers } from './prices/job';
 import { InfluxPriceStore } from './prices/store';
 import { sessionRoutes } from './routes/session';
@@ -156,7 +156,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
         capabilities,
         tariffs,
         writes: new AttemptCounter(HOUR_MS),
-        writesPerHour: 10,
+        writesPerHour: TARIFF_WRITES_PER_HOUR,
       });
       await api.register(historyRoutes, {
         sessions,

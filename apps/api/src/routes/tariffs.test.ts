@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { loadConfig } from '../config';
 import { FakeDataSource } from '../data/fake';
 import { buildServer } from '../server';
+import { TARIFF_WRITES_PER_HOUR } from './tariffs';
 
 const SIG = '2019-ETI-EMON-V01-A1B2C3-000000';
 const CAPS: Capabilities = {
@@ -97,7 +98,7 @@ describe('tariff routes', () => {
   it('limits saves per household per hour', async () => {
     const { call } = await setup();
     let status = 0;
-    for (let v = 0; v <= 10; v++) {
+    for (let v = 0; v <= TARIFF_WRITES_PER_HOUR; v++) {
       status = (await call('PUT', '/tariffs', { profiles: { own: { periods: [] } } }, v))
         .statusCode;
     }

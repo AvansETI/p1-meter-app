@@ -20,6 +20,9 @@ export interface TariffRouteOptions {
   writesPerHour: number;
 }
 
+/** Every change in the Settings screen is a save, so allow a comfortable editing session. */
+export const TARIFF_WRITES_PER_HOUR = 30;
+
 const BodySchema = z.object({ profiles: TariffProfilesSchema });
 const toResponse = (stored: ReturnType<TariffRepository['get']>): TariffsResponse => stored;
 
