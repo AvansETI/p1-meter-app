@@ -1,0 +1,38 @@
+# MNEXT Energiemeter API + web app (docs/design/2026-11-09-deployment.md §4.3)
+[Unit]
+Description=MNEXT Energiemeter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=p1meter
+Group=p1meter
+EnvironmentFile=/etc/p1-meter-app/env
+WorkingDirectory=/opt/p1-meter-app/current/api
+ExecStart=/opt/node/current/bin/node /opt/p1-meter-app/current/api/dist/index.mjs
+Restart=on-failure
+RestartSec=5
+
+# Hardening: the app only needs to read its files and talk over the network.
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target
