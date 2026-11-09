@@ -16,15 +16,15 @@ desktop. Ionic's adaptive components stay; only the theme changes.
 
 Extracted from the theme stylesheet and logo of mnext.nl on 2026-11-09:
 
-| Element | Value on mnext.nl |
-|---|---|
-| Primary | navy `#293D66`; dark navy `#222C3B` |
-| Accent | green `#1CAB7D`; dark green `#047563` |
-| Light backgrounds | `#EFF3F2` (grey-green), `#F2F3F6` (grey), `#F4F2F9` (lilac), `#C8BBE6` (lilac) |
-| Typeface | Nunito |
-| Corner radius | 5 px (buttons, cards), round for avatars/icons |
-| Logo | `logo.svg` (87×65, navy wordmark, green diagonal strokes forming the X), `logo_white.svg` |
-| Co-branding | Avans and HZ logos (white versions on the site footer) |
+| Element           | Value on mnext.nl                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| Primary           | navy `#293D66`; dark navy `#222C3B`                                                       |
+| Accent            | green `#1CAB7D`; dark green `#047563`                                                     |
+| Light backgrounds | `#EFF3F2` (grey-green), `#F2F3F6` (grey), `#F4F2F9` (lilac), `#C8BBE6` (lilac)            |
+| Typeface          | Nunito                                                                                    |
+| Corner radius     | 5 px (buttons, cards), round for avatars/icons                                            |
+| Logo              | `logo.svg` (87×65, navy wordmark, green diagonal strokes forming the X), `logo_white.svg` |
+| Co-branding       | Avans and HZ logos (white versions on the site footer)                                    |
 
 The product owner confirmed the logos may be used in this app.
 
@@ -36,41 +36,41 @@ with 10 % white) per colour; these are generated from the base values below.
 
 ### 3.1 Light (default)
 
-| Token | Value | Use |
-|---|---|---|
-| `--ion-color-primary` | `#293D66` | toolbar, primary buttons, active tab, links |
-| `--ion-color-primary-contrast` | `#FFFFFF` | text on primary (10.75 : 1) |
-| `--ion-color-secondary` | `#047563` | secondary buttons, positive text (5.63 : 1 with white) |
-| `--ion-color-tertiary` | `#6F55C2` | gas accents |
-| `--ion-color-success` | `#047563` | "live" indicator text |
-| `--ion-color-warning` | `#A15F00` | "no recent data" text |
-| `--ion-color-danger` | `#C0392B` | errors |
-| `--ion-background-color` | `#FFFFFF` | page background |
-| `--app-surface` | `#F2F3F6` | cards, chart panels |
-| `--app-surface-alt` | `#EFF3F2` | splash, welcome, highlighted panel |
-| `--ion-text-color` | `#222C3B` | body text (14.08 : 1) |
-| `--app-text-muted` | `#5A6475` | labels, axis text (≥ 5.3 : 1 on all backgrounds) |
-| `--app-radius` | `5px` | cards, buttons, inputs |
-| `--app-brand-green` | `#1CAB7D` | decorative accents only (logo strokes, live dot, dividers) |
+| Token                          | Value     | Use                                                        |
+| ------------------------------ | --------- | ---------------------------------------------------------- |
+| `--ion-color-primary`          | `#293D66` | toolbar, primary buttons, active tab, links                |
+| `--ion-color-primary-contrast` | `#FFFFFF` | text on primary (10.75 : 1)                                |
+| `--ion-color-secondary`        | `#047563` | secondary buttons, positive text (5.63 : 1 with white)     |
+| `--ion-color-tertiary`         | `#6F55C2` | gas accents                                                |
+| `--ion-color-success`          | `#047563` | "live" indicator text                                      |
+| `--ion-color-warning`          | `#A15F00` | "no recent data" text                                      |
+| `--ion-color-danger`           | `#C0392B` | errors                                                     |
+| `--ion-background-color`       | `#FFFFFF` | page background                                            |
+| `--app-surface`                | `#F2F3F6` | cards, chart panels                                        |
+| `--app-surface-alt`            | `#EFF3F2` | splash, welcome, highlighted panel                         |
+| `--ion-text-color`             | `#222C3B` | body text (14.08 : 1)                                      |
+| `--app-text-muted`             | `#5A6475` | labels, axis text (≥ 5.3 : 1 on all backgrounds)           |
+| `--app-radius`                 | `5px`     | cards, buttons, inputs                                     |
+| `--app-brand-green`            | `#1CAB7D` | decorative accents only (logo strokes, live dot, dividers) |
 
 ### 3.2 Dark
 
 Follows `prefers-color-scheme: dark`; the user can override (system / light / dark) in
 Settings. Derived from dark navy `#222C3B`.
 
-| Token | Value | Use |
-|---|---|---|
-| `--ion-background-color` | `#161D29` | page background |
-| `--app-surface` | `#222C3B` | cards, toolbar |
-| `--app-surface-alt` | `#2B3648` | raised panels |
-| `--ion-text-color` | `#F2F3F6` | body text (≥ 10.98 : 1) |
-| `--app-text-muted` | `#AAB3C2` | labels, axis text (≥ 5.76 : 1) |
-| `--ion-color-primary` | `#8FA8DC` | links, active tab, primary buttons |
+| Token                          | Value     | Use                                |
+| ------------------------------ | --------- | ---------------------------------- |
+| `--ion-background-color`       | `#161D29` | page background                    |
+| `--app-surface`                | `#222C3B` | cards, toolbar                     |
+| `--app-surface-alt`            | `#2B3648` | raised panels                      |
+| `--ion-text-color`             | `#F2F3F6` | body text (≥ 10.98 : 1)            |
+| `--app-text-muted`             | `#AAB3C2` | labels, axis text (≥ 5.76 : 1)     |
+| `--ion-color-primary`          | `#8FA8DC` | links, active tab, primary buttons |
 | `--ion-color-primary-contrast` | `#161D29` | text on primary buttons (7.09 : 1) |
-| `--ion-color-secondary` | `#3CCB96` | positive text |
-| `--ion-color-tertiary` | `#A894E6` | gas accents |
-| `--ion-color-warning` | `#F2B046` | "no recent data" |
-| `--ion-color-danger` | `#FF7A6B` | errors |
+| `--ion-color-secondary`        | `#3CCB96` | positive text                      |
+| `--ion-color-tertiary`         | `#A894E6` | gas accents                        |
+| `--ion-color-warning`          | `#F2B046` | "no recent data"                   |
+| `--ion-color-danger`           | `#FF7A6B` | errors                             |
 
 In dark mode the toolbar is `--app-surface` instead of navy, so the logo uses
 `logo_white.svg`.
@@ -79,11 +79,11 @@ In dark mode the toolbar is `--app-surface` instead of navy, so the logo uses
 
 Same meaning everywhere: live tiles, legends, charts, icons.
 
-| Stream | Light | Dark | Contrast (light: white / `#F2F3F6`) | Contrast (dark: `#161D29` / `#222C3B`) |
-|---|---|---|---|---|
-| Import (*afname*) | `#293D66` navy | `#8FA8DC` | 10.75 / 9.69 | 7.09 / 5.90 |
-| Export (*teruglevering*) | `#189C71` green | `#3CCB96` | 3.48 / 3.14 | 8.19 / 6.82 |
-| Gas | `#6F55C2` purple | `#A894E6` | 5.59 / 5.04 | 6.48 / 5.39 |
+| Stream                   | Light            | Dark      | Contrast (light: white / `#F2F3F6`) | Contrast (dark: `#161D29` / `#222C3B`) |
+| ------------------------ | ---------------- | --------- | ----------------------------------- | -------------------------------------- |
+| Import (_afname_)        | `#293D66` navy   | `#8FA8DC` | 10.75 / 9.69                        | 7.09 / 5.90                            |
+| Export (_teruglevering_) | `#189C71` green  | `#3CCB96` | 3.48 / 3.14                         | 8.19 / 6.82                            |
+| Gas                      | `#6F55C2` purple | `#A894E6` | 5.59 / 5.04                         | 6.48 / 5.39                            |
 
 Notes:
 
@@ -106,14 +106,14 @@ Notes:
   `-apple-system, "Segoe UI", Roboto, sans-serif`.
 - Numbers use `font-variant-numeric: tabular-nums` so live values don't jitter.
 
-| Role | Size / weight | Example |
-|---|---|---|
-| Live value | 48 px / 800 (mobile), 64 px desktop | `3,52 kW` |
-| Page title | 22 px / 700 | Live |
-| Section title | 17 px / 700 | Vandaag |
-| Body | 16 px / 400 | |
-| Label, axis | 13 px / 600 | `kWh` |
-| Caption | 12 px / 400 | `bijgewerkt 10:11:54` |
+| Role          | Size / weight                       | Example               |
+| ------------- | ----------------------------------- | --------------------- |
+| Live value    | 48 px / 800 (mobile), 64 px desktop | `3,52 kW`             |
+| Page title    | 22 px / 700                         | Live                  |
+| Section title | 17 px / 700                         | Vandaag               |
+| Body          | 16 px / 400                         |                       |
+| Label, axis   | 13 px / 600                         | `kWh`                 |
+| Caption       | 12 px / 400                         | `bijgewerkt 10:11:54` |
 
 Units are written with a thin space and Dutch number formatting (`Intl.NumberFormat('nl-NL')`):
 `3,52 kW`, `12,4 kWh`, `0,68 m³`.
@@ -122,13 +122,13 @@ Units are written with a thin space and Dutch number formatting (`Intl.NumberFor
 
 ### 5.1 Logo use
 
-| Place | Asset |
-|---|---|
-| Splash | `logo.svg` large (light), `logo_white.svg` (dark) |
-| Welcome screen | `logo.svg`, medium |
-| Desktop side menu header | `logo.svg` / `logo_white.svg`, small |
-| Mobile toolbar | no logo (space); page title only |
-| About (in Settings) | MNEXT logo + "Lectoraat Smart Energie" + Avans and HZ logos |
+| Place                    | Asset                                                      |
+| ------------------------ | ---------------------------------------------------------- |
+| Splash                   | `logo.svg` large (light), `logo_white.svg` (dark)          |
+| Welcome screen           | `logo.svg`, medium                                         |
+| Desktop side menu header | `logo.svg` / `logo_white.svg`, small                       |
+| Mobile toolbar           | no logo (space); page title only                           |
+| About (in Settings)      | MNEXT logo + "Lectoraat Smart Energy" + Avans and HZ logos |
 
 The logo is not recoloured, stretched or cropped. Minimum display width 64 px.
 
@@ -136,12 +136,12 @@ The logo is not recoloured, stretched or cropped. Minimum display width 64 px.
 
 The logo's thin strokes become hairlines at small sizes, so:
 
-| Size | Design |
-|---|---|
-| 192, 512 px (`any`) | full MNEXT logo, navy/green on white, centred, 70 % width |
-| 512 px (`maskable`) | same, logo within the 80 % safe zone, white background |
-| 180 px (`apple-touch-icon`) | same as 192, no transparency |
-| favicon (SVG + 32 px PNG) | full logo SVG for modern browsers; 32 px PNG gets thicker strokes (stroke-width ×2) |
+| Size                        | Design                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| 192, 512 px (`any`)         | full MNEXT logo, navy/green on white, centred, 70 % width                           |
+| 512 px (`maskable`)         | same, logo within the 80 % safe zone, white background                              |
+| 180 px (`apple-touch-icon`) | same as 192, no transparency                                                        |
+| favicon (SVG + 32 px PNG)   | full logo SVG for modern browsers; 32 px PNG gets thicker strokes (stroke-width ×2) |
 
 ### 5.3 Web app manifest
 
@@ -173,7 +173,8 @@ shown while the browser starts. Then the **in-app splash** takes over:
 │         M N E ╱ T           │   MNEXT logo, ~60 % of width (max 320 px)
 │              ╱              │
 │                             │
-│   Lectoraat Smart Energie   │   Nunito 20 px / 700, --ion-text-color
+│   Lectoraat Smart Energy   │   Nunito 20 px / 700, --ion-text-color
+│        Arno Broeders        │   15 px / 600, 75 % opacity (added 2026-11-09)
 │                             │
 │                             │
 │                             │
@@ -181,6 +182,12 @@ shown while the browser starts. Then the **in-app splash** takes over:
 └─────────────────────────────┘
   background --app-surface-alt (#EFF3F2 light / #161D29 dark)
 ```
+
+Logo animation (added 2026-11-09, issue #3): the navy letters fade in (100–550 ms), the long
+green stroke flies in along its own direction from the top right (200–800 ms), the short green
+stroke from the bottom left (550–1000 ms), then the subtitle and author name rise in (700–1100 ms). Pure CSS in
+`index.html`, so it runs before the JavaScript loads and fits within the 1.2 s minimum. With
+`prefers-reduced-motion` the logo is shown static.
 
 Behaviour:
 
@@ -313,12 +320,12 @@ spanning the gap, with a tooltip giving the total and the period.
 
 ## 10. Assets and licences
 
-| Asset | Source | Stored at |
-|---|---|---|
+| Asset                      | Source                                                                        | Stored at                |
+| -------------------------- | ----------------------------------------------------------------------------- | ------------------------ |
 | MNEXT logo (colour, white) | `https://www.mnext.nl/app/themes/mnext/assets/img/logo.svg`, `logo_white.svg` | `apps/web/public/brand/` |
-| Avans logo | mnext.nl footer image (white PNG); prefer an official SVG if available | `apps/web/public/brand/` |
-| HZ logo | mnext.nl footer image (white PNG); prefer an official SVG if available | `apps/web/public/brand/` |
-| Nunito | `@fontsource-variable/nunito`, SIL Open Font License | npm dependency |
+| Avans logo                 | mnext.nl footer image (white PNG); prefer an official SVG if available        | `apps/web/public/brand/` |
+| HZ logo                    | mnext.nl footer image (white PNG); prefer an official SVG if available        | `apps/web/public/brand/` |
+| Nunito                     | `@fontsource-variable/nunito`, SIL Open Font License                          | npm dependency           |
 
 The footer images on mnext.nl are white versions for a dark background. On the light
 splash a coloured (or navy) version is needed; if no official file is available the
@@ -328,8 +335,8 @@ download date of each file.
 
 ## 11. Open points
 
-| # | Topic | Proposal |
-|---|---|---|
-| 1 | Coloured Avans/HZ logos for the light splash | Ask MNEXT/Avans communication for official SVGs |
-| 2 | Brand guidelines MNEXT | If an official guide exists, check tokens against it before implementation |
-| 3 | Theme override in Settings | system / light / dark, default system |
+| #   | Topic                                        | Proposal                                                                   |
+| --- | -------------------------------------------- | -------------------------------------------------------------------------- |
+| 1   | Coloured Avans/HZ logos for the light splash | Ask MNEXT/Avans communication for official SVGs                            |
+| 2   | Brand guidelines MNEXT                       | If an official guide exists, check tokens against it before implementation |
+| 3   | Theme override in Settings                   | system / light / dark, default system                                      |

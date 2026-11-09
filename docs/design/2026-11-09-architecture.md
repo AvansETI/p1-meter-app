@@ -31,33 +31,33 @@ user accounts, inverter integrations, voltage/current/per-phase data.
 Findings from metadata queries over the whole bucket and from detailed queries on one
 consenting household.
 
-| Item | Value |
-|---|---|
-| Measurement | `dsmr` (only one) |
-| Tags | `signature` (only one) |
-| Fields | `power_consumed`, `power_produced`, `energy_consumed`, `energy_produced`, `gas_delivered` — all `double` |
-| Retention | infinite, shard group 7 days |
-| Oldest data | August 2023 |
-| Signatures | 351 in total; ~90–100 reporting at any moment, 124 in the last 30 days |
-| Prefixes | `2019-ETI-EMON-V01` (349), two single test/legacy devices with other prefixes |
-| Signature length | always 31 characters: prefix + `-` + 6 hex + `-` + 6 hex |
-| Sample interval | ~20 s (median 20 s, mostly 19–21 s) |
-| Ingest latency | of 91 reporting households, 90 had a last point < 30 s old, 1 between 30–60 s |
+| Item             | Value                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| Measurement      | `dsmr` (only one)                                                                                        |
+| Tags             | `signature` (only one)                                                                                   |
+| Fields           | `power_consumed`, `power_produced`, `energy_consumed`, `energy_produced`, `gas_delivered` — all `double` |
+| Retention        | infinite, shard group 7 days                                                                             |
+| Oldest data      | August 2023                                                                                              |
+| Signatures       | 351 in total; ~90–100 reporting at any moment, 124 in the last 30 days                                   |
+| Prefixes         | `2019-ETI-EMON-V01` (349), two single test/legacy devices with other prefixes                            |
+| Signature length | always 31 characters: prefix + `-` + 6 hex + `-` + 6 hex                                                 |
+| Sample interval  | ~20 s (median 20 s, mostly 19–21 s)                                                                      |
+| Ingest latency   | of 91 reporting households, 90 had a last point < 30 s old, 1 between 30–60 s                            |
 
 Units and semantics:
 
-| Field | Unit | Kind | Notes |
-|---|---|---|---|
-| `power_consumed` | kW | instantaneous | import from grid; resolution 0.01 kW |
-| `power_produced` | kW | instantaneous | export to grid |
-| `energy_consumed` | kWh | cumulative counter | sum over tariffs; **orientation varies, see below** |
-| `energy_produced` | kWh | cumulative counter | sum over tariffs; **orientation varies, see below** |
-| `gas_delivered` | m³ | cumulative counter | updates every 5 min (DSMR 5) or hourly (DSMR ≤ 4) |
+| Field             | Unit | Kind               | Notes                                               |
+| ----------------- | ---- | ------------------ | --------------------------------------------------- |
+| `power_consumed`  | kW   | instantaneous      | import from grid; resolution 0.01 kW                |
+| `power_produced`  | kW   | instantaneous      | export to grid                                      |
+| `energy_consumed` | kWh  | cumulative counter | sum over tariffs; **orientation varies, see below** |
+| `energy_produced` | kWh  | cumulative counter | sum over tariffs; **orientation varies, see below** |
+| `gas_delivered`   | m³   | cumulative counter | updates every 5 min (DSMR 5) or hourly (DSMR ≤ 4)   |
 
 ### 3.1 Per-household differences
 
-Every signature has written all five fields at some point, so field *presence* says
-nothing. Differences are in the *values*:
+Every signature has written all five fields at some point, so field _presence_ says
+nothing. Differences are in the _values_:
 
 - **Gas.** In the last 30 days 103 of 121 households had `gas_delivered > 0`; the rest
   always report 0 (no gas connection or no gas meter linked).
@@ -68,7 +68,7 @@ nothing. Differences are in the *values*:
   daily delta of both counters (83 households, 2026-10-01): in **75** households
   `energy_consumed` is the import counter (as named); in **8** households it is the
   other way round. The `power_*` fields were consistent everywhere. Cross-checking with
-  gas update frequency showed this is *not* explained by DSMR generation (5 swapped
+  gas update frequency showed this is _not_ explained by DSMR generation (5 swapped
   households have a DSMR 5 meter). Cause unknown; it must be detected per household.
 - **Gaps.** Loggers go offline for days or weeks. Counters keep running on the meter,
   so after a gap the first value includes everything consumed during the gap.
@@ -96,11 +96,11 @@ is where such fields would be added.
 
 Monorepo (pnpm workspaces):
 
-| Package | Responsibility |
-|---|---|
-| `apps/web` | UI, routing, charts, PWA (service worker, manifest), local settings |
-| `apps/api` | HTTP API, SSE, Flux queries, capability detection, caching, rate limiting; serves the built web app |
-| `packages/shared` | API types and schemas (zod), signature normalization, device profiles, unit helpers |
+| Package           | Responsibility                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| `apps/web`        | UI, routing, charts, PWA (service worker, manifest), local settings                                 |
+| `apps/api`        | HTTP API, SSE, Flux queries, capability detection, caching, rate limiting; serves the built web app |
+| `packages/shared` | API types and schemas (zod), signature normalization, device profiles, unit helpers                 |
 
 The API serves the static web build itself (`@fastify/static`), so production is one
 Node process behind the proxy. Same origin means no CORS configuration.
@@ -131,7 +131,7 @@ Example (fictional): `a1b2c3000000` → `2019-ETI-EMON-V01-A1B2C3-000000`.
 - Server logs never contain a full signature; they log a masked form
   (`2019-ETI-EMON-V01-…-0000`-style, last 4 characters only).
 - Rate limiting (§9) makes brute-forcing the 48-bit dynamic part impractical; the
-  MAC-derived half is guessable, so limits are on *attempts*, not on the search space.
+  MAC-derived half is guessable, so limits are on _attempts_, not on the search space.
 
 ## 6. Device profiles and capabilities
 
@@ -147,11 +147,11 @@ const EMON_V01: DeviceProfile = {
   sampleIntervalSec: 20,
   liveMaxAgeSec: 60,
   fields: {
-    powerImport: 'power_consumed',     // kW
-    powerExport: 'power_produced',     // kW
-    counterA: 'energy_consumed',       // kWh, orientation detected per household
-    counterB: 'energy_produced',       // kWh
-    gas: 'gas_delivered',              // m³
+    powerImport: 'power_consumed', // kW
+    powerExport: 'power_produced', // kW
+    counterA: 'energy_consumed', // kWh, orientation detected per household
+    counterB: 'energy_produced', // kWh
+    gas: 'gas_delivered', // m³
   },
 };
 ```
@@ -163,11 +163,11 @@ prefixes is an open question (§15).
 
 Computed by the API on session start and cached for 24 h:
 
-| Capability | Rule |
-|---|---|
-| `hasData` | any point in the last 30 days |
-| `hasGas` | `max(gas_delivered) > 0` over the last 30 days |
-| `hasExport` | `max(power_produced) > 0` over the last 30 days |
+| Capability      | Rule                                                                                                                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hasData`       | any point in the last 30 days                                                                                                                                   |
+| `hasGas`        | `max(gas_delivered) > 0` over the last 30 days                                                                                                                  |
+| `hasExport`     | `max(power_produced) > 0` over the last 30 days                                                                                                                 |
 | `importCounter` | `energy_consumed` or `energy_produced` — whichever daily delta is closest to `integral(power_consumed)` over the most recent days with complete data (see §7.4) |
 
 If orientation cannot be determined (e.g. near-zero consumption, too little data), fall
@@ -213,11 +213,11 @@ from(bucket: "p1-smartmeters")
 ```
 
 | Period | Window | Points |
-|---|---|---|
-| day | 1 m | 1440 |
-| week | 15 m | 672 |
-| month | 1 h | ~730 |
-| year | 1 d | 365 |
+| ------ | ------ | ------ |
+| day    | 1 m    | 1440   |
+| week   | 15 m   | 672    |
+| month  | 1 h    | ~730   |
+| year   | 1 d    | 365    |
 
 `createEmpty: true` makes gaps visible as nulls (shown as breaks in the line).
 
@@ -233,12 +233,12 @@ from(bucket: "p1-smartmeters")
   |> difference(nonNegative: true)
 ```
 
-| Period | Bars |
-|---|---|
-| day | 24 × hour |
-| week | 7 × day |
-| month | 28–31 × day |
-| year | 12 × month |
+| Period | Bars        |
+| ------ | ----------- |
+| day    | 24 × hour   |
+| week   | 7 × day     |
+| month  | 28–31 × day |
+| year   | 12 × month  |
 
 Totals come from counter differences, not from integrating power, because counters
 are exact even across gaps.
@@ -297,14 +297,14 @@ and are validated on both sides.
 
 ### 8.2 Data
 
-| Method & path | Returns |
-|---|---|
-| `GET /api/v1/live` | latest values, `live: boolean`, `time` |
-| `GET /api/v1/live/stream` | SSE stream of live values (see §10) |
-| `GET /api/v1/history/power?period=day&date=2026-11-09` | power series (§7.2) |
-| `GET /api/v1/history/energy?period=week&date=2026-11-09` | import/export/gas buckets with gap flags (§7.3) |
-| `GET /api/v1/capabilities` | capabilities (§6.2) |
-| `GET /api/v1/health` | liveness (no Influx call) and readiness (Influx ping, cached) |
+| Method & path                                            | Returns                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------- |
+| `GET /api/v1/live`                                       | latest values, `live: boolean`, `time`                        |
+| `GET /api/v1/live/stream`                                | SSE stream of live values (see §10)                           |
+| `GET /api/v1/history/power?period=day&date=2026-11-09`   | power series (§7.2)                                           |
+| `GET /api/v1/history/energy?period=week&date=2026-11-09` | import/export/gas buckets with gap flags (§7.3)               |
+| `GET /api/v1/capabilities`                               | capabilities (§6.2)                                           |
+| `GET /api/v1/health`                                     | liveness (no Influx call) and readiness (Influx ping, cached) |
 
 `period` ∈ `day|week|month|year`; `date` is any date inside the period (local time);
 weeks start on Monday (ISO).
@@ -316,13 +316,13 @@ weeks start on Monday (ISO).
 In-memory LRU cache (`lru-cache`) behind a small `Cache` interface, so a Redis
 implementation can be added later without touching callers.
 
-| Data | Key | TTL |
-|---|---|---|
-| live values | signature | 5 s (shared with the live poller) |
-| capabilities | signature | 24 h |
-| history, period contains "now" | signature + query + period | 60 s |
-| history, period fully in the past | signature + query + period | 24 h |
-| last-seen for offline households | signature | 60 s |
+| Data                              | Key                        | TTL                               |
+| --------------------------------- | -------------------------- | --------------------------------- |
+| live values                       | signature                  | 5 s (shared with the live poller) |
+| capabilities                      | signature                  | 24 h                              |
+| history, period contains "now"    | signature + query + period | 60 s                              |
+| history, period fully in the past | signature + query + period | 24 h                              |
+| last-seen for offline households  | signature                  | 60 s                              |
 
 In-flight deduplication: concurrent identical queries share one Influx request.
 Memory bound: max entries and max total size configured via env.
@@ -331,12 +331,12 @@ Memory bound: max entries and max total size configured via env.
 
 `@fastify/rate-limit` with `trustProxy` configured for the reverse proxy:
 
-| Scope | Limit (initial, configurable) |
-|---|---|
-| all API routes, per IP | 120 requests / minute |
-| `POST /session`, per IP | 10 / minute and 50 / day |
+| Scope                                 | Limit (initial, configurable)       |
+| ------------------------------------- | ----------------------------------- |
+| all API routes, per IP                | 120 requests / minute               |
+| `POST /session`, per IP               | 10 / minute and 50 / day            |
 | `POST /session` returning 404, per IP | 5 / hour; afterwards 429 for 1 hour |
-| SSE connections per session | 2 concurrent |
+| SSE connections per session           | 2 concurrent                        |
 
 Limits reset on restart (in-memory); acceptable for MVP, Redis later if needed.
 
@@ -424,36 +424,36 @@ Provisioning is done step by step together in a later issue.
 
 ## 15. Open questions and decisions
 
-| # | Topic | Proposal |
-|---|---|---|
-| 1 | Swapped energy counters | Auto-detect per household (§6.2). Cause unknown. |
-| 2 | Gaps | One "not broken down" block (§7.4). Accepted 2026-11-09. |
-| 3 | Other prefixes (`2005-POK-EMON-V00`, `DIY-SMARTMETER-V2`) | Not supported in MVP. |
-| 4 | Future fields (voltage, current, per phase) | Not in MVP; add via device profile + capability. |
-| 5 | Neutral response vs. helpful UX | Same 404 for unknown and inactive (> 30 days) signatures. |
-| 6 | Chart library | ECharts. |
-| 7 | Reverse proxy and hostname | To be decided at deployment. |
-| 8 | Dev without live data | Optional replay data source that replays history as live. |
+| #   | Topic                                                     | Proposal                                                  |
+| --- | --------------------------------------------------------- | --------------------------------------------------------- |
+| 1   | Swapped energy counters                                   | Auto-detect per household (§6.2). Cause unknown.          |
+| 2   | Gaps                                                      | One "not broken down" block (§7.4). Accepted 2026-11-09.  |
+| 3   | Other prefixes (`2005-POK-EMON-V00`, `DIY-SMARTMETER-V2`) | Not supported in MVP.                                     |
+| 4   | Future fields (voltage, current, per phase)               | Not in MVP; add via device profile + capability.          |
+| 5   | Neutral response vs. helpful UX                           | Same 404 for unknown and inactive (> 30 days) signatures. |
+| 6   | Chart library                                             | ECharts.                                                  |
+| 7   | Reverse proxy and hostname                                | To be decided at deployment.                              |
+| 8   | Dev without live data                                     | Optional replay data source that replays history as live. |
 
 ## 16. Glossary
 
-| Term | Meaning |
-|---|---|
-| P1 port | Customer port on a Dutch/Belgian smart meter that outputs DSMR telegrams. |
-| DSMR | Dutch Smart Meter Requirements; versions ≤ 4 and 5 differ in update rates. |
-| Logger | The device on the P1 port that sends data to InfluxDB. |
-| Signature | Unique ID of a logger/household, the Influx tag `signature`. |
-| Prefix | Fixed first part of a signature identifying device type and firmware, e.g. `2019-ETI-EMON-V01`. |
-| Dynamic part | The last 12 hex characters (`XXXXXX-XXXXXX`), MAC-derived. |
-| Device profile | Static description of fields, units and processing for one prefix. |
-| Capability | Per-household property detected from data (has gas, has export, …). |
-| Import | Electricity taken from the grid (Dutch: *afname*). |
-| Export | Electricity fed back into the grid (Dutch: *teruglevering*). |
-| Counter | Cumulative meter reading (kWh or m³) that only increases. |
-| Live | Latest value is less than 60 s old. |
-| Gap | Period in which the logger sent no data. |
-| BFF | Backend-for-frontend: an API shaped for this app's UI. |
-| SSE | Server-Sent Events: one-way HTTP stream from server to browser. |
-| PWA | Progressive web app: installable web app with a service worker. |
-| Flux | InfluxDB 2.x query language. |
-| LXC | Linux container on Proxmox, the deployment target. |
+| Term           | Meaning                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| P1 port        | Customer port on a Dutch/Belgian smart meter that outputs DSMR telegrams.                       |
+| DSMR           | Dutch Smart Meter Requirements; versions ≤ 4 and 5 differ in update rates.                      |
+| Logger         | The device on the P1 port that sends data to InfluxDB.                                          |
+| Signature      | Unique ID of a logger/household, the Influx tag `signature`.                                    |
+| Prefix         | Fixed first part of a signature identifying device type and firmware, e.g. `2019-ETI-EMON-V01`. |
+| Dynamic part   | The last 12 hex characters (`XXXXXX-XXXXXX`), MAC-derived.                                      |
+| Device profile | Static description of fields, units and processing for one prefix.                              |
+| Capability     | Per-household property detected from data (has gas, has export, …).                             |
+| Import         | Electricity taken from the grid (Dutch: _afname_).                                              |
+| Export         | Electricity fed back into the grid (Dutch: _teruglevering_).                                    |
+| Counter        | Cumulative meter reading (kWh or m³) that only increases.                                       |
+| Live           | Latest value is less than 60 s old.                                                             |
+| Gap            | Period in which the logger sent no data.                                                        |
+| BFF            | Backend-for-frontend: an API shaped for this app's UI.                                          |
+| SSE            | Server-Sent Events: one-way HTTP stream from server to browser.                                 |
+| PWA            | Progressive web app: installable web app with a service worker.                                 |
+| Flux           | InfluxDB 2.x query language.                                                                    |
+| LXC            | Linux container on Proxmox, the deployment target.                                              |

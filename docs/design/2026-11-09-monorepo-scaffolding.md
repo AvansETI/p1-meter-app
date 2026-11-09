@@ -54,36 +54,36 @@ p1-meter-app/
 Versions are the latest that satisfy all peer dependencies on 2026-11-09. Ranges use `^`;
 the lockfile pins exact versions.
 
-| Area | Package | Version | Note |
-|---|---|---|---|
-| Runtime | Node | 26.13.0 | `.nvmrc` |
-| Package manager | pnpm | 12.18.0 | `packageManager` field in root `package.json` |
-| Language | typescript | ~6.0.3 | **not 7.x**: typescript-eslint supports `<6.1` |
-| Web build | vite | ^8.3 | |
-| | @vitejs/plugin-react | ^6.3 | |
-| UI | react, react-dom | ^19.3 | |
-| | @ionic/react, @ionic/react-router | ^9.0 | |
-| | react-router, react-router-dom | ^6.30 | **not 7/8**: `@ionic/react-router` 9 requires `>=6.4 <7` |
-| | ionicons | ^8.1 | |
-| | @fontsource-variable/nunito | ^5.3 | self-hosted font |
-| i18n | i18next / react-i18next | ^27.0 / ^18.0 | |
-| PWA | vite-plugin-pwa | ^2.0 | Workbox 7.4 |
-| | @vite-pwa/assets-generator | ^2.0 | icons from SVG |
-| API | fastify | ^5.12 | |
-| | @fastify/static, @fastify/helmet | ^10.1 / ^13.2 | |
-| | zod | ^4.6 | config and API schemas |
-| | pino-pretty | ^13.2 | dev only |
-| | tsx | ^4.23 | dev runner (watch) |
-| | tsdown | ^0.23 | production bundle of the API incl. `shared` |
-| Test | vitest | ^5.1 | |
-| | jsdom, @testing-library/react, @testing-library/jest-dom | ^31 / ^16.3 / ^7.0 | web tests |
-| Lint/format | eslint, @eslint/js | ^10.14 / ^10.0 | flat config |
-| | typescript-eslint | ^8.72 | |
-| | eslint-plugin-react-hooks, eslint-plugin-react-refresh | ^7.1 / ^0.5 | |
-| | prettier, eslint-config-prettier | ^3.9 / ^10.1 | |
-| Hooks | lefthook | ^2.2 | |
-| | @commitlint/cli, @commitlint/config-conventional | ^21.2 | |
-| Dev | concurrently | ^10.0 | run web + api |
+| Area            | Package                                                  | Version            | Note                                                     |
+| --------------- | -------------------------------------------------------- | ------------------ | -------------------------------------------------------- |
+| Runtime         | Node                                                     | 26.13.0            | `.nvmrc`                                                 |
+| Package manager | pnpm                                                     | 12.18.0            | `packageManager` field in root `package.json`            |
+| Language        | typescript                                               | ~6.0.3             | **not 7.x**: typescript-eslint supports `<6.1`           |
+| Web build       | vite                                                     | ^8.3               |                                                          |
+|                 | @vitejs/plugin-react                                     | ^6.3               |                                                          |
+| UI              | react, react-dom                                         | ^19.3              |                                                          |
+|                 | @ionic/react, @ionic/react-router                        | ^9.0               |                                                          |
+|                 | react-router, react-router-dom                           | ^6.30              | **not 7/8**: `@ionic/react-router` 9 requires `>=6.4 <7` |
+|                 | ionicons                                                 | ^8.1               |                                                          |
+|                 | @fontsource-variable/nunito                              | ^5.3               | self-hosted font                                         |
+| i18n            | i18next / react-i18next                                  | ^27.0 / ^18.0      |                                                          |
+| PWA             | vite-plugin-pwa                                          | ^2.0               | Workbox 7.4                                              |
+|                 | @vite-pwa/assets-generator                               | ^2.0               | icons from SVG                                           |
+| API             | fastify                                                  | ^5.12              |                                                          |
+|                 | @fastify/static, @fastify/helmet                         | ^10.1 / ^13.2      |                                                          |
+|                 | zod                                                      | ^4.6               | config and API schemas                                   |
+|                 | pino-pretty                                              | ^13.2              | dev only                                                 |
+|                 | tsx                                                      | ^4.23              | dev runner (watch)                                       |
+|                 | tsdown                                                   | ^0.23              | production bundle of the API incl. `shared`              |
+| Test            | vitest                                                   | ^5.1               |                                                          |
+|                 | jsdom, @testing-library/react, @testing-library/jest-dom | ^31 / ^16.3 / ^7.0 | web tests                                                |
+| Lint/format     | eslint, @eslint/js                                       | ^10.14 / ^10.0     | flat config                                              |
+|                 | typescript-eslint                                        | ^8.72              |                                                          |
+|                 | eslint-plugin-react-hooks, eslint-plugin-react-refresh   | ^7.1 / ^0.5        |                                                          |
+|                 | prettier, eslint-config-prettier                         | ^3.9 / ^10.1       |                                                          |
+| Hooks           | lefthook                                                 | ^2.2               |                                                          |
+|                 | @commitlint/cli, @commitlint/config-conventional         | ^21.2              |                                                          |
+| Dev             | concurrently                                             | ^10.0              | run web + api                                            |
 
 ### 3.1 Supply-chain settings (`pnpm-workspace.yaml`)
 
@@ -95,16 +95,16 @@ the lockfile pins exact versions.
 
 ## 4. Root scripts
 
-| Script | Does |
-|---|---|
-| `pnpm dev` | `concurrently` → api (`tsx watch`) + web (`vite`) |
-| `pnpm build` | web (`vite build`) and api (`tsdown`) |
-| `pnpm start` | run the built api in production mode, serving the built web app |
-| `pnpm lint` | `eslint .` |
-| `pnpm format` / `format:check` | `prettier --write .` / `--check .` |
-| `pnpm typecheck` | `tsc --noEmit` per package (`pnpm -r typecheck`) |
-| `pnpm test` | `vitest run` (all projects) |
-| `prepare` | `lefthook install` (runs after `pnpm install`) |
+| Script                         | Does                                                            |
+| ------------------------------ | --------------------------------------------------------------- |
+| `pnpm dev`                     | `concurrently` → api (`tsx watch`) + web (`vite`)               |
+| `pnpm build`                   | web (`vite build`) and api (`tsdown`)                           |
+| `pnpm start`                   | run the built api in production mode, serving the built web app |
+| `pnpm lint`                    | `eslint .`                                                      |
+| `pnpm format` / `format:check` | `prettier --write .` / `--check .`                              |
+| `pnpm typecheck`               | `tsc --noEmit` per package (`pnpm -r typecheck`)                |
+| `pnpm test`                    | `vitest run` (all projects)                                     |
+| `prepare`                      | `lefthook install` (runs after `pnpm install`)                  |
 
 ## 5. Shared package
 
@@ -150,7 +150,7 @@ phones.
 ### 6.3 Splash screen
 
 - `index.html` contains `<div id="splash">` with the inline MNEXT logo SVG,
-  "Lectoraat Smart Energie" and "Avans · HZ" as muted text, plus its own inline CSS using
+  "Lectoraat Smart Energy" and "Avans · HZ" as muted text, plus its own inline CSS using
   the light/dark splash colours. It paints before any JavaScript loads.
 - `splash.ts` exports `hideSplash()`. `main.tsx` calls it after the first React render;
   it waits until `performance.now() ≥ 1200` (time since navigation start), then adds a
@@ -159,6 +159,8 @@ phones.
   the transition.
 - Because the 1.2 s is measured from navigation start, it overlaps with loading: a slow
   load adds nothing.
+- The logo is animated with CSS keyframes (green strokes fly in, letters and subtitle fade in;
+  see visual design §6); disabled with `prefers-reduced-motion`.
 - The splash text is static HTML and not translated (it shows the organisation names).
 
 ### 6.4 Pages
@@ -209,16 +211,17 @@ from `package.json`).
 
 - `config.ts` — zod schema over `process.env`:
 
-  | Variable | Default | Note |
-  |---|---|---|
-  | `NODE_ENV` | `development` | `production` enables static serving |
-  | `API_HOST` | `127.0.0.1` | |
-  | `API_PORT` | `3000` | |
-  | `LOG_LEVEL` | `info` | |
-  | `WEB_DIST` | `../web/dist` | path to the built web app |
-  | `INFLUX_*` | — | present in `.env.example`, **not** validated until the data feature |
+  | Variable    | Default       | Note                                                                |
+  | ----------- | ------------- | ------------------------------------------------------------------- |
+  | `NODE_ENV`  | `development` | `production` enables static serving                                 |
+  | `API_HOST`  | `127.0.0.1`   |                                                                     |
+  | `API_PORT`  | `3000`        |                                                                     |
+  | `LOG_LEVEL` | `info`        |                                                                     |
+  | `WEB_DIST`  | `../web/dist` | path to the built web app                                           |
+  | `INFLUX_*`  | —             | present in `.env.example`, **not** validated until the data feature |
 
   Invalid config → clear error message listing the bad variables, exit code 1.
+
 - `server.ts` — `buildServer(config)` returns a Fastify instance (no `listen`), so tests
   use `app.inject()`:
   - logger: pino; `pino-pretty` transport only in development;
@@ -248,11 +251,11 @@ from `package.json`).
 
 Root `vitest.config.ts` with `projects` for the three packages:
 
-| Package | Environment | First tests |
-|---|---|---|
-| shared | node | `API_BASE` constant / type guard |
-| api | node | `GET /api/v1/health` via `inject`; invalid config is rejected |
-| web | jsdom | i18n keys used in code exist in `nl.json`; `LivePage` renders its title; `hideSplash` respects minimum duration (fake timers) |
+| Package | Environment | First tests                                                                                                                   |
+| ------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| shared  | node        | `API_BASE` constant / type guard                                                                                              |
+| api     | node        | `GET /api/v1/health` via `inject`; invalid config is rejected                                                                 |
+| web     | jsdom       | i18n keys used in code exist in `nl.json`; `LivePage` renders its title; `hideSplash` respects minimum duration (fake timers) |
 
 ## 10. Git hooks (Lefthook)
 
@@ -290,9 +293,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4        # version from packageManager
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6 # version from packageManager
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -328,7 +331,7 @@ jobs:
 
 ## 14. Open points
 
-| # | Topic | Proposal |
-|---|---|---|
-| 1 | Favicon at 32 px with thicker strokes | Use the plain SVG favicon now; revisit if it looks too thin |
-| 2 | Upgrading to TypeScript 7 and react-router 7 | When typescript-eslint and `@ionic/react-router` support them; tracked as a chore issue |
+| #   | Topic                                        | Proposal                                                                                |
+| --- | -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1   | Favicon at 32 px with thicker strokes        | Use the plain SVG favicon now; revisit if it looks too thin                             |
+| 2   | Upgrading to TypeScript 7 and react-router 7 | When typescript-eslint and `@ionic/react-router` support them; tracked as a chore issue |
