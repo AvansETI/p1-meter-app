@@ -177,6 +177,48 @@ from(bucket: ${literal(this.options.bucket)})
     return deltas;
   }
 
+  async countersAt(
+    signature: string,
+    fields: CounterField[],
+    instants: Date[],
+    lookbackMs: number,
+  ): Promise<Array<Partial<Record<CounterField, number>>>> {
+    assertNormalized(signature);
+    if (instants.length === 0) return [];
+    const fieldFilter = fields.map((f) => `r._field == ${literal(f)}`).join(' or ');
+    const parts = instants.map(
+      (instant, i) => `from(bucket: ${literal(this.options.bucket)})
+  |> range(start: ${new Date(instant.getTime() - lookbackMs).toISOString()}, stop: ${new Date(instant.getTime() + 1).toISOString()})
+  |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
+  |> filter(fn: (r) => ${fieldFilter})
+  |> last()
+  |> yield(name: "at${i}")`,
+    );
+    const rows = await this.query(parts.join('\n'));
+    const result = instants.map((): Partial<Record<CounterField, number>> => ({}));
+    for (const row of rows) {
+      const index = Number(String(row.result).replace('at', ''));
+      const value = num(row._value);
+      const target = result[index];
+      if (target && value !== null && fields.includes(row._field as CounterField)) {
+        target[row._field as CounterField] = value;
+      }
+    }
+    return result;
+  }
+
+  async firstPoint(signature: string): Promise<Date | null> {
+    assertNormalized(signature);
+    const rows = await this.query(`
+from(bucket: ${literal(this.options.bucket)})
+  |> range(start: 0)
+  |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
+  |> filter(fn: (r) => r._field == "power_consumed")
+  |> first()`);
+    const time = rows[0]?._time;
+    return typeof time === 'string' ? new Date(time) : null;
+  }
+
   async gasHourly(signature: string, from: Date): Promise<GasData> {
     assertNormalized(signature);
     const rows = await this.query(`
