@@ -50,18 +50,22 @@ function MeterInfo({ capabilities }: { capabilities: Capabilities }) {
 
   return (
     <>
+      {/* Long values go under the label: next to it they squeezed the label to a sliver on
+          narrow screens, making the card extremely tall (iPhone). */}
       <IonItem>
-        <IonLabel>{t('settings.measured')}</IonLabel>
-        <IonNote slot="end">{measured.join(', ')}</IonNote>
+        <IonLabel className="ion-text-wrap">
+          <h3>{t('settings.measured')}</h3>
+          <p>{measured.join(', ')}</p>
+        </IonLabel>
       </IonItem>
       <IonItem>
         <IonLabel className="ion-text-wrap">
-          {t('settings.counters')}
+          <h3>{t('settings.counters')}</h3>
+          <p>{counters}</p>
           {capabilities.counterOrientation === 'swapped' && (
             <p>{t('settings.countersSwappedHelp')}</p>
           )}
         </IonLabel>
-        <IonNote slot="end">{counters}</IonNote>
       </IonItem>
       <IonItem>
         <IonLabel>{t('settings.lastSeen')}</IonLabel>
