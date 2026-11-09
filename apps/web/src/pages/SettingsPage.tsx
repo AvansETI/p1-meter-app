@@ -27,6 +27,7 @@ import { useSettings } from '../settings/context';
 import { ThemeSchema } from '../settings/storage';
 
 const PROJECT_URL = 'https://github.com/AvansETI/SmartMeter_DIY';
+const LICENSE_URL = 'https://github.com/AvansETI/p1-meter-app/blob/main/LICENSE';
 
 const dateTime = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -150,6 +151,9 @@ export default function SettingsPage() {
             <IonNote>{t('settings.version', { version: __APP_VERSION__ })}</IonNote>
             <a href={PROJECT_URL} target="_blank" rel="noreferrer">
               {t('settings.aboutProject')}
+            </a>
+            <a href={LICENSE_URL} target="_blank" rel="noreferrer">
+              {t('settings.aboutLicense')}
             </a>
           </div>
         </IonList>

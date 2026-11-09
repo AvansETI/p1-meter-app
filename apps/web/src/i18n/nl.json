@@ -86,7 +86,8 @@
     "aboutAuthor": "Arno Broeders",
     "aboutProject": "Meer over de meterkit",
     "version": "Versie {{version}}",
-    "measuredElectricity": "Stroomverbruik"
+    "measuredElectricity": "Stroomverbruik",
+    "aboutLicense": "Open source onder de Apache 2.0-licentie"
   },
   "pwa": {
     "updateAvailable": "Er is een nieuwe versie beschikbaar.",
