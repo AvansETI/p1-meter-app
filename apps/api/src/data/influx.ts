@@ -12,7 +12,6 @@ export interface InfluxOptions {
 }
 
 const DETECTION_WINDOW = '-30d';
-const SECONDS_PER_DAY = 86_400;
 
 /** Flux string literal; JSON escaping is a valid subset of Flux string escaping. */
 const literal = (value: string) => JSON.stringify(value);
@@ -67,9 +66,7 @@ export class InfluxDataSource implements HouseholdDataSource {
       hasGas: max('gas_delivered') > 0,
       hasExport: max('power_produced') > 0,
       lastSeen,
-      ...decideOrientation([...days.values()], {
-        expectedPoints: SECONDS_PER_DAY / DEFAULT_PROFILE.sampleIntervalSec,
-      }),
+      ...decideOrientation([...days.values()]),
     };
   }
 

@@ -13,8 +13,7 @@ export interface DayStats {
 }
 
 export interface OrientationOptions {
-  /** Points expected on a complete day (86400 s / sample interval). */
-  expectedPoints: number;
+  /** A day counts as complete with at least this share of the household's median daily points. */
   minCompleteness?: number;
   minImportKwh?: number;
   minValidDays?: number;
@@ -31,13 +30,15 @@ type Orientation = Pick<Capabilities, 'counterOrientation' | 'importCounter'>;
 export function decideOrientation(
   days: DayStats[],
   {
-    expectedPoints,
-    minCompleteness = 0.95,
+    minCompleteness = 0.9,
     minImportKwh = 1,
     minValidDays = 3,
     minAgreement = 0.8,
-  }: OrientationOptions,
+  }: OrientationOptions = {},
 ): Orientation {
+  // The send interval differs per kit and over time (observed 20–33 s), so completeness is
+  // judged against the household's own typical day rather than a fixed sample interval.
+  const expectedPoints = median(days.map((day) => day.points).filter((points) => points > 0));
   let asNamed = 0;
   let swapped = 0;
 
@@ -60,4 +61,11 @@ export function decideOrientation(
     }
   }
   return { counterOrientation: 'unknown', importCounter: 'energy_consumed' };
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 }

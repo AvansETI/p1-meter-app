@@ -41,7 +41,7 @@ consenting household.
 | Signatures       | 351 in total; ~90–100 reporting at any moment, 124 in the last 30 days                                   |
 | Prefixes         | `2019-ETI-EMON-V01` (349), two single test/legacy devices with other prefixes                            |
 | Signature length | always 31 characters: prefix + `-` + 6 hex + `-` + 6 hex                                                 |
-| Sample interval  | ~20 s (median 20 s, mostly 19–21 s)                                                                      |
+| Sample interval  | ~20–33 s; varies per kit and over time (one kit: 20 s in Feb, ~33 s in Oct 2026)                         |
 | Ingest latency   | of 91 reporting households, 90 had a last point < 30 s old, 1 between 30–60 s                            |
 
 Units and semantics:

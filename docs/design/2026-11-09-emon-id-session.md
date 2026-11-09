@@ -1,7 +1,7 @@
 # EMON ID entry and session
 
 - Issue: #5
-- Status: **draft — awaiting approval**
+- Status: **approved** (2026-11-09)
 - Date: 2026-11-09
 - Builds on: [architecture](2026-11-09-architecture.md) §5, §6, §8.1, §9;
   [visual design](2026-11-09-visual-design.md) §7.1
@@ -154,8 +154,10 @@ Rules:
 
 - **No points** → `null` → API answers `404 not_found`.
 - `hasGas` = max `gas_delivered` > 0; `hasExport` = max `power_produced` > 0.
-- **Orientation vote** over complete days only: point count ≥ 95 % of 4320 (20 s
-  interval) and integrated import ≥ 1 kWh. Per day, the counter whose delta is closer to
+- **Orientation vote** over complete days only: point count ≥ 90 % of the household's
+  **median** daily point count, and integrated import ≥ 1 kWh. (Changed during
+  implementation: the send interval differs per kit and over time, e.g. 20 s in February
+  and ~33 s in October 2026 for the same kit, so a fixed 4320 points/day rejected every day.) Per day, the counter whose delta is closer to
   the integral wins. Result:
   - ≥ 3 valid days and ≥ 80 % agree → `as-named` or `swapped`;
   - otherwise `unknown`, and `importCounter` falls back to `energy_consumed`.

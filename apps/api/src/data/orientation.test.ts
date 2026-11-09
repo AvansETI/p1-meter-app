@@ -8,7 +8,7 @@ const day = (importKwh: number, deltaConsumed: number, deltaProduced: number): D
   deltaConsumed,
   deltaProduced,
 });
-const decide = (days: DayStats[]) => decideOrientation(days, { expectedPoints: EXPECTED });
+const decide = (days: DayStats[]) => decideOrientation(days);
 
 describe('decideOrientation', () => {
   it('detects counters as named', () => {
@@ -37,8 +37,21 @@ describe('decideOrientation', () => {
     });
   });
 
+  it("judges completeness against the household's own typical day", () => {
+    // A kit sending every ~33 s: about 2600 points per day is complete for this household.
+    const sparse = (d: DayStats): DayStats => ({ ...d, points: 2620 });
+    const days = [
+      sparse(day(51, 11, 51)),
+      sparse(day(23.2, 22.1, 23.2)),
+      sparse(day(42.6, 7.1, 42.8)),
+    ];
+    expect(decide([...days, { ...day(27.5, 4.7, 27.6), points: 1119 }]).counterOrientation).toBe(
+      'swapped',
+    );
+  });
+
   it('ignores incomplete days, low usage and missing counters', () => {
-    const swapped = [day(30, 5, 30), day(30, 5, 30), day(30, 5, 30)];
+    const swapped = [day(30, 5, 30), day(30, 5, 30), day(30, 5, 30), day(30, 5, 30)];
     const noise: DayStats[] = [
       { ...day(30, 30, 5), points: 1000 },
       day(0.5, 0.5, 0),
