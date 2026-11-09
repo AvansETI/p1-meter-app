@@ -178,7 +178,7 @@ shown while the browser starts. Then the **in-app splash** takes over:
 │                             │
 │                             │
 │                             │
-│     [Avans]      [HZ]       │   small, muted (opacity .6), max 24 px high
+│     [Avans]      [HZ]       │   real logos, 28 px high, opacity .85 (colour in light, white in dark)
 └─────────────────────────────┘
   background --app-surface-alt (#EFF3F2 light / #161D29 dark)
 ```
@@ -326,20 +326,18 @@ spanning the gap, with a tooltip giving the total and the period.
 | Asset                      | Source                                                                        | Stored at                |
 | -------------------------- | ----------------------------------------------------------------------------- | ------------------------ |
 | MNEXT logo (colour, white) | `https://www.mnext.nl/app/themes/mnext/assets/img/logo.svg`, `logo_white.svg` | `apps/web/public/brand/` |
-| Avans logo                 | mnext.nl footer image (white PNG); prefer an official SVG if available        | `apps/web/public/brand/` |
-| HZ logo                    | mnext.nl footer image (white PNG); prefer an official SVG if available        | `apps/web/public/brand/` |
+| Avans logo (colour, white) | avans.nl SVGs, unmodified (#9)                                                | `apps/web/public/brand/` |
+| HZ logo (colour, white)    | hz.nl SVG (colour) and mnext.nl PNG (white), unmodified (#9)                  | `apps/web/public/brand/` |
 | Nunito                     | `@fontsource-variable/nunito`, SIL Open Font License                          | npm dependency           |
 
-The footer images on mnext.nl are white versions for a dark background. On the light
-splash a coloured (or navy) version is needed; if no official file is available the
-white PNG is shown on the dark splash only and replaced by text on the light splash
-until official files arrive. `apps/web/public/brand/SOURCES.md` records origin and
-download date of each file.
+The light theme uses the colour logos, the dark theme the white versions (switched with
+the `ion-palette-dark` class). `apps/web/public/brand/SOURCES.md` records origin and
+download date of each file. The logos are not covered by the Apache license (NOTICE).
 
 ## 11. Open points
 
 | #   | Topic                                        | Proposal                                                                   |
 | --- | -------------------------------------------- | -------------------------------------------------------------------------- |
-| 1   | Coloured Avans/HZ logos for the light splash | Ask MNEXT/Avans communication for official SVGs                            |
+| 1   | Coloured Avans/HZ logos for the light splash | Resolved in #9: official logos from avans.nl, hz.nl and mnext.nl           |
 | 2   | Brand guidelines MNEXT                       | If an official guide exists, check tokens against it before implementation |
 | 3   | Theme override in Settings                   | system / light / dark, default system                                      |

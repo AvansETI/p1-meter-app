@@ -171,7 +171,32 @@ export default function SettingsPage() {
           <div className="about">
             <BrandLogo className="about__logo" />
             <p className="about__lectorate">{t('settings.aboutLectorate')}</p>
-            <p>{t('settings.aboutPartners')}</p>
+            <div className="about__partners" aria-label={t('settings.aboutPartners')}>
+              <span className="brand-logo">
+                <img
+                  className="brand-logo__light"
+                  src="/brand/avans-logo.svg"
+                  alt="Avans Hogeschool"
+                />
+                <img
+                  className="brand-logo__dark"
+                  src="/brand/avans-logo-white.svg"
+                  alt="Avans Hogeschool"
+                />
+              </span>
+              <span className="brand-logo">
+                <img
+                  className="brand-logo__light"
+                  src="/brand/hz-logo.svg"
+                  alt="HZ University of Applied Sciences"
+                />
+                <img
+                  className="brand-logo__dark"
+                  src="/brand/hz-logo-white.png"
+                  alt="HZ University of Applied Sciences"
+                />
+              </span>
+            </div>
             <p>{t('settings.aboutAuthor')}</p>
             <IonNote>{t('settings.version', { version: __APP_VERSION__ })}</IonNote>
             <a href={PROJECT_URL} target="_blank" rel="noreferrer">

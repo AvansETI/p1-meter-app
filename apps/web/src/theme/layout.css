@@ -367,3 +367,14 @@ ion-menu.app-side-menu ion-item.selected {
   margin-top: 18px;
   color: var(--app-text-muted);
 }
+
+.about__partners {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 4px 0;
+}
+.about__partners .brand-logo img {
+  height: 24px;
+  width: auto;
+}
