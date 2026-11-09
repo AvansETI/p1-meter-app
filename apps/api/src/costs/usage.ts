@@ -10,6 +10,8 @@ const QUARTER_MS = 15 * 60_000;
 const NORMAL_GAP_QUARTERS = 3;
 
 /** Start (ms) of every quarter hour of a local day: 92, 96 or 100 on DST days. */
+const floorQuarter = (time: number) => Math.floor(time / QUARTER_MS) * QUARTER_MS;
+
 export function quarterStarts(date: PlainDate): number[] {
   const end = zonedToUtc(addDays(date, 1)).getTime();
   const starts: number[] = [];
@@ -22,6 +24,8 @@ export interface CounterSeries {
   last: Map<number, number>;
   /** Last value before the first quarter, if any. */
   baseline?: number;
+  /** Time (ms) of that value; quarters between it and the first quarter belong to the gap. */
+  baselineTime?: number;
 }
 
 /**
@@ -39,6 +43,11 @@ export function quarterDeltas(
   const estimated = starts.map(() => false);
   let known = series.baseline;
   let pending: number[] = [];
+  // Quarters of a gap that started before `starts` (computed earlier): they take their share.
+  let missed =
+    series.baselineTime !== undefined && starts.length > 0
+      ? Math.max(0, Math.round((starts[0]! - floorQuarter(series.baselineTime)) / QUARTER_MS) - 1)
+      : 0;
 
   starts.forEach((start, i) => {
     if (start >= now) return;
@@ -49,14 +58,16 @@ export function quarterDeltas(
     }
     if (known !== undefined) {
       const delta = value - known;
-      const share = Math.max(0, delta) / (pending.length + 1);
+      const gap = missed + pending.length;
+      const share = Math.max(0, delta) / (gap + 1);
       for (const j of [...pending, i]) {
         values[j] = share;
-        estimated[j] = pending.length > NORMAL_GAP_QUARTERS || delta < 0;
+        estimated[j] = gap > NORMAL_GAP_QUARTERS || delta < 0;
       }
     }
     known = value;
     pending = [];
+    missed = 0;
   });
   return { values, estimated };
 }
@@ -99,8 +110,10 @@ export function dayUsages(input: UsageInput): DayUsage[] {
     });
 
     let gasM3: number | null | undefined;
+    let gasQuarters: Array<number | null> | undefined;
     if (gas) {
-      const known = dayStarts.map((_, i) => gas.values[range(i)]).filter((v) => v != null);
+      gasQuarters = dayStarts.map((_, i) => gas.values[range(i)] ?? null);
+      const known = gasQuarters.filter((v) => v !== null);
       gasM3 = known.length === 0 ? null : known.reduce((a, b) => a + b, 0);
       if (known.length < dayStarts.length || dayStarts.some((_, i) => gas.estimated[range(i)])) {
         estimated = true;
@@ -115,7 +128,7 @@ export function dayUsages(input: UsageInput): DayUsage[] {
     return {
       date,
       quarters,
-      ...(gas && { gasM3 }),
+      ...(gas && { gasM3, gasQuarters }),
       ...(hourPrices.length > 0 && {
         gasPrice: hourPrices.reduce((a, b) => a + b, 0) / hourPrices.length,
       }),

@@ -41,7 +41,8 @@ function household(days: number) {
       quarters.set(start, { energy_consumed: counter });
     }
   }
-  const counters = new Map([[zonedToUtc(jan(1)).getTime(), { energy_consumed: 1000 }]]);
+  // Last value just before 1 January.
+  const counters = new Map([[zonedToUtc(jan(1)).getTime() - 60_000, { energy_consumed: 1000 }]]);
   return new FakeDataSource({ [SIG]: { capabilities: caps, quarters, counters } });
 }
 
