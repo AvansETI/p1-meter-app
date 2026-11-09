@@ -94,7 +94,7 @@ switch_to() {
 healthy() {
   local i
   for ((i = 0; i < HEALTH_TIMEOUT_SEC; i++)); do
-    curl -fsS --max-time 2 -o /dev/null "$HEALTH_URL" && return 0
+    curl -fs --max-time 2 -o /dev/null "$HEALTH_URL" && return 0
     sleep 1
   done
   return 1
