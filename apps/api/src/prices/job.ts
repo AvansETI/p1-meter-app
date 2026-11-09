@@ -83,7 +83,12 @@ export class PriceJob {
     private readonly store: PriceStore,
     private readonly fetchers: PriceFetchers,
     private readonly log: FastifyBaseLogger,
-    private readonly options: { pauseMs?: number; now?: () => Date } = {},
+    private readonly options: {
+      pauseMs?: number;
+      now?: () => Date;
+      /** Start of the backfill; tests use a short one. */
+      backfillFrom?: typeof BACKFILL_FROM;
+    } = {},
   ) {}
 
   /** Status per source for /api/v1/health. */
@@ -122,7 +127,11 @@ export class PriceJob {
         try {
           // Recent days (incl. tomorrow) first, then the backfill since August 2023.
           await this.fill(kind, dayStart(this.now(), -7), dayStart(this.now(), 2));
-          await this.fill(kind, zonedToUtc(BACKFILL_FROM), dayStart(this.now(), -7));
+          await this.fill(
+            kind,
+            zonedToUtc(this.options.backfillFrom ?? BACKFILL_FROM),
+            dayStart(this.now(), -7),
+          );
           state.failures = 0;
           state.status = 'ok';
           state.nextAttemptAt = now + NORMAL_INTERVAL_MS;
