@@ -38,6 +38,15 @@ export interface HouseholdDataSource {
   lastPoint(signature: string): Promise<PowerPoint | null>;
   /** Increase of the given counters since `since`. */
   counterDeltas(signature: string, since: Date, fields: CounterField[]): Promise<CounterDeltas>;
+  /** Last counter value at or before each instant, looking back at most `lookbackMs`. */
+  countersAt(
+    signature: string,
+    fields: CounterField[],
+    instants: Date[],
+    lookbackMs: number,
+  ): Promise<Array<Partial<Record<CounterField, number>>>>;
+  /** Time of the household's first data point, or null. */
+  firstPoint(signature: string): Promise<Date | null>;
   /** Gas counter per hour since `from`, and its increase times. */
   gasHourly(signature: string, from: Date): Promise<GasData>;
   /** 5-minute mean power over the last 24 hours. */

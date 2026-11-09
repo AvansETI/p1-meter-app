@@ -56,7 +56,35 @@
   },
   "history": {
     "title": "Historie",
-    "placeholder": "Hier komen je grafieken per dag, week, maand en jaar."
+    "day": "Dag",
+    "week": "Week",
+    "month": "Maand",
+    "year": "Jaar",
+    "previous": "Vorige periode",
+    "next": "Volgende periode",
+    "pickDate": "Kies een datum",
+    "done": "Klaar",
+    "import": "Afname",
+    "export": "Terug",
+    "net": "Netto",
+    "gas": "Gas",
+    "electricity": "Stroom",
+    "gasTitle": "Gas",
+    "energyChart": "Staafgrafiek van afname en teruglevering in deze periode",
+    "gasChart": "Staafgrafiek van het gasverbruik in deze periode",
+    "gapNote": "niet uitgesplitst, sinds {{since}}",
+    "incomplete": "onvolledig",
+    "change": "{{arrow}} {{percent}} % t.o.v. vorige {{period}}",
+    "vs": {
+      "day": "dag",
+      "week": "week",
+      "month": "maand",
+      "year": "jaar"
+    },
+    "noData": "Geen gegevens in deze periode.",
+    "zoomHint": "Tik op een staaf om in te zoomen.",
+    "loadError": "Kon de gegevens niet ophalen.",
+    "retry": "Opnieuw"
   },
   "settings": {
     "title": "Instellingen",

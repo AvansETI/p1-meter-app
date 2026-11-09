@@ -2,6 +2,7 @@ import {
   API_BASE,
   CapabilitiesSchema,
   GasSeriesSchema,
+  HistorySchema,
   LiveSnapshotSchema,
   RecentSeriesSchema,
   TodayTotalsSchema,
@@ -11,6 +12,8 @@ import {
   type ApiErrorCode,
   type Capabilities,
   type GasSeries,
+  type History,
+  type Period,
   type LiveSnapshot,
   type RecentSeries,
   type TodayTotals,
@@ -85,6 +88,11 @@ export class ApiClient {
 
   getToday(): Promise<ApiResult<TodayTotals>> {
     return this.authorized('/live/today', {}, TodayTotalsSchema);
+  }
+
+  getHistory(period: Period, date: string): Promise<ApiResult<History>> {
+    const query = new URLSearchParams({ period, date }).toString();
+    return this.authorized(`/history?${query}`, {}, HistorySchema);
   }
 
   getGas(): Promise<ApiResult<GasSeries>> {

@@ -33,3 +33,20 @@ export function localMidnight(now: Date = new Date(), timeZone = TIME_ZONE): Dat
   const guess = new Date(midnightAsUtc - zoneOffsetMs(new Date(midnightAsUtc), timeZone));
   return new Date(midnightAsUtc - zoneOffsetMs(guess, timeZone));
 }
+
+/** UTC instant of local midnight (or `hour`:00) on a calendar date in `timeZone` (DST-aware). */
+export function zonedToUtc(
+  date: { year: number; month: number; day: number },
+  hour = 0,
+  timeZone = TIME_ZONE,
+): Date {
+  const asUtc = Date.UTC(date.year, date.month - 1, date.day, hour);
+  const guess = new Date(asUtc - zoneOffsetMs(new Date(asUtc), timeZone));
+  return new Date(asUtc - zoneOffsetMs(guess, timeZone));
+}
+
+/** Calendar date (in `timeZone`) of an instant. */
+export function zonedDate(instant: Date, timeZone = TIME_ZONE) {
+  const local = new Date(instant.getTime() + zoneOffsetMs(instant, timeZone));
+  return { year: local.getUTCFullYear(), month: local.getUTCMonth() + 1, day: local.getUTCDate() };
+}
