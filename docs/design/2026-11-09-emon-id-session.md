@@ -51,7 +51,7 @@ export const EMON_V01 = {
   dynamicPattern: /^[0-9A-F]{12}$/, // chip ID + flash chip ID, without dashes
   measurement: 'dsmr',
   sampleIntervalSec: 20,
-  liveMaxAgeSec: 60,
+  liveMaxAgeSec: 300,
 } as const;
 ```
 

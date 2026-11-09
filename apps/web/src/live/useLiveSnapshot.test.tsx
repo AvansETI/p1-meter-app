@@ -40,7 +40,7 @@ describe('useLiveSnapshot', () => {
     act(() =>
       FakeEventSource.instances[0]!.emit('live', {
         time: '2026-11-09T12:00:00Z',
-        ageSec: 50,
+        ageSec: 290,
         status: 'live',
         importKw: 1,
         exportKw: 0,

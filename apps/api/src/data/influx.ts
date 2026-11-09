@@ -111,7 +111,7 @@ export class InfluxDataSource implements HouseholdDataSource {
       const pattern = `/^(${batch.join('|')})$/`;
       const rows = await this.query(`
 from(bucket: ${literal(this.options.bucket)})
-  |> range(start: -2m)
+  |> range(start: -10m)
   |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature =~ ${pattern})
   |> filter(fn: (r) => r._field == "power_consumed" or r._field == "power_produced")
   |> last()`);

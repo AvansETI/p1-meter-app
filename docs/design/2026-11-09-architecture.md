@@ -145,7 +145,7 @@ const EMON_V01: DeviceProfile = {
   prefix: '2019-ETI-EMON-V01',
   measurement: 'dsmr',
   sampleIntervalSec: 20,
-  liveMaxAgeSec: 60,
+  liveMaxAgeSec: 300,
   fields: {
     powerImport: 'power_consumed', // kW
     powerExport: 'power_produced', // kW
@@ -192,7 +192,7 @@ option location = timezone.location(name: "Europe/Amsterdam")
 
 ```flux
 from(bucket: "p1-smartmeters")
-  |> range(start: -2m)
+  |> range(start: -10m)
   |> filter(fn: (r) => r._measurement == "dsmr" and r.signature == sig)
   |> last()
 ```
@@ -349,7 +349,7 @@ Limits reset on restart (in-memory); acceptable for MVP, Redis later if needed.
   updates the live cache and pushes a `live` event to each subscriber.
   Influx load is independent of the number of open browser tabs.
 - Heartbeat comment every 25 s to keep proxies from closing idle connections.
-- The client marks data stale when no event arrived for 60 s and falls back to
+- The client marks data stale when the latest point is older than 5 minutes and falls back to
   polling `GET /live` if SSE fails repeatedly.
 - The reverse proxy must not buffer SSE (`X-Accel-Buffering: no` / proxy setting).
 
@@ -438,23 +438,23 @@ Provisioning is done step by step together in a later issue.
 
 ## 16. Glossary
 
-| Term           | Meaning                                                                                         |
-| -------------- | ----------------------------------------------------------------------------------------------- |
-| P1 port        | Customer port on a Dutch/Belgian smart meter that outputs DSMR telegrams.                       |
-| DSMR           | Dutch Smart Meter Requirements; versions ≤ 4 and 5 differ in update rates.                      |
-| Logger         | The device on the P1 port that sends data to InfluxDB.                                          |
-| Signature      | Unique ID of a logger/household, the Influx tag `signature`.                                    |
-| Prefix         | Fixed first part of a signature identifying device type and firmware, e.g. `2019-ETI-EMON-V01`. |
-| Dynamic part   | The last 12 hex characters (`XXXXXX-XXXXXX`), MAC-derived.                                      |
-| Device profile | Static description of fields, units and processing for one prefix.                              |
-| Capability     | Per-household property detected from data (has gas, has export, …).                             |
-| Import         | Electricity taken from the grid (Dutch: _afname_).                                              |
-| Export         | Electricity fed back into the grid (Dutch: _teruglevering_).                                    |
-| Counter        | Cumulative meter reading (kWh or m³) that only increases.                                       |
-| Live           | Latest value is less than 60 s old.                                                             |
-| Gap            | Period in which the logger sent no data.                                                        |
-| BFF            | Backend-for-frontend: an API shaped for this app's UI.                                          |
-| SSE            | Server-Sent Events: one-way HTTP stream from server to browser.                                 |
-| PWA            | Progressive web app: installable web app with a service worker.                                 |
-| Flux           | InfluxDB 2.x query language.                                                                    |
-| LXC            | Linux container on Proxmox, the deployment target.                                              |
+| Term           | Meaning                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| P1 port        | Customer port on a Dutch/Belgian smart meter that outputs DSMR telegrams.                         |
+| DSMR           | Dutch Smart Meter Requirements; versions ≤ 4 and 5 differ in update rates.                        |
+| Logger         | The device on the P1 port that sends data to InfluxDB.                                            |
+| Signature      | Unique ID of a logger/household, the Influx tag `signature`.                                      |
+| Prefix         | Fixed first part of a signature identifying device type and firmware, e.g. `2019-ETI-EMON-V01`.   |
+| Dynamic part   | The last 12 hex characters (`XXXXXX-XXXXXX`), MAC-derived.                                        |
+| Device profile | Static description of fields, units and processing for one prefix.                                |
+| Capability     | Per-household property detected from data (has gas, has export, …).                               |
+| Import         | Electricity taken from the grid (Dutch: _afname_).                                                |
+| Export         | Electricity fed back into the grid (Dutch: _teruglevering_).                                      |
+| Counter        | Cumulative meter reading (kWh or m³) that only increases.                                         |
+| Live           | Latest value is less than 5 minutes old (changed from 60 s on 2026-11-09, see live dashboard §2). |
+| Gap            | Period in which the logger sent no data.                                                          |
+| BFF            | Backend-for-frontend: an API shaped for this app's UI.                                            |
+| SSE            | Server-Sent Events: one-way HTTP stream from server to browser.                                   |
+| PWA            | Progressive web app: installable web app with a service worker.                                   |
+| Flux           | InfluxDB 2.x query language.                                                                      |
+| LXC            | Linux container on Proxmox, the deployment target.                                                |

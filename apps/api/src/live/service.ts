@@ -59,7 +59,7 @@ export class LiveService {
     return point ? toSnapshot(point) : null;
   }
 
-  /** Most recent point within 30 days; used when nothing arrived in the last 2 minutes. */
+  /** Most recent point within 30 days; used when nothing arrived in the last 10 minutes. */
   async lastPoint(signature: string): Promise<PowerPoint | null> {
     let cached = this.lastPoints.get(signature);
     if (!cached) {

@@ -28,7 +28,7 @@ describe('toSnapshot', () => {
   });
 
   it('marks old points as stale or offline', () => {
-    expect(toSnapshot({ time: '2026-11-09T11:58:00Z', importKw: 1, exportKw: 0 }, now).status).toBe(
+    expect(toSnapshot({ time: '2026-11-09T11:54:00Z', importKw: 1, exportKw: 0 }, now).status).toBe(
       'stale',
     );
     expect(toSnapshot({ time: '2026-10-14T15:38:29Z', importKw: 1, exportKw: 0 }, now).status).toBe(

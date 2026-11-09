@@ -17,7 +17,10 @@ and the last 24 hours, updated without reloading.
   another exports. In the last 24 h, 35 of 93 reporting households had moments with both
   `power_consumed` > 0 and `power_produced` > 0 (≈ 7.5 % of all points). So we never assume
   one of them is zero: **net = consumed − produced**.
-- **Send interval** varies per kit (20–33 s); "live" is judged by age (< 60 s), not by count.
+- **Send interval** is irregular: often every 10–20 s, but every household regularly pauses
+  2–2.5 minutes. With a 60 s threshold working meters showed "no recent data" ~20 % of the
+  time; with 5 minutes ~0.1 % (93 households, 2 hours, measured 2026-11-09). **Live = latest
+  point < 5 minutes old** (product owner decision, replacing the original 60 s).
 - **Counters** may be swapped per household; the API applies `importCounter` from the
   capabilities (#5) everywhere. The web app never sees raw field names.
 
@@ -27,7 +30,7 @@ and the last 24 hours, updated without reloading.
 LiveSnapshot = {
   time: string;          // ISO, timestamp of the latest point
   ageSec: number;        // age of that point when the API sent it
-  status: 'live' | 'stale' | 'offline';   // < 60 s, < 1 h, ≥ 1 h
+  status: 'live' | 'stale' | 'offline';   // < 5 min, < 1 h, ≥ 1 h
   importKw: number;      // power_consumed
   exportKw: number;      // power_produced (0 without export)
   netKw: number;         // importKw − exportKw
@@ -45,7 +48,7 @@ RecentSeries = {
 }
 ```
 
-Thresholds (`LIVE_MAX_AGE_SEC = 60`, `OFFLINE_AFTER_SEC = 3600`) live in `shared`, so web
+Thresholds (`LIVE_MAX_AGE_SEC = 300`, `OFFLINE_AFTER_SEC = 3600`) live in `shared`, so web
 and API agree. The web app recomputes `status` as time passes between updates
 (`ageSec` + seconds since receipt), so a stream that stops still turns "stale".
 
@@ -73,7 +76,7 @@ IDs do not end up in logs.
 
 ```flux
 from(bucket: B)
-  |> range(start: -2m)
+  |> range(start: -10m)
   |> filter(fn: (r) => r._measurement == "dsmr" and r.signature =~ /^(SIG1|SIG2|…)$/
                        and (r._field == "power_consumed" or r._field == "power_produced"))
   |> last()
@@ -83,7 +86,7 @@ A regex filter on the tag is pushed down to storage (unlike `contains()`). Signa
 normalized (`[0-9A-Z-]` only), so they are safe inside the regex. At most 200 signatures per
 query; more are split into batches.
 
-When a household has no point in the last 2 minutes, a fallback query looks back 30 days
+When a household has no point in the last 10 minutes, a fallback query looks back 30 days
 (`|> last()`, cached 60 s) to report when the latest point was.
 
 **Today's totals (one household):**
@@ -180,7 +183,7 @@ SSE route ───────────────────────�
 └─────────────────────────────┘
 ```
 
-- **Stale** (60 s – 1 h): grey dot, "geen recente data · laatst 12:01", tile values muted.
+- **Stale** (5 min – 1 h): grey dot, "geen recente data · laatst 12:01", tile values muted.
 - **Offline** (≥ 1 h): the tile is replaced by a notice:
   > **Je meter stuurt sinds 14 okt 15:38 geen gegevens.**
   > Controleer of de meterkit stroom heeft en of je wifi werkt. Helpt dat niet, haal dan

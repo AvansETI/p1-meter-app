@@ -4,8 +4,8 @@ import { liveStatus, netKw } from './live';
 describe('liveStatus', () => {
   it.each([
     [0, 'live'],
-    [59.9, 'live'],
-    [60, 'stale'],
+    [299.9, 'live'],
+    [300, 'stale'],
     [3599, 'stale'],
     [3600, 'offline'],
   ] as const)('%s s → %s', (age, status) => {

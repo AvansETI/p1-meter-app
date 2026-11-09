@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
-/** A point younger than this counts as live. */
-export const LIVE_MAX_AGE_SEC = 60;
+/**
+ * A point younger than this counts as live. Kits send irregularly (often every 10–20 s, but
+ * regularly with 2–2.5 minute pauses); 5 minutes shows "no recent data" only ~0.1 % of the
+ * time for working meters, against ~20 % with 60 s (measured 2026-11-09, 93 households).
+ */
+export const LIVE_MAX_AGE_SEC = 300;
 /** Without data for this long the meter is considered offline. */
 export const OFFLINE_AFTER_SEC = 3600;
 

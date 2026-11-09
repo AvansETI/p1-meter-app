@@ -24,7 +24,7 @@ export interface PowerWindow {
 export interface HouseholdDataSource {
   /** Capabilities of a household, or `null` when it has no data in the last 30 days. */
   detect(signature: string): Promise<Capabilities | null>;
-  /** Latest point in the last 2 minutes for each of the given households (one query). */
+  /** Latest point in the last 10 minutes for each of the given households (one query). */
   latest(signatures: string[]): Promise<Map<string, PowerPoint>>;
   /** Most recent point in the last 30 days, for "last seen" when not live. */
   lastPoint(signature: string): Promise<PowerPoint | null>;
