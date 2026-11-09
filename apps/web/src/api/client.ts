@@ -3,6 +3,8 @@ import {
   CapabilitiesSchema,
   GasSeriesSchema,
   HistorySchema,
+  TariffsResponseSchema,
+  TariffVersionSchema,
   LiveSnapshotSchema,
   RecentSeriesSchema,
   TodayTotalsSchema,
@@ -13,6 +15,9 @@ import {
   type Capabilities,
   type GasSeries,
   type History,
+  type TariffProfiles,
+  type TariffsResponse,
+  type TariffVersion,
   type Period,
   type LiveSnapshot,
   type RecentSeries,
@@ -88,6 +93,35 @@ export class ApiClient {
 
   getToday(): Promise<ApiResult<TodayTotals>> {
     return this.authorized('/live/today', {}, TodayTotalsSchema);
+  }
+
+  getTariffs(): Promise<ApiResult<TariffsResponse>> {
+    return this.authorized('/tariffs', {}, TariffsResponseSchema);
+  }
+
+  /** Saves if `version` is still current; otherwise the result is `conflict`. */
+  saveTariffs(profiles: TariffProfiles, version: number): Promise<ApiResult<TariffsResponse>> {
+    return this.authorized(
+      '/tariffs',
+      {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json', 'if-match': String(version) },
+        body: JSON.stringify({ profiles }),
+      },
+      TariffsResponseSchema,
+    );
+  }
+
+  getTariffVersions(): Promise<ApiResult<TariffVersion[]>> {
+    return this.authorized('/tariffs/versions', {}, TariffVersionSchema.array());
+  }
+
+  restoreTariffVersion(version: number): Promise<ApiResult<TariffsResponse>> {
+    return this.authorized(
+      `/tariffs/versions/${version}/restore`,
+      { method: 'POST' },
+      TariffsResponseSchema,
+    );
   }
 
   getHistory(period: Period, date: string): Promise<ApiResult<History>> {

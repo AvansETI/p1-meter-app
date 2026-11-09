@@ -12,6 +12,10 @@ EnvironmentFile=/etc/p1-meter-app/env
 WorkingDirectory=/opt/p1-meter-app/current/api
 ExecStart=/opt/node/current/bin/node /opt/p1-meter-app/current/api/dist/index.mjs
 Restart=on-failure
+# App database and backups (/var/lib/p1-meter-app, owned by p1meter; writable despite
+# ProtectSystem=strict). systemd passes the path as STATE_DIRECTORY.
+StateDirectory=p1-meter-app
+StateDirectoryMode=0750
 RestartSec=5
 
 # Hardening: the app only needs to read its files and talk over the network.

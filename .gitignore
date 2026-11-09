@@ -42,3 +42,6 @@ Thumbs.db
 *.swo
 *~
 .*.swp
+
+# Local app database (SQLite) and backups
+data/

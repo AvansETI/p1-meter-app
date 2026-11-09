@@ -12,6 +12,11 @@ const NAMESPACES = Object.keys(nl).join('|');
 const KEY_LITERAL = new RegExp(`'((?:${NAMESPACES})\\.[\\w.]+)'`, 'g');
 
 function hasKey(dict: unknown, key: string): boolean {
+  // Keys used with `count` exist as plural forms (key_one, key_other).
+  return hasText(dict, key) || (hasText(dict, `${key}_one`) && hasText(dict, `${key}_other`));
+}
+
+function hasText(dict: unknown, key: string): boolean {
   let node: unknown = dict;
   for (const part of key.split('.')) {
     if (typeof node !== 'object' || node === null || !(part in node)) return false;

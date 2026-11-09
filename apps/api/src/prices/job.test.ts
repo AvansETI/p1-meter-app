@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { zonedToUtc } from '../time';
 import type { PricePoint } from './entsoe';
 import type { GasPricePoint } from './energyzero';
-import { PriceJob, type PriceFetchers } from './job';
+import { FetchError, PriceJob, parseRetryAfter, type PriceFetchers } from './job';
 import type { PriceKind, PriceStore } from './store';
 
 const HOUR = 3_600_000;
@@ -102,5 +102,77 @@ describe('PriceJob.fill', () => {
       zonedToUtc({ year: 2026, month: 3, day: 1 }),
     );
     expect(calls).toHaveLength(2);
+  });
+});
+
+describe('PriceJob backoff', () => {
+  const okHours = (from: Date, to: Date) => {
+    const out: Date[] = [];
+    for (let t = from.getTime(); t < to.getTime(); t += HOUR) out.push(new Date(t));
+    return out;
+  };
+
+  function setup(electricityFails: () => Error | undefined) {
+    let now = new Date('2026-11-09T12:00:00Z');
+    const calls: string[] = [];
+    const fetchers: PriceFetchers = {
+      electricity: (from, to) => {
+        calls.push('electricity');
+        const error = electricityFails();
+        if (error) return Promise.reject(error);
+        return Promise.resolve(
+          okHours(from, to).map((time) => ({ time, eurPerKwh: 0.1, resolution: 'PT60M' as const })),
+        );
+      },
+      gas: (from, to) => {
+        calls.push('gas');
+        return Promise.resolve(okHours(from, to).map((time) => ({ time, eurPerM3: 0.8 })));
+      },
+    };
+    const job = new PriceJob(new MemoryStore(), fetchers, log, {
+      now: () => now,
+      // A short backfill keeps the in-memory store fast (the full one spans years).
+      backfillFrom: { year: 2026, month: 10, day: 1 },
+    });
+    return { job, calls, advance: (ms: number) => (now = new Date(now.getTime() + ms)) };
+  }
+
+  it('keeps fetching gas while electricity backs off', async () => {
+    const { job, calls } = setup(() => new FetchError(503));
+    await job.tick();
+    expect(job.status()).toEqual({ electricity: 'backoff', gas: 'ok' });
+    expect(calls).toContain('gas');
+  });
+
+  it('honours Retry-After and doubles the delay without one', async () => {
+    let error: Error | undefined = new FetchError(429, 10 * 60_000);
+    const { job, calls, advance } = setup(() => error);
+    await job.tick(); // fails: retry after 10 minutes
+    calls.length = 0;
+    advance(5 * 60_000);
+    await job.tick();
+    expect(calls.filter((c) => c === 'electricity')).toHaveLength(0); // still waiting
+    advance(6 * 60_000);
+    error = new FetchError(503); // second failure without Retry-After → 2 hours
+    await job.tick();
+    expect(calls.filter((c) => c === 'electricity')).toHaveLength(1);
+    calls.length = 0;
+    advance(HOUR + 60_000);
+    await job.tick();
+    expect(calls.filter((c) => c === 'electricity')).toHaveLength(0); // within 2 h
+    advance(HOUR);
+    error = undefined; // recovered
+    await job.tick();
+    expect(job.status().electricity).toBe('ok');
+  });
+});
+
+describe('parseRetryAfter', () => {
+  it('reads seconds and HTTP dates', () => {
+    const now = Date.parse('2026-11-09T12:00:00Z');
+    expect(parseRetryAfter('120', now)).toBe(120_000);
+    expect(parseRetryAfter('Mon, 09 Nov 2026 12:10:00 GMT', now)).toBe(600_000);
+    expect(parseRetryAfter(null, now)).toBeUndefined();
+    expect(parseRetryAfter('soon', now)).toBeUndefined();
   });
 });

@@ -17,6 +17,7 @@ import { NAV_ITEMS } from './navigation';
 import HistoryPage from './pages/HistoryPage';
 import LivePage from './pages/LivePage';
 import SettingsPage from './pages/SettingsPage';
+import TariffsPage from './pages/TariffsPage';
 import WelcomePage from './pages/WelcomePage';
 import UpdatePrompt from './pwa/UpdatePrompt';
 import { SessionProvider } from './session/SessionProvider';
@@ -36,6 +37,7 @@ function MainLayout() {
             <Route path="/live" element={<LivePage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/tariffs" element={<TariffsPage />} />
             <Route path="*" element={<Navigate to="/live" replace />} />
           </IonRouterOutlet>
           <IonTabBar slot="bottom" className="app-tab-bar">
