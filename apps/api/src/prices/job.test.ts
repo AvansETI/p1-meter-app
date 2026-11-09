@@ -129,7 +129,11 @@ describe('PriceJob backoff', () => {
         return Promise.resolve(okHours(from, to).map((time) => ({ time, eurPerM3: 0.8 })));
       },
     };
-    const job = new PriceJob(new MemoryStore(), fetchers, log, { now: () => now });
+    const job = new PriceJob(new MemoryStore(), fetchers, log, {
+      now: () => now,
+      // A short backfill keeps the in-memory store fast (the full one spans years).
+      backfillFrom: { year: 2026, month: 10, day: 1 },
+    });
     return { job, calls, advance: (ms: number) => (now = new Date(now.getTime() + ms)) };
   }
 
