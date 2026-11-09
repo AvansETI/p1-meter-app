@@ -10,6 +10,7 @@ import {
 import type { LiveSnapshot, LiveStatus, TodayTotals } from '@p1/shared';
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import ToolbarLogo from '../components/ToolbarLogo';
 import { formatKwh, formatM3, formatMoment, formatPower } from '../format';
 import { useGasSeries, useRecentSeries, useTodayTotals } from '../live/queries';
 import { useLiveSnapshot } from '../live/useLiveSnapshot';
@@ -158,6 +159,7 @@ export default function LivePage() {
       <IonHeader>
         <IonToolbar>
           <IonTitle>{t('live.title')}</IonTitle>
+          <ToolbarLogo />
         </IonToolbar>
       </IonHeader>
       <IonContent className={showBanner ? 'ion-padding live-content--banner' : 'ion-padding'}>
