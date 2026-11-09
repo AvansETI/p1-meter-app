@@ -93,7 +93,7 @@ describe('PriceJob.fill', () => {
     expect(calls).toEqual([]);
   });
 
-  it('splits long gaps into chunks of at most 31 days', async () => {
+  it('splits long gaps into chunks of at most 7 days', async () => {
     const calls: Array<[string, string, string]> = [];
     const job = new PriceJob(new MemoryStore(), fakeFetchers(calls), log);
     await job.fill(
@@ -101,7 +101,7 @@ describe('PriceJob.fill', () => {
       zonedToUtc({ year: 2026, month: 1, day: 1 }),
       zonedToUtc({ year: 2026, month: 3, day: 1 }),
     );
-    expect(calls).toHaveLength(2);
+    expect(calls).toHaveLength(9); // 59 days
   });
 });
 
@@ -112,7 +112,7 @@ describe('PriceJob backoff', () => {
     return out;
   };
 
-  function setup(electricityFails: () => Error | undefined) {
+  function setup(electricityFails: () => Error | undefined, store = new MemoryStore()) {
     let now = new Date('2026-11-09T12:00:00Z');
     const calls: string[] = [];
     const fetchers: PriceFetchers = {
@@ -129,7 +129,7 @@ describe('PriceJob backoff', () => {
         return Promise.resolve(okHours(from, to).map((time) => ({ time, eurPerM3: 0.8 })));
       },
     };
-    const job = new PriceJob(new MemoryStore(), fetchers, log, {
+    const job = new PriceJob(store, fetchers, log, {
       now: () => now,
       // A short backfill keeps the in-memory store fast (the full one spans years).
       backfillFrom: { year: 2026, month: 10, day: 1 },
@@ -142,6 +142,25 @@ describe('PriceJob backoff', () => {
     await job.tick();
     expect(job.status()).toEqual({ electricity: 'backoff', gas: 'ok' });
     expect(calls).toContain('gas');
+  });
+
+  it('retries database errors after 10 minutes without backing off for hours', async () => {
+    const store = new MemoryStore();
+    let writeFails = true;
+    const write = store.writeElectricity.bind(store);
+    store.writeElectricity = (points) =>
+      writeFails ? Promise.reject(new Error('timeout')) : write(points);
+    const { job, calls, advance } = setup(() => undefined, store);
+    await job.tick();
+    expect(job.status()).toEqual({ electricity: 'retrying', gas: 'ok' });
+    calls.length = 0;
+    advance(5 * 60_000);
+    await job.tick();
+    expect(calls).not.toContain('electricity'); // waits 10 minutes
+    advance(6 * 60_000);
+    writeFails = false;
+    await job.tick();
+    expect(job.status().electricity).toBe('ok');
   });
 
   it('honours Retry-After and doubles the delay without one', async () => {
