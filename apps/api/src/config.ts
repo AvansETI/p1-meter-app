@@ -41,6 +41,11 @@ const schema = z
     INFLUX_TOKEN: optional(z.string().optional()),
     INFLUX_TIMEOUT_MS: positiveInt(10_000),
 
+    // Day-ahead prices (costs, #32); the price job only runs when all three are set.
+    PRICES_INFLUX_BUCKET: optional(z.string().optional()),
+    PRICES_INFLUX_TOKEN: optional(z.string().optional()),
+    ENTSOE_TOKEN: optional(z.string().optional()),
+
     SESSION_TTL_HOURS: positiveInt(24),
     RATE_LIMIT_PER_MINUTE: positiveInt(120),
     SESSION_LIMIT_PER_MINUTE: positiveInt(10),
