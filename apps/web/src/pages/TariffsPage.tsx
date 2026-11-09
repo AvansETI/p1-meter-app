@@ -62,8 +62,19 @@ function PeriodList({
       {newestFirst.map((period) => (
         <IonItem key={period.validFrom} button detail onClick={() => onEdit(period)}>
           <IonLabel>
-            <h3>{t('tariffs.from', { date: showDate(period.validFrom) })}</h3>
-            <p>{summary(period)}</p>
+            {period.name ? (
+              <>
+                <h3>{period.name}</h3>
+                <p>
+                  {t('tariffs.fromLower', { date: showDate(period.validFrom) })} · {summary(period)}
+                </p>
+              </>
+            ) : (
+              <>
+                <h3>{t('tariffs.from', { date: showDate(period.validFrom) })}</h3>
+                <p>{summary(period)}</p>
+              </>
+            )}
           </IonLabel>
           <IonButton
             slot="end"

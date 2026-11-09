@@ -39,6 +39,8 @@ export const GasTariffSchema = z.discriminatedUnion('type', [
 
 export const TariffPeriodSchema = z.object({
   validFrom: planDate,
+  /** Optional label, e.g. supplier and contract (#53). */
+  name: z.string().trim().min(1).max(40).optional(),
   electricity: ElectricityTariffSchema,
   export: ExportTariffSchema,
   gas: GasTariffSchema.optional(),
