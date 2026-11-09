@@ -1,0 +1,28 @@
+{
+  "app": {
+    "name": "MNEXT Energiemeter",
+    "shortName": "Energiemeter"
+  },
+  "nav": {
+    "live": "Live",
+    "history": "Historie",
+    "settings": "Instellingen"
+  },
+  "live": {
+    "title": "Live",
+    "placeholder": "Hier komen je actuele verbruik en teruglevering."
+  },
+  "history": {
+    "title": "Historie",
+    "placeholder": "Hier komen je grafieken per dag, week, maand en jaar."
+  },
+  "settings": {
+    "title": "Instellingen",
+    "placeholder": "Hier kun je straks de code van je meter wijzigen.",
+    "version": "Versie {{version}}"
+  },
+  "pwa": {
+    "updateAvailable": "Er is een nieuwe versie beschikbaar.",
+    "reload": "Vernieuwen"
+  }
+}

@@ -1,0 +1,43 @@
+/* Desktop (≥ 992 px, Ionic "lg"): the side menu replaces the tab bar. */
+@media (min-width: 992px) {
+  ion-tab-bar.app-tab-bar {
+    display: none;
+  }
+}
+
+ion-menu.app-side-menu ion-content {
+  --background: var(--app-surface);
+}
+
+.app-side-menu__logo {
+  display: block;
+  width: 72px;
+  margin: 8px 0 4px;
+}
+
+.app-side-menu__name {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+ion-menu.app-side-menu ion-list {
+  background: transparent;
+}
+
+ion-menu.app-side-menu ion-item {
+  --background: transparent;
+  --border-radius: var(--app-radius);
+  --color: var(--app-text-muted);
+  font-weight: 700;
+}
+
+ion-menu.app-side-menu ion-item.selected {
+  --background: var(--ion-background-color);
+  --color: var(--ion-color-primary);
+}
+
+.app-placeholder {
+  color: var(--app-text-muted);
+  max-width: 60ch;
+}
