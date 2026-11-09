@@ -16,7 +16,8 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "check:signatures": "node scripts/check-signatures.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
