@@ -13,6 +13,15 @@ pre-commit:
       run: pnpm exec eslint --fix --no-warn-ignored {staged_files}
       stage_fixed: true
 
+pre-push:
+  # Keep broken code off GitHub: the pre-commit hook only formats and lints.
+  piped: true
+  jobs:
+    - name: typecheck
+      run: pnpm typecheck
+    - name: test
+      run: pnpm test
+
 commit-msg:
   jobs:
     - name: commitlint

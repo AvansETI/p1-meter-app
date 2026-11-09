@@ -63,7 +63,8 @@ Merging into `main` deploys automatically to https://p1-meter.sendlab.nl; see th
 
 ## Commits
 
-Conventional Commits with an issue reference, enforced by a commit-msg hook:
+Conventional Commits with an issue reference, enforced by a commit-msg hook. Before a push,
+a pre-push hook runs `pnpm typecheck` and `pnpm test`:
 `feat(api): add live endpoint (#12)`.
 
 ## License
