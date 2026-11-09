@@ -133,4 +133,19 @@ describe('CostService', () => {
     await service.days(SIG, caps, today, today, now);
     expect(source.calls).toBeGreaterThan(calls);
   });
+
+  it('skips a switched-off comparison contract', async () => {
+    const { tariffs, service, now } = setup();
+    tariffs.save(
+      SIG,
+      {
+        own: { periods: [period('2026-01-01', 0.3)] },
+        compare: { name: 'Dynamisch', enabled: false, periods: [dynamic] },
+      },
+      0,
+    );
+    const result = await service.days(SIG, caps, jan(5), jan(5), now);
+    expect(result).not.toHaveProperty('compare');
+    expect(service.configured(SIG)).toBe(true);
+  });
 });

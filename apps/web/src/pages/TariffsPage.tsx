@@ -16,6 +16,7 @@ import {
   IonSpinner,
   IonTitle,
   IonToast,
+  IonToggle,
   IonToolbar,
 } from '@ionic/react';
 import { formatPlainDate, type TariffPeriod, type TariffProfiles } from '@p1/shared';
@@ -233,6 +234,27 @@ export default function TariffsPage() {
               </IonListHeader>
               {profiles.compare ? (
                 <>
+                  <IonItem>
+                    <IonToggle
+                      checked={profiles.compare.enabled !== false}
+                      onIonChange={(event) =>
+                        profiles.compare &&
+                        store({
+                          ...profiles,
+                          compare: { ...profiles.compare, enabled: event.detail.checked },
+                        })
+                      }
+                    >
+                      {t('tariffs.compareEnabled')}
+                    </IonToggle>
+                  </IonItem>
+                  {profiles.compare.enabled === false && (
+                    <IonItem>
+                      <IonLabel className="ion-text-wrap">
+                        <IonNote>{t('tariffs.compareOffNote')}</IonNote>
+                      </IonLabel>
+                    </IonItem>
+                  )}
                   {section('compare')}
                   <IonItem button detail={false} onClick={() => setNaming(true)}>
                     <IonLabel color="primary">{t('tariffs.rename')}</IonLabel>
