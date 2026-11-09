@@ -15,6 +15,8 @@ APP_DIR="${P1_APP_DIR:-/opt/p1-meter-app}"
 NODE_DIR="${P1_NODE_DIR:-/opt/node}"
 ENV_FILE="${P1_ENV_FILE:-/etc/p1-meter-app/env}"
 SERVICE="p1-meter-app"
+UNIT_DIR="${P1_UNIT_DIR:-/etc/systemd/system}"
+UPDATER="${P1_UPDATER:-/usr/local/sbin/p1-meter-update}"
 HEALTH_URL="${P1_HEALTH_URL:-http://127.0.0.1:8080/api/v1/health}"
 HEALTH_TIMEOUT_SEC=30
 KEEP_RELEASES=3
@@ -101,13 +103,38 @@ healthy() {
 }
 
 restart_and_check() {
+  sync_system_files "$(current_release)/deploy"
   systemctl restart "$SERVICE"
   healthy
 }
 
+# Installs the systemd units and the update script shipped in a release when they differ from
+# the installed ones (#21). The env file is never touched. A new update script replaces the
+# file atomically (new inode), so this running copy is unaffected and it takes effect next run.
+sync_system_files() {
+  local dir="$1" unit changed=false
+  [ -d "$dir" ] || return 0 # packages from before #21 have no deploy/ directory
+  for unit in p1-meter-app.service p1-meter-update.service p1-meter-update.timer; do
+    [ -f "$dir/$unit" ] || continue
+    if ! cmp -s "$dir/$unit" "$UNIT_DIR/$unit"; then
+      install -m 644 "$dir/$unit" "$UNIT_DIR/$unit"
+      log "updated $unit"
+      changed=true
+    fi
+  done
+  [ "$changed" = true ] && systemctl daemon-reload
+  if [ -f "$dir/p1-meter-update" ] && ! cmp -s "$dir/p1-meter-update" "$UPDATER"; then
+    install -m 755 "$dir/p1-meter-update" "$UPDATER.new"
+    mv -f "$UPDATER.new" "$UPDATER"
+    log "updated the update script (used from the next run)"
+  fi
+  return 0
+}
+
 check_layout() {
   local dir="$1" path
-  for path in .nvmrc api/dist/index.mjs api/node_modules web/dist/index.html; do
+  for path in .nvmrc api/dist/index.mjs api/node_modules web/dist/index.html \
+    deploy/p1-meter-app.service deploy/p1-meter-update; do
     [ -e "$dir/$path" ] || die "package is missing $path"
   done
 }
