@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Refuse package versions published less than 7 days ago (supply-chain protection).
+minimumReleaseAge: 10080
+
+# Only these dependencies may run install scripts; all others are blocked.
+allowBuilds:
+  esbuild: false
+  lefthook: true
