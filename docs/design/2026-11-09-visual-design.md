@@ -178,7 +178,7 @@ shown while the browser starts. Then the **in-app splash** takes over:
 │                             │
 │                             │
 │                             │
-│     [Avans]      [HZ]       │   real logos, 28 px high, opacity .85 (colour in light, white in dark)
+│     [Avans]      [HZ]       │   colour logos, 28 px high; on a white plate in dark theme
 └─────────────────────────────┘
   background --app-surface-alt (#EFF3F2 light / #161D29 dark)
 ```
@@ -326,12 +326,12 @@ spanning the gap, with a tooltip giving the total and the period.
 | Asset                      | Source                                                                        | Stored at                |
 | -------------------------- | ----------------------------------------------------------------------------- | ------------------------ |
 | MNEXT logo (colour, white) | `https://www.mnext.nl/app/themes/mnext/assets/img/logo.svg`, `logo_white.svg` | `apps/web/public/brand/` |
-| Avans logo (colour, white) | avans.nl SVGs, unmodified (#9)                                                | `apps/web/public/brand/` |
-| HZ logo (colour, white)    | hz.nl SVG (colour) and mnext.nl PNG (white), unmodified (#9)                  | `apps/web/public/brand/` |
+| Avans logo (colour)        | avans.nl SVG, unmodified (#9)                                                 | `apps/web/public/brand/` |
+| HZ logo (colour)           | hz.nl SVG, unmodified (#9)                                                    | `apps/web/public/brand/` |
 | Nunito                     | `@fontsource-variable/nunito`, SIL Open Font License                          | npm dependency           |
 
-The light theme uses the colour logos, the dark theme the white versions (switched with
-the `ion-palette-dark` class). `apps/web/public/brand/SOURCES.md` records origin and
+The Avans and HZ logos always appear in their own colours (product owner request); in the
+dark theme they sit on a white plate so they stay legible. `apps/web/public/brand/SOURCES.md` records origin and
 download date of each file. The logos are not covered by the Apache license (NOTICE).
 
 ## 11. Open points
