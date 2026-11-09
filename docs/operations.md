@@ -20,9 +20,13 @@ On the LXC (Ubuntu LTS, outbound HTTPS to github.com, nodejs.org and influxdb.se
 curl -fsSLO https://raw.githubusercontent.com/AvansETI/p1-meter-app/main/scripts/deploy/install.sh
 less install.sh                      # read it first
 sudo bash install.sh
-sudo nano /etc/p1-meter-app/env      # fill in INFLUX_TOKEN (read-only token)
+sudo nano /etc/p1-meter-app/env      # fill in INFLUX_TOKEN; INFLUX_URL = internal address
 sudo p1-meter-update                 # install the current build now
 ```
+
+From the LXC the public InfluxDB name is not reachable; use the internal address
+(`INFLUX_URL=http://192.168.5.30:8086`). **The env file is read only at start**: after editing it,
+run `sudo systemctl restart p1-meter-app`.
 
 The install script is idempotent; rerun it to update the systemd units or the update script.
 It never overwrites `/etc/p1-meter-app/env`.
@@ -40,6 +44,8 @@ It never overwrites `/etc/p1-meter-app/env`.
 | Back to the previous release | `sudo p1-meter-update --rollback`                           |
 | Pause automatic updates      | `sudo systemctl stop p1-meter-update.timer` (`start` again) |
 | Restart the app              | `sudo systemctl restart p1-meter-app`                       |
+| After changing the env file  | `sudo systemctl restart p1-meter-app` (read only at start)  |
+| Update the systemd units     | rerun `sudo bash install.sh` (the token is kept)            |
 
 The last three releases are kept in `/opt/p1-meter-app/releases/`.
 

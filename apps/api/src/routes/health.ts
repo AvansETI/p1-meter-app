@@ -3,24 +3,41 @@ import type { HealthResponse } from '@p1/shared';
 import pkg from '../../package.json' with { type: 'json' };
 import type { HouseholdDataSource } from '../data/source';
 
-const PING_CACHE_MS = 30_000;
+const PING_INTERVAL_MS = 30_000;
 
+/**
+ * Liveness plus the last known InfluxDB status. Never waits for InfluxDB: the deploy health
+ * check must get an answer within seconds even when InfluxDB is unreachable (#17).
+ */
 export const healthRoutes: FastifyPluginCallback<{ source: HouseholdDataSource }> = (
   app,
   { source },
   done,
 ) => {
-  let lastPing: { ok: boolean; at: number } | undefined;
+  let influx: NonNullable<HealthResponse['influx']> = 'unknown';
+  let lastPingAt = 0;
+  let pinging = false;
 
-  app.get('/health', async (): Promise<HealthResponse> => {
-    if (!lastPing || Date.now() - lastPing.at > PING_CACHE_MS) {
-      lastPing = { ok: await source.ping(), at: Date.now() };
-    }
+  const refresh = () => {
+    if (pinging || Date.now() - lastPingAt < PING_INTERVAL_MS) return;
+    pinging = true;
+    source
+      .ping()
+      .then((ok) => (influx = ok ? 'ok' : 'unavailable'))
+      .catch(() => (influx = 'unavailable'))
+      .finally(() => {
+        pinging = false;
+        lastPingAt = Date.now();
+      });
+  };
+
+  app.get('/health', (): HealthResponse => {
+    refresh();
     return {
       status: 'ok',
       version: pkg.version,
       uptimeSec: Math.round(process.uptime()),
-      influx: lastPing.ok ? 'ok' : 'unavailable',
+      influx,
     };
   });
   done();
