@@ -16,9 +16,12 @@ import { historyRoutes } from './routes/history';
 import { backupDaily, openDatabase } from './db/database';
 import { TariffRepository } from './db/tariffs';
 import { liveRoutes } from './routes/live';
+import { CostService } from './costs/service';
+import { CostCache } from './db/costs';
+import { costRoutes } from './routes/costs';
 import { TARIFF_WRITES_PER_HOUR, tariffRoutes } from './routes/tariffs';
 import { PriceJob, httpFetchers } from './prices/job';
-import { InfluxPriceStore } from './prices/store';
+import { InfluxPriceStore, type PriceReader } from './prices/store';
 import { sessionRoutes } from './routes/session';
 import { LivePoller } from './live/poller';
 import { LiveService } from './live/service';
@@ -38,6 +41,8 @@ function trustProxy(
 
 export interface ServerDeps {
   source?: HouseholdDataSource;
+  /** Price reader for the cost engine; from PRICES_INFLUX_* otherwise. */
+  prices?: PriceReader;
   /** Overrides for tests. */
   pollIntervalMs?: number;
   heartbeatMs?: number;
@@ -116,8 +121,10 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   }
   app.addHook('onClose', () => db.close());
 
-  // Day-ahead price ingestion (costs phase 1, #33); not in tests.
+  // Price bucket: read by the cost engine (#42); filled by the price job (#33) only where
+  // ENTSOE_TOKEN is set (production). Neither runs in tests.
   let priceJob: PriceJob | undefined;
+  let prices = deps.prices;
   const { INFLUX_URL, INFLUX_ORG, PRICES_INFLUX_BUCKET, PRICES_INFLUX_TOKEN, ENTSOE_TOKEN } =
     config;
   if (
@@ -125,8 +132,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
     INFLUX_URL &&
     INFLUX_ORG &&
     PRICES_INFLUX_BUCKET &&
-    PRICES_INFLUX_TOKEN &&
-    ENTSOE_TOKEN
+    PRICES_INFLUX_TOKEN
   ) {
     const store = new InfluxPriceStore({
       url: INFLUX_URL,
@@ -134,15 +140,18 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
       bucket: PRICES_INFLUX_BUCKET,
       token: PRICES_INFLUX_TOKEN,
     });
-    const job = new PriceJob(store, httpFetchers(ENTSOE_TOKEN), app.log, { pauseMs: 2_000 });
-    job.start();
-    priceJob = job;
-    app.addHook('onClose', async () => {
-      job.stop();
-      await store.close();
-    });
+    prices = store;
+    if (ENTSOE_TOKEN) {
+      const job = new PriceJob(store, httpFetchers(ENTSOE_TOKEN), app.log, { pauseMs: 2_000 });
+      job.start();
+      priceJob = job;
+      app.addHook('onClose', () => job.stop());
+    } else {
+      app.log.info('price job disabled (ENTSOE_TOKEN not set)');
+    }
+    app.addHook('onClose', () => store.close());
   } else if (config.NODE_ENV !== 'test') {
-    app.log.info('price job disabled (PRICES_INFLUX_* or ENTSOE_TOKEN not set)');
+    app.log.info('prices unavailable (PRICES_INFLUX_* not set)');
   }
 
   await app.register(
@@ -157,6 +166,11 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
         tariffs,
         writes: new AttemptCounter(HOUR_MS),
         writesPerHour: TARIFF_WRITES_PER_HOUR,
+      });
+      await api.register(costRoutes, {
+        sessions,
+        capabilities,
+        costs: new CostService(source, prices, tariffs, new CostCache(db)),
       });
       await api.register(historyRoutes, {
         sessions,

@@ -1,6 +1,6 @@
 export interface GasPricePoint {
   time: Date;
-  /** EUR per m³ excluding VAT, as published by EnergyZero (energy tax probably included). */
+  /** EUR per m³ excluding VAT and energy tax (wholesale day price), as published by EnergyZero. */
   eurPerM3: number;
 }
 
