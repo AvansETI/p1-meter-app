@@ -1,7 +1,7 @@
 # Live dashboard
 
 - Issue: #6
-- Status: **draft — awaiting approval**
+- Status: **approved** (2026-11-09)
 - Date: 2026-11-09
 - Builds on: [architecture](2026-11-09-architecture.md) §7.1, §10, §11;
   [visual design](2026-11-09-visual-design.md) §3.3, §7.2; [EMON ID session](2026-11-09-emon-id-session.md)
@@ -198,8 +198,10 @@ Net today is signed only when negative (`−2,1 kWh`).
 
 - `echarts` 6 with tree-shaken imports (`echarts/core`, `LineChart`, `GridComponent`,
   `TooltipComponent`, `SVGRenderer`) — SVG renderer for crisp lines and smaller bundle.
-- Series: one line with `areaStyle`; `visualMap` (piecewise at 0) colours above zero with
-  `--app-data-import` and below with `--app-data-export`; `connectNulls: false`.
+- Series: two areas — import (net clipped to ≥ 0, `--app-data-import`) and export (net clipped
+  to ≤ 0, `--app-data-export`, only with export); `connectNulls: false`. (Changed during
+  implementation: a piecewise `visualMap` with open-ended pieces crashes ECharts 6.1 —
+  "reading 'coord'" in `getVisualGradient`. A render test in node guards against regressions.)
 - Colours and text colours read from CSS variables at render time and re-applied when the
   theme changes.
 - Lazy-loaded (`React.lazy`) so ECharts is not in the initial bundle.

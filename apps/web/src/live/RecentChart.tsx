@@ -1,23 +1,21 @@
 import type { RecentSeries } from '@p1/shared';
 import { LineChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { GridComponent, TooltipComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKw } from '../format';
+import { recentChartOption } from './chartOption';
 
-echarts.use([LineChart, GridComponent, TooltipComponent, VisualMapComponent, SVGRenderer]);
+echarts.use([LineChart, GridComponent, TooltipComponent, SVGRenderer]);
 
 const css = (name: string) =>
   getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 const hourMinute = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
 
-/**
- * Net power over the last 24 hours: import above zero (navy), export below zero (green),
- * gaps as breaks. Colours come from the theme tokens and follow theme changes.
- */
+/** Net power over the last 24 hours; colours follow the theme tokens and theme changes. */
 export default function RecentChart({
   series,
   hasExport,
@@ -33,60 +31,29 @@ export default function RecentChart({
     if (!element) return;
     const chart = echarts.init(element, undefined, { renderer: 'svg' });
 
-    const render = () => {
-      const muted = css('--app-text-muted');
+    const render = () =>
       chart.setOption(
-        {
-          animation: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-          grid: { left: 36, right: 8, top: 12, bottom: 24 },
-          textStyle: { fontFamily: css('--ion-font-family') },
-          tooltip: {
-            trigger: 'axis',
-            backgroundColor: css('--app-surface'),
-            borderWidth: 0,
-            textStyle: { color: css('--ion-text-color') },
-            valueFormatter: (value: unknown) =>
-              typeof value === 'number'
-                ? t(value < 0 ? 'live.chartExport' : 'live.chartImport', { value: formatKw(value) })
-                : '–',
+        recentChartOption(
+          series,
+          hasExport,
+          {
+            importColor: css('--app-data-import'),
+            exportColor: css('--app-data-export'),
+            textColor: css('--ion-text-color'),
+            mutedColor: css('--app-text-muted'),
+            surfaceColor: css('--app-surface'),
+            fontFamily: css('--ion-font-family'),
           },
-          xAxis: {
-            type: 'time',
-            axisLabel: {
-              color: muted,
-              formatter: (value: number) => hourMinute.format(new Date(value)),
-            },
-            axisLine: { lineStyle: { color: muted, opacity: 0.4 } },
-            splitLine: { show: false },
+          {
+            net: (net) =>
+              t(net < 0 ? 'live.chartExport' : 'live.chartImport', { value: formatKw(net) }),
+            formatKw,
+            formatTime: (date) => hourMinute.format(date),
           },
-          yAxis: {
-            type: 'value',
-            min: hasExport ? undefined : 0,
-            axisLabel: { color: muted, formatter: (value: number) => formatKw(value) },
-            splitLine: { lineStyle: { color: muted, opacity: 0.15 } },
-          },
-          visualMap: {
-            show: false,
-            dimension: 1,
-            pieces: [
-              { gt: 0, color: css('--app-data-import') },
-              { lte: 0, color: css('--app-data-export') },
-            ],
-          },
-          series: [
-            {
-              type: 'line',
-              showSymbol: false,
-              connectNulls: false,
-              lineStyle: { width: 1.5 },
-              areaStyle: { opacity: 0.25 },
-              data: series.points.map((p) => [p.t, p.netKw]),
-            },
-          ],
-        },
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        ),
         true,
       );
-    };
 
     render();
     // Re-colour when the theme class on <html> changes; resize with the container.
