@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
+  <type>A44</type>
+  <TimeSeries>
+    <curveType>A03</curveType>
+    <Period>
+      <timeInterval><start>2026-11-08T23:00Z</start><end>2026-11-09T00:00Z</end></timeInterval>
+      <resolution>PT15M</resolution>
+      <Point><position>1</position><price.amount>246.11</price.amount></Point>
+      <Point><position>2</position><price.amount>236.84</price.amount></Point>
+      <Point><position>4</position><price.amount>-5.5</price.amount></Point>
+    </Period>
+  </TimeSeries>
+</Publication_MarketDocument>
