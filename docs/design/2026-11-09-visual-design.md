@@ -186,20 +186,20 @@ shown while the browser starts. Then the **in-app splash** takes over:
 Logo animation (added 2026-11-09, issue #3): the navy letters fade in (100–550 ms), the long
 green stroke flies in along its own direction from the top right (200–800 ms), the short green
 stroke from the bottom left (550–1000 ms), then the subtitle and author name rise in (700–1100 ms). Pure CSS in
-`index.html`, so it runs before the JavaScript loads and fits within the 5 s minimum. With
+`index.html`, so it runs before the JavaScript loads and fits within the 3.5 s minimum. With
 `prefers-reduced-motion` the logo is shown static.
 
 Behaviour:
 
 - Shown on every **cold start** (page load), not when resuming from background.
 - Rendered from inline HTML/CSS in `index.html`, so it appears before the JS bundle
-  loads; removed when the app is ready **and** at least 5 s have passed since
+  loads; removed when the app is ready **and** at least 3.5 s have passed since
   first paint. If the app takes longer, it simply stays until ready (no extra delay).
 - Fade-out 250 ms; skipped when `prefers-reduced-motion` is set.
 - The minimum time runs in parallel with loading, so on a slow network the splash
-  adds no delay at all; on a fast cached start the splash stays for 5 s (raised from 1.2 s at the
+  adds no delay at all; on a fast cached start the splash stays for 3.5 s (1.2 s → 5 s → 3.5 s at the
   product owner's request, 2026-11-09).
-- A thin brand-green loading bar under the text fills over the same 5 s (static with
+- A thin brand-green loading bar under the text fills over the same 3.5 s (static with
   `prefers-reduced-motion`).
 - iOS startup images (per device size) and the Android background colour are matched
   to the splash background so there is no visible flash between OS and in-app splash.

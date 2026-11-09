@@ -2,7 +2,7 @@
  * Minimum time the splash screen stays visible, measured from navigation start.
  * Keep in sync with the loading-bar animation in index.html.
  */
-export const SPLASH_MIN_MS = 5000;
+export const SPLASH_MIN_MS = 3500;
 
 /** Upper bound for the fade-out, in case `transitionend` never fires. */
 const FADE_FALLBACK_MS = 400;
