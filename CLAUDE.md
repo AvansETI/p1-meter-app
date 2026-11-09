@@ -22,6 +22,8 @@ for one household, read from an existing InfluxDB 2.x instance (bucket `p1-smart
 - Load Node first in non-interactive shells: `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"`
 - Version constraints: TypeScript stays on 6.0.x (typescript-eslint supports < 6.1);
   react-router stays on 6.x (`@ionic/react-router` 9 requires < 7).
+- New dependencies must pass `pnpm check:licenses` (permissive licenses only for anything
+  shipped; no GPL/AGPL/LGPL). Do not commit generated `third-party-licenses.txt` files.
 - pnpm refuses packages younger than 7 days (`minimumReleaseAge`); use major ranges
   (e.g. `vitest@5`) so pnpm picks the newest mature version. Install scripts are blocked
   unless listed under `allowBuilds` in `pnpm-workspace.yaml`.

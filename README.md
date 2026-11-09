@@ -60,3 +60,22 @@ Then open <http://localhost:4173> locally and use the browser's install option o
 
 Conventional Commits with an issue reference, enforced by a commit-msg hook:
 `feat(api): add live endpoint (#12)`.
+
+## License
+
+Copyright 2026 Arno Broeders.
+
+Licensed under the [Apache License, Version 2.0](LICENSE): you may use, modify and
+distribute this software freely, provided you keep the [NOTICE](NOTICE) file and credit the
+author.
+
+The MNEXT, Avans and HZ names and logos are trademarks of their owners and are **not**
+covered by this license.
+
+### Third-party licenses
+
+All dependencies use permissive licenses. Each build writes `third-party-licenses.txt` with
+the license and notice texts of the included packages (web: served at
+`/third-party-licenses.txt` and linked from the About screen; API: `apps/api/dist/`).
+`pnpm check:licenses` — also run in CI — fails when a dependency has a license outside the
+allowlist in `scripts/licenses.mjs` (no GPL/AGPL/LGPL or unknown licenses in production).

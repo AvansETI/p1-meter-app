@@ -1,6 +1,8 @@
 {
   "name": "p1-meter-app",
   "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": "Arno Broeders",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.18.0",
@@ -17,7 +19,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "prepare": "lefthook install",
-    "check:signatures": "node scripts/check-signatures.mjs"
+    "check:signatures": "node scripts/check-signatures.mjs",
+    "check:licenses": "node scripts/licenses.mjs check"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

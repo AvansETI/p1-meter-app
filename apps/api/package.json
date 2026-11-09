@@ -1,11 +1,13 @@
 {
   "name": "@p1/api",
   "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": "Arno Broeders",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsdown",
+    "build": "tsdown && node ../../scripts/licenses.mjs generate api dist/third-party-licenses.txt",
     "start": "NODE_ENV=production node dist/index.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
