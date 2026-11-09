@@ -4,6 +4,7 @@ import {
   GasSeriesSchema,
   HistorySchema,
   TariffsResponseSchema,
+  CostsTodaySchema,
   TariffVersionSchema,
   LiveSnapshotSchema,
   RecentSeriesSchema,
@@ -16,6 +17,7 @@ import {
   type GasSeries,
   type History,
   type TariffProfiles,
+  type CostsToday,
   type TariffsResponse,
   type TariffVersion,
   type Period,
@@ -93,6 +95,10 @@ export class ApiClient {
 
   getToday(): Promise<ApiResult<TodayTotals>> {
     return this.authorized('/live/today', {}, TodayTotalsSchema);
+  }
+
+  getCostsToday(): Promise<ApiResult<CostsToday>> {
+    return this.authorized('/costs/today', {}, CostsTodaySchema);
   }
 
   getTariffs(): Promise<ApiResult<TariffsResponse>> {

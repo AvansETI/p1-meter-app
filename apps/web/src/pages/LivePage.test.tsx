@@ -1,9 +1,11 @@
-import type { LiveSnapshot } from '@p1/shared';
+import type { CostsToday, LiveSnapshot } from '@p1/shared';
 import { act, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FakeEventSource, installFakeEventSource } from '../test/eventsource';
 import { SIGNATURE, capabilities, sessionResponse } from '../test/fixtures';
 import { mockApi, renderWithProviders } from '../test/render';
+import { resetTariffHint } from '../costs/hintState';
+import type { Settings } from '../settings/storage';
 import LivePage from './LivePage';
 
 vi.mock('../live/RecentChart', () => ({
@@ -23,7 +25,10 @@ const snapshot = (overrides: Partial<LiveSnapshot> = {}): LiveSnapshot => ({
   ...overrides,
 });
 
-function setup(options: { hasExport: boolean; hasGas?: boolean }) {
+function setup(
+  options: { hasExport: boolean; hasGas?: boolean; costs?: CostsToday },
+  settings: Partial<Settings> = {},
+) {
   const caps = { hasExport: options.hasExport, hasGas: options.hasGas ?? true };
   mockApi({
     '/api/v1/session': { status: 200, body: sessionResponse(caps) },
@@ -39,8 +44,9 @@ function setup(options: { hasExport: boolean; hasGas?: boolean }) {
     },
     '/api/v1/live/recent': { status: 200, body: { stepSec: 300, points: [] } },
     '/api/v1/live/gas': { status: 200, body: { hourlyUpdates: false, hours: [] } },
+    '/api/v1/costs/today': { status: 200, body: options.costs ?? { configured: false } },
   });
-  renderWithProviders(<LivePage />, { emonId: SIGNATURE });
+  renderWithProviders(<LivePage />, { emonId: SIGNATURE, ...settings });
 }
 
 async function stream(): Promise<FakeEventSource> {
@@ -50,6 +56,7 @@ async function stream(): Promise<FakeEventSource> {
 
 beforeEach(() => {
   installFakeEventSource();
+  resetTariffHint();
 });
 
 afterEach(() => {
@@ -126,5 +133,51 @@ describe('LivePage', () => {
     );
     expect(await screen.findByText(/Je meter stuurt sinds 14 okt/)).toBeInTheDocument();
     expect(screen.queryByText('Van het net')).toBeNull();
+  });
+});
+
+/** Whether a toast is being shown (closed toasts stay in the DOM). */
+const toastOpen = () =>
+  [...document.querySelectorAll('ion-toast')].some(
+    (toast) => (toast as HTMLElement & { isOpen?: boolean }).isOpen === true,
+  );
+
+describe('LivePage costs', () => {
+  const cost = (totalEur: number) => ({
+    totalEur,
+    electricityEur: totalEur - 1,
+    gasEur: 1,
+    fixedEur: 0.5,
+    taxReductionEur: 0.5,
+    estimated: false,
+  });
+
+  it('shows the costs of today with the comparison contract', async () => {
+    setup({
+      hasExport: true,
+      costs: {
+        configured: true,
+        own: cost(7.99),
+        compare: { name: 'Dynamisch', cost: cost(12.31) },
+      },
+    });
+    expect(await screen.findByText('Kosten vandaag')).toBeInTheDocument();
+    expect(screen.getByText('€ 7,99')).toBeInTheDocument();
+    expect(screen.getByText(/Met Dynamisch: € 12,31/)).toBeInTheDocument();
+    expect(screen.getByText('€ 4,32 duurder')).toBeInTheDocument();
+    expect(toastOpen()).toBe(false);
+  });
+
+  it('hides costs without tariffs and briefly points to the settings', async () => {
+    setup({ hasExport: true });
+    await waitFor(() => expect(toastOpen()).toBe(true));
+    expect(screen.queryByText('Kosten vandaag')).toBeNull();
+  });
+
+  it('does not show the hint after "never again"', async () => {
+    setup({ hasExport: true }, { tariffHintOff: true });
+    expect(await screen.findByText('Vandaag')).toBeInTheDocument();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(toastOpen()).toBe(false);
   });
 });

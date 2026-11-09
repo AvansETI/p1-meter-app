@@ -484,3 +484,111 @@ ion-menu.app-side-menu ion-item.selected {
     display: none;
   }
 }
+
+/* Costs (#49) */
+.cost-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--app-radius);
+  background: var(--app-surface);
+  color: var(--ion-text-color);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cost-tile--skeleton {
+  height: 96px;
+}
+
+.cost-tile__value {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.cost-tile__note,
+.cost-tile__more {
+  color: var(--app-text-muted);
+  font-size: 14px;
+}
+
+.cost-tile__more {
+  color: var(--ion-color-primary);
+  font-weight: 700;
+}
+
+.cost-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ion-background-color);
+  color: var(--app-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.cost-compare {
+  color: var(--app-text-muted);
+  font-size: 14px;
+}
+
+.cost-compare__difference--cheaper {
+  color: var(--ion-color-success);
+  font-weight: 700;
+}
+
+.cost-compare__difference--dearer {
+  color: var(--ion-color-warning-shade);
+  font-weight: 700;
+}
+
+.cost-summary {
+  margin-top: 12px;
+}
+
+.cost-forecast {
+  margin: 8px 0 0;
+  color: var(--ion-text-color);
+  font-size: 15px;
+}
+
+.cost-forecast small {
+  color: var(--app-text-muted);
+}
+
+.cost-breakdown h3 {
+  margin: 8px 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cost-breakdown dl {
+  margin: 0 0 16px;
+}
+
+.cost-breakdown dl > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-text-muted) 20%, transparent);
+}
+
+.cost-breakdown dt,
+.cost-breakdown dd {
+  margin: 0;
+}
+
+.cost-breakdown__total {
+  font-weight: 800;
+}
+
+.cost-breakdown__note,
+.cost-breakdown__unknown {
+  color: var(--app-text-muted);
+  font-size: 14px;
+}

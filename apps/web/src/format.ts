@@ -32,6 +32,13 @@ export const formatPowerText = (kwValue: number) => {
 
 /** `12,4` — energy in kWh; negative values keep their sign (`−2,1`). */
 export const formatKwh = (value: number) => kwh.format(value).replace('-', '−');
+const euro = number(2);
+/** `€ 1.234,56`; negative amounts (earnings) as `−€ 3,10`. */
+export function formatEuro(value: number): string {
+  const cents = Math.round(value * 100);
+  return `${cents < 0 ? '−' : ''}€ ${euro.format(Math.abs(cents) / 100)}`;
+}
+
 /** `0,68` — gas in m³. */
 export const formatM3 = (value: number) => m3.format(value);
 

@@ -6,6 +6,7 @@ export interface SettingsValue {
   setEmonId: (emonId: string | undefined) => void;
   setTheme: (theme: Theme) => void;
   dismissInstallHint: () => void;
+  turnOffTariffHint: () => void;
 }
 
 export const SettingsContext = createContext<SettingsValue | null>(null);

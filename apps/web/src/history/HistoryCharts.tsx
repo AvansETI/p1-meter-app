@@ -1,10 +1,11 @@
 import type { History } from '@p1/shared';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatKwh, formatM3, formatMoment } from '../format';
+import { formatEuro, formatKwh, formatM3, formatMoment } from '../format';
 import { css, useEChart } from '../live/useEChart';
 import { axisTitle, bucketLabel, bucketTitle } from './dates';
 import {
+  costChartOption,
   energyChartOption,
   gasHistoryChartOption,
   type HistoryChartText,
@@ -82,4 +83,32 @@ export function GasHistoryChart({
   );
   const ref = useEChart(build, onSelect);
   return <div ref={ref} className="history-chart" role="img" aria-label={t('history.gasChart')} />;
+}
+
+/** Costs per bucket for both contracts; tapping a bar zooms in like the other charts. */
+export function CostChart({
+  history,
+  onSelect,
+}: {
+  history: History;
+  onSelect?: (index: number) => void;
+}) {
+  const { t } = useTranslation();
+  const usage = useText(history);
+  const build = useCallback(
+    () =>
+      costChartOption(history, theme(), {
+        labels: usage.labels,
+        axisName: usage.axisName,
+        titles: usage.titles,
+        formatEuro,
+        names: { own: t('costs.own'), compare: history.costs?.compareName },
+        estimated: t('costs.estimated'),
+      }),
+    // usage is derived from history and the language
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [history, t],
+  );
+  const ref = useEChart(build, onSelect);
+  return <div ref={ref} className="history-chart" role="img" aria-label={t('costs.chartLabel')} />;
 }
