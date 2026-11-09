@@ -16,21 +16,16 @@ export const css = (name: string) =>
  * One ECharts instance for the component's lifetime, updated with new options (#19):
  * re-creating it on every data update while the element had no size (hidden tab, iOS app in
  * the background) left a 0×0 chart. Re-colours on theme changes and resizes whenever the page
- * or the Ionic tab becomes visible again. `buildOption(animate)` is called with `true` only for
- * the first drawing, so periodic updates do not replay the animation.
+ * or the Ionic tab becomes visible again. Charts are drawn without an intro animation: Safari
+ * on iOS sometimes did not run the animated clip path until the chart was tapped, leaving it
+ * empty (#26); `buildOption` therefore always gets `animate = false`.
  */
 export function useEChart(buildOption: (animate: boolean) => EChartsCoreOption) {
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | undefined>(undefined);
   const buildRef = useRef(buildOption);
-  const drawnRef = useRef(false);
 
-  const option = () => {
-    const animate =
-      !drawnRef.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    drawnRef.current = true;
-    return buildRef.current(animate);
-  };
+  const option = () => buildRef.current(false);
 
   useEffect(() => {
     const element = ref.current;
@@ -46,6 +41,8 @@ export function useEChart(buildOption: (animate: boolean) => EChartsCoreOption) 
       if (document.visibilityState === 'visible') requestAnimationFrame(resize);
     };
 
+    // One more layout pass after the first frame, when the container has its final size.
+    const firstFrame = requestAnimationFrame(resize);
     const themeObserver = new MutationObserver(redraw);
     themeObserver.observe(document.documentElement, { attributeFilter: ['class'] });
     const resizeObserver = new ResizeObserver(resize);
@@ -54,6 +51,7 @@ export function useEChart(buildOption: (animate: boolean) => EChartsCoreOption) 
     window.addEventListener('pageshow', onVisible);
 
     return () => {
+      cancelAnimationFrame(firstFrame);
       themeObserver.disconnect();
       resizeObserver.disconnect();
       document.removeEventListener('visibilitychange', onVisible);
