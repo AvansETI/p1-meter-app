@@ -13,6 +13,15 @@ export function useTodayTotals(emonId: string | undefined, enabled: boolean) {
   });
 }
 
+export function useGasSeries(emonId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ['gas', emonId],
+    queryFn: () => unwrap(api.getGas()),
+    enabled,
+    refetchInterval: MINUTE_MS,
+  });
+}
+
 export function useRecentSeries(emonId: string | undefined, enabled: boolean) {
   return useQuery({
     queryKey: ['recent', emonId],

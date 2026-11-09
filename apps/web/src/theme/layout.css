@@ -140,11 +140,18 @@ ion-menu.app-side-menu ion-item.selected {
 }
 @media (min-width: 992px) {
   .live {
-    grid-template-columns: minmax(280px, 1fr) 2fr;
+    grid-template-columns: 1fr 1fr;
     align-items: start;
   }
+  /* Power and gas chart side by side; the power chart alone spans the full width. */
   .live__recent {
     grid-column: 1 / -1;
+  }
+  .live__recent:has(+ .live__gas) {
+    grid-column: 1;
+  }
+  .live__gas {
+    grid-column: 2;
   }
 }
 .live__heading {

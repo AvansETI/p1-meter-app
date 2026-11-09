@@ -48,7 +48,11 @@
     "chartImport": "{{value}} van het net",
     "chartExport": "{{value}} terug",
     "loadError": "Kon de gegevens niet ophalen.",
-    "retry": "Opnieuw"
+    "retry": "Opnieuw",
+    "gas": "Gas per uur",
+    "gasChartLabel": "Staafgrafiek van het gasverbruik per uur in de afgelopen 24 uur",
+    "gasGap": "(niet uitgesplitst)",
+    "gasHourlyNote": "Je meter geeft de gasstand één keer per uur door; verbruik verschijnt een uur later."
   },
   "history": {
     "title": "Historie",

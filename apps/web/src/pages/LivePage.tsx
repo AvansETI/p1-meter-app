@@ -11,7 +11,7 @@ import type { LiveSnapshot, LiveStatus, TodayTotals } from '@p1/shared';
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKwh, formatM3, formatMoment, formatPower } from '../format';
-import { useRecentSeries, useTodayTotals } from '../live/queries';
+import { useGasSeries, useRecentSeries, useTodayTotals } from '../live/queries';
 import { useLiveSnapshot } from '../live/useLiveSnapshot';
 import { useSession } from '../session/context';
 import { shouldShowBanner } from '../install/banner';
@@ -22,6 +22,7 @@ import { useSettings } from '../settings/context';
 
 // ECharts is large; load it only when the Live page shows the chart.
 const RecentChart = lazy(() => import('../live/RecentChart'));
+const GasChart = lazy(() => import('../live/GasChart'));
 
 const MANUAL_URL = 'https://github.com/AvansETI/SmartMeter_DIY/wiki/6.-Gebruiksaanwijzing';
 
@@ -140,10 +141,12 @@ export default function LivePage() {
   const install = useInstall();
   const ready = state.status === 'ready';
   const hasExport = ready && state.capabilities.hasExport;
+  const hasGas = ready && state.capabilities.hasGas;
 
   const live = useLiveSnapshot(ready);
   const today = useTodayTotals(settings.emonId, ready);
   const recent = useRecentSeries(settings.emonId, ready);
+  const gas = useGasSeries(settings.emonId, hasGas);
   const showBanner = shouldShowBanner({
     method: install.method,
     liveStatus: live.status,
@@ -207,6 +210,28 @@ export default function LivePage() {
               </p>
             )}
           </section>
+
+          {hasGas && (
+            <section className="live__gas">
+              <h2 className="live__heading">
+                {t('live.gas')} <small>m³</small>
+              </h2>
+              {gas.data && (
+                <Suspense fallback={<IonSkeletonText animated className="recent-chart" />}>
+                  <GasChart series={gas.data} />
+                </Suspense>
+              )}
+              {gas.isPending && <IonSkeletonText animated className="recent-chart" />}
+              {gas.isError && (
+                <p className="live__error">
+                  {t('live.loadError')}{' '}
+                  <IonButton size="small" fill="clear" onClick={() => void gas.refetch()}>
+                    {t('live.retry')}
+                  </IonButton>
+                </p>
+              )}
+            </section>
+          )}
         </div>
         {showBanner && (
           <div slot="fixed" className="install-banner-slot">
