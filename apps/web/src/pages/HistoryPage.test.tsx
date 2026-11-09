@@ -87,8 +87,10 @@ describe('HistoryPage', () => {
   it('navigates to the previous period and stops at the first data', async () => {
     setup('/history?period=week&date=2026-11-11', { hasExport: true, hasGas: true });
     await screen.findByText('week 46, 2026');
+    // Wait until the first period is loaded, so firstData is known before navigating.
+    await screen.findByText('▼ 12 % t.o.v. vorige week', {}, { timeout: 5000 });
     fireEvent.click(screen.getByLabelText('Vorige periode'));
-    expect(await screen.findByText('week 45, 2026')).toBeInTheDocument();
+    expect(await screen.findByText('week 45, 2026', {}, { timeout: 5000 })).toBeInTheDocument();
     // firstData is 2026-11-02, the first day of week 45.
     await waitFor(() =>
       expect(screen.getByLabelText('Vorige periode')).toHaveAttribute('disabled'),

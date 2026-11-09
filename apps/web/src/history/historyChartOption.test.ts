@@ -3,6 +3,7 @@ import type { History } from '@p1/shared';
 import { BarChart, LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
+import type { EChartsCoreOption } from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { describe, expect, it } from 'vitest';
 import { energyChartOption, gasHistoryChartOption } from './historyChartOption';
@@ -46,7 +47,7 @@ const text = (n: number) => ({
   gapNote: (since: string) => `niet uitgesplitst, sinds ${since}`,
 });
 
-const render = (option: object) => {
+const render = (option: EChartsCoreOption) => {
   const chart = echarts.init(null, null, { renderer: 'svg', ssr: true, width: 400, height: 200 });
   chart.setOption(option);
   const svg = chart.renderToSVGString();
@@ -60,10 +61,8 @@ describe('history chart options render in ECharts', () => {
   });
 
   it('energy without export has no export bars or net line', () => {
-    const option = energyChartOption(history(7, false), false, theme, text(7)) as {
-      series: unknown[];
-    };
-    expect(option.series).toHaveLength(1);
+    const option = energyChartOption(history(7, false), false, theme, text(7));
+    expect((option as { series: unknown[] }).series).toHaveLength(1);
     expect(render(option)).toContain('<svg');
   });
 
