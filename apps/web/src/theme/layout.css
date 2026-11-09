@@ -51,11 +51,12 @@ ion-menu.app-side-menu ion-item.selected {
   width: 100%;
   height: auto;
 }
-.brand-logo__dark,
-.ion-palette-dark .brand-logo__light {
+/* Scoped under .brand-logo so these win over `.brand-logo img` above (#12). */
+.brand-logo .brand-logo__dark,
+.ion-palette-dark .brand-logo .brand-logo__light {
   display: none;
 }
-.ion-palette-dark .brand-logo__dark {
+.ion-palette-dark .brand-logo .brand-logo__dark {
   display: block;
 }
 
