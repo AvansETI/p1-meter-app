@@ -26,6 +26,8 @@ const MIGRATIONS: string[] = [
      json           TEXT NOT NULL,
      PRIMARY KEY (signature, profile, day)
    );`,
+  // Gap handling changed (#49): recompute all cached costs.
+  `DELETE FROM daily_costs;`,
 ];
 
 /** Opens (and migrates) the app database in `dir` (docs/design/2026-11-09-costs.md §5). */

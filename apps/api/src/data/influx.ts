@@ -234,6 +234,32 @@ from(bucket: ${literal(this.options.bucket)})
     return result;
   }
 
+  async lastBefore(
+    signature: string,
+    fields: CounterField[],
+    before: Date,
+    lookbackMs: number,
+  ): Promise<Map<CounterField, { time: number; value: number }>> {
+    assertNormalized(signature);
+    const fieldFilter = fields.map((f) => `r._field == ${literal(f)}`).join(' or ');
+    const rows = await this.query(`
+from(bucket: ${literal(this.options.bucket)})
+  |> range(start: ${new Date(before.getTime() - lookbackMs).toISOString()}, stop: ${before.toISOString()})
+  |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
+  |> filter(fn: (r) => ${fieldFilter})
+  |> last()
+  |> keep(columns: ["_time", "_field", "_value"])`);
+    const result = new Map<CounterField, { time: number; value: number }>();
+    for (const row of rows) {
+      const value = num(row._value);
+      const field = row._field as CounterField;
+      if (fields.includes(field) && typeof row._time === 'string' && value !== null) {
+        result.set(field, { time: Date.parse(row._time), value });
+      }
+    }
+    return result;
+  }
+
   async firstPoint(signature: string): Promise<Date | null> {
     assertNormalized(signature);
     const rows = await this.query(`

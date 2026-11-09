@@ -68,6 +68,17 @@ tariffs in the app (Instellingen → Tarieven → Geschiedenis).
 
 Never paste the token in chats, issues or commits; edit the file on the server.
 
+## Proxy caching
+
+Keep asset caching **off** on the reverse proxy. The app sends its own cache headers (hashed
+files in `assets/` are immutable for a year, everything else `no-cache`). With caching on, the
+proxy stored a 502 from the few seconds of a restart during a deploy (v0.6.1) and kept serving it
+for the stylesheet and `sw.js`, so the app hung on the splash screen. Check after a deploy:
+
+```sh
+curl -s -o /dev/null -w "%{http_code}\n" https://p1-meter.sendlab.nl/sw.js   # 200
+```
+
 ## Client IP (reverse proxy)
 
 Rate limiting and the lock-out after failed EMON ID lookups work per client IP. The API trusts

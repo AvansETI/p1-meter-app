@@ -6,7 +6,7 @@ import * as echarts from 'echarts/core';
 import type { EChartsCoreOption } from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { describe, expect, it } from 'vitest';
-import { energyChartOption, gasHistoryChartOption } from './historyChartOption';
+import { costChartOption, energyChartOption, gasHistoryChartOption } from './historyChartOption';
 
 echarts.use([BarChart, LineChart, GridComponent, TooltipComponent, SVGRenderer]);
 
@@ -80,5 +80,45 @@ describe('history chart options render in ECharts', () => {
     };
     expect((option.series[1]!.data[0] as { value: number }).value).toBe(-2);
     expect(option.tooltip.formatter([{ dataIndex: 3 }])).toContain('niet uitgesplitst');
+  });
+});
+
+describe('cost chart', () => {
+  const withCosts = (n: number): History => ({
+    ...history(n, false),
+    costs: {
+      compareName: 'Dynamisch',
+      buckets: Array.from({ length: n }, (_, i) => ({
+        own: i === 2 ? null : 5 - i,
+        compare: i === 2 ? null : 4,
+        ...(i === 3 && { estimated: true as const }),
+      })),
+      totals: { own: 20, compare: 24, complete: false },
+      previous: null,
+    },
+  });
+  const costText = (n: number, compare?: string) => ({
+    labels: text(n).labels,
+    axisName: 'november 2026',
+    titles: text(n).titles,
+    formatEuro: (v: number) => `€ ${v.toFixed(2)}`,
+    names: { own: 'Mijn contract', compare },
+    estimated: 'geschat',
+  });
+
+  it.each([7, 24, 12])('renders bars and the comparison line, %i buckets', (n) => {
+    const option = costChartOption(withCosts(n), theme, costText(n, 'Dynamisch'));
+    expect((option as { series: unknown[] }).series).toHaveLength(2);
+    expect(render(option)).toContain('<svg');
+  });
+
+  it('has no line without a comparison contract and marks estimates in the tooltip', () => {
+    const option = costChartOption(withCosts(7), theme, costText(7)) as {
+      series: unknown[];
+      tooltip: { formatter: (p: unknown) => string };
+    };
+    expect(option.series).toHaveLength(1);
+    expect(option.tooltip.formatter([{ dataIndex: 3 }])).toContain('geschat');
+    expect(option.tooltip.formatter([{ dataIndex: 2 }])).toContain('Mijn contract: –');
   });
 });

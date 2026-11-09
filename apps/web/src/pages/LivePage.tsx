@@ -11,6 +11,9 @@ import type { LiveSnapshot, LiveStatus, TodayTotals } from '@p1/shared';
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import ToolbarLogo from '../components/ToolbarLogo';
+import CostTile from '../costs/CostTile';
+import { useCostsToday } from '../costs/queries';
+import TariffHint from '../costs/TariffHint';
 import { formatKwh, formatM3, formatMoment, formatPower } from '../format';
 import { useGasSeries, useRecentSeries, useTodayTotals } from '../live/queries';
 import { useLiveSnapshot } from '../live/useLiveSnapshot';
@@ -148,6 +151,7 @@ export default function LivePage() {
   const today = useTodayTotals(settings.emonId, ready);
   const recent = useRecentSeries(settings.emonId, ready);
   const gas = useGasSeries(settings.emonId, hasGas);
+  const costs = useCostsToday(settings.emonId, ready);
   const showBanner = shouldShowBanner({
     method: install.method,
     liveStatus: live.status,
@@ -192,6 +196,15 @@ export default function LivePage() {
               </p>
             )}
           </section>
+
+          {/* Costs only once known to be configured: without tariffs nothing is shown (#49). */}
+          {costs.data?.configured && (
+            <section className="live__costs">
+              <h2 className="live__heading">{t('costs.today')}</h2>
+              <CostTile costs={costs.data} />
+            </section>
+          )}
+          {costs.data?.configured === false && <TariffHint />}
 
           <section className="live__recent">
             <h2 className="live__heading">

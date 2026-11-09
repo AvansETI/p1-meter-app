@@ -8,6 +8,7 @@ import {
 import type { FastifyPluginCallback } from 'fastify';
 import { z } from 'zod';
 import type { CapabilityService } from '../data/capabilities';
+import type { CostViews } from '../costs/views';
 import type { HistoryService } from '../history/service';
 import type { SessionStore } from '../sessions';
 import { zonedDate } from '../time';
@@ -19,6 +20,8 @@ export interface HistoryRouteOptions {
   sessions: SessionStore;
   capabilities: CapabilityService;
   history: HistoryService;
+  /** Adds costs when the household has tariffs (costs phase 4, #49). */
+  costs?: CostViews;
 }
 
 export const historyRoutes: FastifyPluginCallback<HistoryRouteOptions> = (app, options, done) => {
@@ -41,10 +44,15 @@ export const historyRoutes: FastifyPluginCallback<HistoryRouteOptions> = (app, o
     );
     if (!household) return reply;
 
-    const history = await upstream(app.log, reply, () =>
-      options.history.history(household.signature, household.capabilities, query.data.period, date),
-    );
-    return history === undefined ? reply : (history satisfies History);
+    const result = await upstream(app.log, reply, async () => {
+      const { signature, capabilities } = household;
+      const [history, costs] = await Promise.all([
+        options.history.history(signature, capabilities, query.data.period, date),
+        options.costs?.history(signature, capabilities, query.data.period, date),
+      ]);
+      return costs ? { ...history, costs } : history;
+    });
+    return result === undefined ? reply : (result satisfies History);
   });
 
   done();
