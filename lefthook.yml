@@ -1,0 +1,17 @@
+# Git hooks, installed by `pnpm install` (prepare script). See docs/design/2026-11-09-monorepo-scaffolding.md §10.
+pre-commit:
+  piped: true
+  jobs:
+    - name: prettier
+      glob: '*.{ts,tsx,js,json,md,yml,yaml,css,html}'
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: '*.{ts,tsx,js}'
+      run: pnpm exec eslint --fix --no-warn-ignored {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}

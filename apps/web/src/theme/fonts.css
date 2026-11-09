@@ -1,0 +1,5 @@
+@import '@fontsource-variable/nunito';
+
+:root {
+  --ion-font-family: 'Nunito Variable', -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
