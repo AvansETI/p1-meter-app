@@ -1,20 +1,66 @@
 import path from 'node:path';
-import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
+import Fastify, { type FastifyError } from 'fastify';
 import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
-import { API_BASE } from '@p1/shared';
+import { API_BASE, type ErrorResponse } from '@p1/shared';
 import type { Config } from './config';
+import { CapabilityService } from './data/capabilities';
+import { FakeDataSource } from './data/fake';
+import { InfluxDataSource } from './data/influx';
+import type { HouseholdDataSource } from './data/source';
+import { loggerOptions } from './logging';
 import { healthRoutes } from './routes/health';
+import { sessionRoutes } from './routes/session';
+import { AttemptCounter, SessionStore } from './sessions';
 
-function loggerOptions(config: Config): FastifyServerOptions['logger'] {
-  if (config.NODE_ENV === 'development') {
-    return { level: config.LOG_LEVEL, transport: { target: 'pino-pretty' } };
-  }
-  return { level: config.LOG_LEVEL };
+const HOUR_MS = 60 * 60 * 1000;
+
+/** Maps TRUST_PROXY onto Fastify: a hop count becomes a function, a list becomes an array. */
+function trustProxy(
+  value: Config['TRUST_PROXY'],
+): boolean | string | string[] | ((address: string, hop: number) => boolean) {
+  if (typeof value === 'number') return (_address, hop) => hop < value;
+  if (typeof value === 'string' && value.includes(','))
+    return value.split(',').map((part) => part.trim());
+  return value;
 }
 
-export async function buildServer(config: Config): Promise<FastifyInstance> {
-  const app = Fastify({ logger: loggerOptions(config) });
+export interface ServerDeps {
+  source?: HouseholdDataSource;
+}
+
+function createSource(config: Config): HouseholdDataSource {
+  const { INFLUX_URL, INFLUX_ORG, INFLUX_BUCKET, INFLUX_TOKEN, INFLUX_TIMEOUT_MS } = config;
+  if (INFLUX_URL && INFLUX_ORG && INFLUX_BUCKET && INFLUX_TOKEN) {
+    return new InfluxDataSource({
+      url: INFLUX_URL,
+      org: INFLUX_ORG,
+      bucket: INFLUX_BUCKET,
+      token: INFLUX_TOKEN,
+      timeoutMs: INFLUX_TIMEOUT_MS,
+    });
+  }
+  // Only reachable in tests: loadConfig() requires InfluxDB settings everywhere else.
+  return new FakeDataSource();
+}
+
+export async function buildServer(config: Config, deps: ServerDeps = {}) {
+  const app = Fastify({
+    logger: loggerOptions(config),
+    trustProxy: trustProxy(config.TRUST_PROXY),
+  });
+  const source = deps.source ?? createSource(config);
+
+  app.setErrorHandler((error: FastifyError, _request, reply) => {
+    if (error.statusCode === 429) {
+      return reply.code(429).send({ error: 'rate_limited' } satisfies ErrorResponse);
+    }
+    if (error.statusCode === 400) {
+      return reply.code(400).send({ error: 'invalid_format' } satisfies ErrorResponse);
+    }
+    return reply.send(error);
+  });
 
   await app.register(helmet, {
     contentSecurityPolicy: {
@@ -22,7 +68,33 @@ export async function buildServer(config: Config): Promise<FastifyInstance> {
       directives: { 'upgrade-insecure-requests': null },
     },
   });
-  await app.register(healthRoutes, { prefix: API_BASE });
+
+  await app.register(rateLimit, {
+    max: config.RATE_LIMIT_PER_MINUTE,
+    timeWindow: '1 minute',
+    // Static files of the web app are not limited; only the API is.
+    allowList: (request) => !request.url.startsWith(API_BASE),
+    errorResponseBuilder: (_request, context) =>
+      Object.assign(new Error('rate_limited'), { statusCode: context.statusCode }),
+  });
+
+  await app.register(
+    async (api) => {
+      await api.register(healthRoutes, { source });
+      await api.register(sessionRoutes, {
+        sessions: new SessionStore(config.SESSION_TTL_HOURS * HOUR_MS),
+        capabilities: new CapabilityService(source),
+        failedLookups: new AttemptCounter(HOUR_MS),
+        dailyAttempts: new AttemptCounter(24 * HOUR_MS),
+        limits: {
+          perMinute: config.SESSION_LIMIT_PER_MINUTE,
+          perDay: config.SESSION_LIMIT_PER_DAY,
+          failedPerHour: config.FAILED_LOOKUPS_PER_HOUR,
+        },
+      });
+    },
+    { prefix: API_BASE },
+  );
 
   if (config.NODE_ENV === 'production') {
     await app.register(fastifyStatic, {
