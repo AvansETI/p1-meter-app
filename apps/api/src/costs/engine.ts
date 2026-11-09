@@ -31,6 +31,8 @@ export interface DayUsage {
   quarters: Array<QuarterUsage | null>;
   /** Gas used that day; null when unknown, undefined for households without gas. */
   gasM3?: number | null;
+  /** Gas per quarter hour (for hour buckets); null where unknown. */
+  gasQuarters?: Array<number | null>;
   /** Mean gas day price in EUR/m³ excl. VAT and energy tax. */
   gasPrice?: number;
   /** Usage includes values spread over a gap in the data. */

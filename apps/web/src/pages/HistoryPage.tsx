@@ -30,6 +30,7 @@ import { chevronBack, chevronForward } from 'ionicons/icons';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ToolbarLogo from '../components/ToolbarLogo';
+import HistoryCostSummary from '../costs/HistoryCostSummary';
 import { useSearchParams } from 'react-router-dom';
 import { formatKwh, formatM3 } from '../format';
 import { compare, type Stream } from '../history/comparison';
@@ -41,6 +42,9 @@ import { useSettings } from '../settings/context';
 // ECharts is large; load the charts only when they are shown.
 const EnergyChart = lazy(() =>
   import('../history/HistoryCharts').then((m) => ({ default: m.EnergyChart })),
+);
+const CostChart = lazy(() =>
+  import('../history/HistoryCharts').then((m) => ({ default: m.CostChart })),
 );
 const GasHistoryChart = lazy(() =>
   import('../history/HistoryCharts').then((m) => ({ default: m.GasHistoryChart })),
@@ -283,6 +287,7 @@ export default function HistoryPage() {
           </div>
 
           {history && <Summary history={history} hasExport={hasExport} hasGas={hasGas} />}
+          {history?.costs && <HistoryCostSummary costs={history.costs} period={period} />}
           {query.isPending && <IonSkeletonText animated className="today-grid--skeleton" />}
           {query.isError && (
             <p className="live__error">
@@ -325,6 +330,16 @@ export default function HistoryPage() {
                 ) : (
                   <IonSkeletonText animated className="history-chart" />
                 )}
+              </section>
+            )}
+            {history?.costs && (
+              <section>
+                <h2 className="live__heading">
+                  {t('costs.title')} <small>€</small>
+                </h2>
+                <Suspense fallback={<IonSkeletonText animated className="history-chart" />}>
+                  <CostChart history={history} onSelect={period === 'day' ? undefined : zoom} />
+                </Suspense>
               </section>
             )}
           </div>

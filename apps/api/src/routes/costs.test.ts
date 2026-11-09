@@ -85,3 +85,28 @@ describe('GET /costs/days', () => {
     });
   });
 });
+
+describe('GET /costs/today', () => {
+  it('says "not configured" without tariffs and needs a session', async () => {
+    const { app, get } = await setup();
+    expect((await get('/costs/today')).json()).toEqual({ configured: false });
+    const res = await app.inject({ method: 'GET', url: '/api/v1/costs/today' });
+    expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('GET /history with costs', () => {
+  it('adds costs only when the household has tariffs', async () => {
+    const { app, get, headers } = await setup();
+    const url = '/history?period=week&date=2026-01-05';
+    expect((await get(url)).json()).not.toHaveProperty('costs');
+    await app.inject({
+      method: 'PUT',
+      url: '/api/v1/tariffs',
+      payload: { profiles: { own: { periods: [period] } } },
+      headers: { ...headers, 'if-match': '0' },
+    });
+    const costs = (await get(url)).json<{ costs: { buckets: unknown[] } }>().costs;
+    expect(costs.buckets).toHaveLength(7);
+  });
+});

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PERIODS } from './calendar';
+import { HistoryCostsSchema } from './costs';
 
 export const PeriodSchema = z.enum(PERIODS);
 
@@ -36,5 +37,7 @@ export const HistorySchema = z.object({
   totals: TotalsSchema,
   /** The comparable part of the previous period; null when unknown. */
   previous: TotalsSchema.nullable(),
+  /** Costs per bucket, totals and forecast; absent without tariffs (costs design §7.1). */
+  costs: HistoryCostsSchema.optional(),
 });
 export type History = z.infer<typeof HistorySchema>;

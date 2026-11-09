@@ -16,6 +16,7 @@ import {
   LAST_NET_METERING_YEAR,
   type Balance,
   type DayCost,
+  type DayResult,
   type DayUsage,
   type Unknown,
 } from './engine';
@@ -29,8 +30,6 @@ const CHUNK_DAYS = 31;
 const LONG_LOOKBACK_MS = 400 * DAY_MS;
 /** A day's data is considered final this long after the day ended. */
 const SETTLE_MS = 2 * HOUR_MS;
-/** A day without any data stays "unknown" for good after a week. */
-const NO_USAGE_FINAL_MS = 7 * DAY_MS;
 
 export interface DayEntry {
   date: string;
@@ -40,6 +39,8 @@ export interface DayEntry {
 export interface CostDays {
   own: DayEntry[];
   compare?: { name: string; days: DayEntry[] };
+  /** Per-quarter results of the `detail` day, when requested (hour buckets). */
+  detail?: { usage: DayUsage; results: Partial<Record<ProfileKey, DayResult>> };
 }
 
 const daysBetween = (from: PlainDate, to: PlainDate): PlainDate[] => {
@@ -80,18 +81,28 @@ export class CostService {
     private readonly cache: CostCache,
   ) {}
 
-  /** Costs of every day in [from, to] (local dates). */
+  /** Whether the household has any tariff period (otherwise the app shows no costs). */
+  configured(signature: string): boolean {
+    const { own, compare } = this.tariffs.get(signature).profiles;
+    return own.periods.length > 0 || (compare?.periods.length ?? 0) > 0;
+  }
+
+  /**
+   * Costs of every day in [from, to] (local dates). With `detail` (a day in the range) that
+   * day is always recomputed and its per-quarter results are returned too.
+   */
   async days(
     signature: string,
     capabilities: Capabilities,
     from: PlainDate,
     to: PlainDate,
     now = Date.now(),
+    detail?: PlainDate,
   ): Promise<CostDays> {
     const previous = this.queue.get(signature) ?? Promise.resolve();
     const run = previous
       .catch(() => undefined)
-      .then(() => this.compute(signature, capabilities, from, to, now));
+      .then(() => this.compute(signature, capabilities, from, to, now, detail));
     this.queue.set(signature, run);
     try {
       return await run;
@@ -106,6 +117,7 @@ export class CostService {
     from: PlainDate,
     to: PlainDate,
     now: number,
+    detail?: PlainDate,
   ): Promise<CostDays> {
     const stored = this.tariffs.get(signature);
     const { own, compare } = stored.profiles;
@@ -115,6 +127,8 @@ export class CostService {
     const requested = daysBetween(from, to);
     const results = new Map<ProfileKey, Map<string, CachedDay>>();
     const anyPeriods = profiles.some(([, periods]) => periods.length > 0);
+    const detailKey = detail && formatPlainDate(detail);
+    let detailResult: CostDays['detail'];
 
     if (anyPeriods) {
       // Net metering needs the balance since 1 January.
@@ -128,9 +142,21 @@ export class CostService {
           this.cache.get(signature, profile, stored.version, formatPlainDate(start), end),
         );
       }
-      const missing = all.filter((day) =>
-        profiles.some(([profile]) => !results.get(profile)!.has(formatPlainDate(day))),
+      const missing = all.filter(
+        (day) =>
+          formatPlainDate(day) === detailKey ||
+          profiles.some(([profile]) => !results.get(profile)!.has(formatPlainDate(day))),
       );
+
+      // Days without data are only final before the household's first data; in a gap they get
+      // their share of the use once the meter reports again.
+      let firstData: number | null | undefined;
+      const final = async (date: PlainDate, cost: DayCost | Unknown) => {
+        if (!this.isFinal(date, cost, now)) return false;
+        if (cost !== 'no-usage') return true;
+        firstData ??= (await this.source.firstPoint(signature))?.getTime() ?? null;
+        return firstData === null || zonedToUtc(addDays(date, 1)).getTime() <= firstData;
+      };
 
       for (const run of runs(missing)) {
         const before = formatPlainDate(addDays(run[0]!, -1));
@@ -146,7 +172,11 @@ export class CostService {
             const day = formatPlainDate(usage.date);
             const entry = { cost: result.cost, balance };
             results.get(profile)!.set(day, entry);
-            if (this.isFinal(usage.date, result.cost, now)) fresh.push({ day, ...entry });
+            if (day === detailKey) {
+              detailResult ??= { usage, results: {} };
+              detailResult.results[profile] = result;
+            }
+            if (await final(usage.date, result.cost)) fresh.push({ day, ...entry });
           }
           this.cache.put(signature, profile, stored.version, fresh);
         }
@@ -161,6 +191,7 @@ export class CostService {
     return {
       own: entries('own'),
       ...(compare && { compare: { name: compare.name, days: entries('compare') } }),
+      ...(detailResult && { detail: detailResult }),
     };
   }
 
@@ -168,9 +199,7 @@ export class CostService {
   private isFinal(date: PlainDate, cost: DayCost | Unknown, now: number): boolean {
     const dayEnd = zonedToUtc(addDays(date, 1)).getTime();
     if (dayEnd > now - SETTLE_MS) return false;
-    if (cost === 'no-price') return false; // prices may still arrive (backfill)
-    if (cost === 'no-usage') return dayEnd <= now - NO_USAGE_FINAL_MS;
-    return true;
+    return cost !== 'no-price'; // prices may still arrive (backfill)
   }
 
   /** Usage and prices per day for consecutive days, read in monthly chunks. */
@@ -188,11 +217,14 @@ export class CostService {
     if (capabilities.hasGas) fields.push('gas_delivered');
 
     const start = zonedToUtc(days[0]!);
-    const [baseline] = await this.source.countersAt(signature, fields, [start], LONG_LOOKBACK_MS);
+    const baseline = await this.source.lastBefore(signature, fields, start, LONG_LOOKBACK_MS);
     const series = new Map<CounterField, CounterSeries>(
       fields.map((field) => {
-        const value = baseline?.[field];
-        return [field, { last: new Map(), ...(value !== undefined && { baseline: value }) }];
+        const last = baseline.get(field);
+        return [
+          field,
+          { last: new Map(), ...(last && { baseline: last.value, baselineTime: last.time }) },
+        ];
       }),
     );
     const prices = new Map<number, number>();

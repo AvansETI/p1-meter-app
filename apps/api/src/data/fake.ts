@@ -103,6 +103,26 @@ export class FakeDataSource implements HouseholdDataSource {
     });
   }
 
+  lastBefore(
+    signature: string,
+    fields: CounterField[],
+    before: Date,
+  ): Promise<Map<CounterField, { time: number; value: number }>> {
+    return this.run(() => {
+      const household = this.households[signature];
+      const result = new Map<CounterField, { time: number; value: number }>();
+      // Values at exact instants (countersAt) and quarter values, latest first.
+      const points = [...(household?.counters ?? []), ...(household?.quarters ?? [])]
+        .filter(([time]) => time < before.getTime())
+        .sort(([a], [b]) => b - a);
+      for (const field of fields) {
+        const hit = points.find(([, values]) => values[field] !== undefined);
+        if (hit) result.set(field, { time: hit[0], value: hit[1][field]! });
+      }
+      return result;
+    });
+  }
+
   firstPoint(signature: string): Promise<Date | null> {
     return this.run(() => this.households[signature]?.firstPoint ?? null);
   }

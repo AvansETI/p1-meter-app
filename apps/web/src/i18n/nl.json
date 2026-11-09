@@ -244,5 +244,41 @@
     "formInvalid": "Controleer de gemarkeerde velden.",
     "invalidAmount": "Vul een geldig bedrag in.",
     "invalidDate": "Vul een datum in die nog niet in gebruik is."
+  },
+  "costs": {
+    "today": "Kosten vandaag",
+    "title": "Kosten",
+    "own": "Mijn contract",
+    "estimated": "geschat",
+    "estimatedNote": "Geschat: er ontbreekt meterdata; het verbruik is over die periode verdeeld.",
+    "proRataNote": "Vaste kosten en heffingskorting tellen naar rato van het deel van de dag dat voorbij is.",
+    "details": "Details",
+    "compareLine": "Met {{name}}: {{amount}}",
+    "cheaper": "{{amount}} goedkoper",
+    "dearer": "{{amount}} duurder",
+    "electricity": "Stroom",
+    "gas": "Gas",
+    "fixed": "Vaste kosten",
+    "taxReduction": "Heffingskorting",
+    "total": "Totaal",
+    "unknown": {
+      "no-tariff": "Geen tarief voor deze dag",
+      "no-price": "Marktprijs nog niet bekend",
+      "no-usage": "Geen meterdata"
+    },
+    "chartLabel": "Staafgrafiek van de kosten per periode, met een lijn voor het vergelijkingscontract",
+    "forecast": {
+      "month": "Verwacht deze maand: {{amount}}",
+      "year": "Verwacht dit jaar: {{amount}}"
+    },
+    "basis": {
+      "last-year": "o.b.v. dezelfde dagen vorig jaar",
+      "last-30-days": "o.b.v. de afgelopen 30 dagen",
+      "mixed": "o.b.v. vorig jaar en de afgelopen 30 dagen"
+    },
+    "hint": "Vul je tarieven in om kosten te zien",
+    "hintAction": "Instellen",
+    "hintNever": "Deze melding niet meer tonen?",
+    "hintNeverAction": "Nooit meer"
   }
 }

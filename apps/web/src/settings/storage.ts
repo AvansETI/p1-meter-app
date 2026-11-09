@@ -12,6 +12,8 @@ const SettingsSchema = z.object({
   theme: ThemeSchema.catch('system'),
   /** When the install banner was last dismissed (ISO); it returns after 30 days. */
   installHintDismissedAt: z.string().optional(),
+  /** The user chose to never see the "fill in your tariffs" hint again. */
+  tariffHintOff: z.boolean().optional(),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 

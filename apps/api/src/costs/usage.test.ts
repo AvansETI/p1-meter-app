@@ -55,6 +55,16 @@ describe('quarterDeltas', () => {
     ]);
   });
 
+  it('gives quarters only their share of a gap that began before them', () => {
+    // Last value 2 h before the first quarter: 7 quarters in between belong to earlier days.
+    const result = quarterDeltas(
+      { last: new Map([[start, 18]]), baseline: 10, baselineTime: start - 8 * Q },
+      starts.slice(0, 1),
+      now,
+    );
+    expect(result).toEqual({ values: [1], estimated: [true] });
+  });
+
   it('counts a counter that went down (meter replaced) as 0, estimated', () => {
     const result = quarterDeltas(series([5], 10), starts.slice(0, 1), now);
     expect(result).toEqual({ values: [0], estimated: [true] });

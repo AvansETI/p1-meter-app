@@ -52,6 +52,13 @@ export interface HouseholdDataSource {
     from: Date,
     to: Date,
   ): Promise<Map<CounterField, Map<number, number>>>;
+  /** Last value and its time (ms) of each counter before `before`, within `lookbackMs`. */
+  lastBefore(
+    signature: string,
+    fields: CounterField[],
+    before: Date,
+    lookbackMs: number,
+  ): Promise<Map<CounterField, { time: number; value: number }>>;
   /** Time of the household's first data point, or null. */
   firstPoint(signature: string): Promise<Date | null>;
   /** Gas counter per hour since `from`, and its increase times. */

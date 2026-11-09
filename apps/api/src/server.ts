@@ -17,6 +17,7 @@ import { backupDaily, openDatabase } from './db/database';
 import { TariffRepository } from './db/tariffs';
 import { liveRoutes } from './routes/live';
 import { CostService } from './costs/service';
+import { CostViews } from './costs/views';
 import { CostCache } from './db/costs';
 import { costRoutes } from './routes/costs';
 import { TARIFF_WRITES_PER_HOUR, tariffRoutes } from './routes/tariffs';
@@ -154,6 +155,9 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
     app.log.info('prices unavailable (PRICES_INFLUX_* not set)');
   }
 
+  const costs = new CostService(source, prices, tariffs, new CostCache(db));
+  const costViews = new CostViews(costs);
+
   await app.register(
     async (api) => {
       await api.register(healthRoutes, {
@@ -167,15 +171,12 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
         writes: new AttemptCounter(HOUR_MS),
         writesPerHour: TARIFF_WRITES_PER_HOUR,
       });
-      await api.register(costRoutes, {
-        sessions,
-        capabilities,
-        costs: new CostService(source, prices, tariffs, new CostCache(db)),
-      });
+      await api.register(costRoutes, { sessions, capabilities, costs, views: costViews });
       await api.register(historyRoutes, {
         sessions,
         capabilities,
         history: new HistoryService(source),
+        costs: costViews,
       });
       await api.register(liveRoutes, {
         sessions,

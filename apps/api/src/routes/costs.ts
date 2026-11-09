@@ -5,11 +5,13 @@ import {
   SESSION_HEADER,
   type CostDay,
   type CostDaysResponse,
+  type CostsToday,
 } from '@p1/shared';
 import type { FastifyPluginCallback } from 'fastify';
 import { z } from 'zod';
 import type { CapabilityService } from '../data/capabilities';
 import type { CostService, DayEntry } from '../costs/service';
+import type { CostViews } from '../costs/views';
 import type { SessionStore } from '../sessions';
 import { zonedDate, zonedToUtc } from '../time';
 import { fail, resolveHousehold, upstream } from './household';
@@ -20,6 +22,7 @@ export interface CostRouteOptions {
   sessions: SessionStore;
   capabilities: CapabilityService;
   costs: CostService;
+  views: CostViews;
 }
 
 const round = (value: number) => Math.round(value * 10_000) / 10_000;
@@ -72,6 +75,20 @@ export const costRoutes: FastifyPluginCallback<CostRouteOptions> = (app, options
         compare: { name: result.compare.name, days: result.compare.days.map(toDay) },
       }),
     } satisfies CostDaysResponse;
+  });
+
+  app.get('/costs/today', async (request, reply) => {
+    const header = request.headers[SESSION_HEADER];
+    const household = await resolveHousehold(
+      deps,
+      typeof header === 'string' ? header : undefined,
+      reply,
+    );
+    if (!household) return reply;
+    const today = await upstream(app.log, reply, () =>
+      options.views.today(household.signature, household.capabilities),
+    );
+    return today === undefined ? reply : (today satisfies CostsToday);
   });
 
   done();

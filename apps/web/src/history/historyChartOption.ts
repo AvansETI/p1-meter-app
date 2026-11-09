@@ -31,7 +31,7 @@ const GAP_STYLE = (color: string) => ({
   borderWidth: 1,
 });
 
-function base(theme: HistoryChartTheme, text: HistoryChartText) {
+function base(theme: HistoryChartTheme, text: Pick<HistoryChartText, 'labels' | 'axisName'>) {
   return {
     animation: false,
     // Room for (two-line) labels plus the axis title below them.
@@ -183,6 +183,74 @@ export function gasHistoryChartOption(
           itemStyle: bucket.spansGap ? GAP_STYLE(theme.gasColor) : undefined,
         })),
       },
+    ],
+  };
+}
+
+export interface CostChartText {
+  labels: string[];
+  axisName: string;
+  titles: string[];
+  formatEuro: (value: number) => string;
+  names: { own: string; compare?: string };
+  estimated: string;
+}
+
+/**
+ * Costs per bucket (costs design §7.1): bars for the own contract (below zero when export
+ * earned more), a line for the comparison contract; estimated buckets dimmed.
+ */
+export function costChartOption(
+  history: History,
+  theme: HistoryChartTheme,
+  text: CostChartText,
+): EChartsCoreOption {
+  const buckets = history.costs?.buckets ?? [];
+  const fmt = (v: number | null | undefined) =>
+    v === null || v === undefined ? '–' : text.formatEuro(v);
+  return {
+    ...base(theme, text),
+    tooltip: tooltip(theme, (i) => {
+      const bucket = buckets[i];
+      if (!bucket) return [];
+      const lines = [
+        `<strong>${text.titles[i] ?? ''}</strong>`,
+        `${text.names.own}: ${fmt(bucket.own)}`,
+      ];
+      if (text.names.compare) lines.push(`${text.names.compare}: ${fmt(bucket.compare)}`);
+      if (bucket.estimated) lines.push(text.estimated);
+      return lines;
+    }),
+    yAxis: {
+      type: 'value',
+      axisLabel: { color: theme.mutedColor, formatter: (v: number) => text.formatEuro(v) },
+      splitLine: { lineStyle: { color: theme.mutedColor, opacity: 0.15 } },
+    },
+    series: [
+      {
+        name: text.names.own,
+        type: 'bar',
+        color: theme.importColor,
+        barMaxWidth: 22,
+        data: buckets.map((bucket) => ({
+          value: bucket.own,
+          itemStyle: bucket.estimated ? GAP_STYLE(theme.importColor) : undefined,
+        })),
+      },
+      ...(text.names.compare
+        ? [
+            {
+              name: text.names.compare,
+              type: 'line',
+              color: theme.exportColor,
+              symbol: 'circle',
+              symbolSize: 5,
+              lineStyle: { width: 2 },
+              connectNulls: false,
+              data: buckets.map((bucket) => bucket.compare ?? null),
+            },
+          ]
+        : []),
     ],
   };
 }

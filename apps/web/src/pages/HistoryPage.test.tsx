@@ -14,6 +14,7 @@ import HistoryPage from './HistoryPage';
 vi.mock('../history/HistoryCharts', () => ({
   EnergyChart: () => <div data-testid="energy-chart" />,
   GasHistoryChart: () => <div data-testid="gas-chart" />,
+  CostChart: () => <div data-testid="cost-chart" />,
 }));
 
 const history = (period: History['period'], start: string): History => ({
@@ -26,7 +27,11 @@ const history = (period: History['period'], start: string): History => ({
   previous: { importKwh: 100, exportKwh: 10, netKwh: 90, gasM3: 9.1, complete: true },
 });
 
-function setup(url: string, caps: { hasExport: boolean; hasGas: boolean }) {
+function setup(
+  url: string,
+  caps: { hasExport: boolean; hasGas: boolean },
+  costs?: History['costs'],
+) {
   const requests: string[] = [];
   vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -37,9 +42,10 @@ function setup(url: string, caps: { hasExport: boolean; hasGas: boolean }) {
     if (url.startsWith('/api/v1/capabilities')) return json(capabilities(caps));
     if (url.startsWith('/api/v1/history')) {
       const params = new URL(url, 'http://x').searchParams;
-      return json(
-        history(params.get('period') as History['period'], `${params.get('date')}T00:00:00Z`),
-      );
+      return json({
+        ...history(params.get('period') as History['period'], `${params.get('date')}T00:00:00Z`),
+        ...(costs && { costs }),
+      });
     }
     return Promise.reject(new Error(`unexpected ${url}`));
   });
@@ -103,5 +109,34 @@ describe('HistoryPage', () => {
     expect(await screen.findByText('Afname')).toBeInTheDocument();
     expect(screen.queryByText('Netto')).toBeNull();
     expect(screen.queryByTestId('gas-chart')).toBeNull();
+  });
+});
+
+describe('HistoryPage costs', () => {
+  it('shows the cost card, comparison, forecast and chart when there are tariffs', async () => {
+    setup(
+      '/history?period=month&date=2026-11-01',
+      { hasExport: true, hasGas: true },
+      {
+        compareName: 'Dynamisch',
+        buckets: [{ own: 10, compare: 12 }],
+        totals: { own: 90, compare: 110, complete: true },
+        previous: { own: 100, compare: 100, complete: true },
+        forecast: { own: 400, compare: 380, basis: 'last-year' },
+      },
+    );
+    expect(await screen.findByText('€ 90,00')).toBeInTheDocument();
+    expect(screen.getByText(/Met Dynamisch: € 110,00/)).toBeInTheDocument();
+    expect(screen.getByText('€ 20,00 duurder')).toBeInTheDocument();
+    expect(screen.getByText(/Verwacht deze maand: € 400,00/)).toBeInTheDocument();
+    expect(screen.getByText('o.b.v. dezelfde dagen vorig jaar')).toBeInTheDocument();
+    expect(await screen.findByTestId('cost-chart')).toBeInTheDocument();
+  });
+
+  it('shows nothing about costs without tariffs', async () => {
+    setup('/history?period=month&date=2026-11-01', { hasExport: true, hasGas: true });
+    expect(await screen.findByText(/88/)).toBeInTheDocument();
+    expect(screen.queryByText('Kosten')).toBeNull();
+    expect(screen.queryByTestId('cost-chart')).toBeNull();
   });
 });
