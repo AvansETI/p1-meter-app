@@ -24,6 +24,7 @@ export function SettingsProvider({
       settings,
       setEmonId: (emonId) => update({ emonId }),
       setTheme: (theme) => update({ theme }),
+      dismissInstallHint: () => update({ installHintDismissedAt: new Date().toISOString() }),
     }),
     [settings, update],
   );

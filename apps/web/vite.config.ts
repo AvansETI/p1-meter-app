@@ -50,6 +50,8 @@ export default defineConfig({
     proxy: apiProxy,
   },
   preview: {
+    // LAN access for testing on phones (docs/design/2026-11-09-install-hints.md §7).
+    host: '0.0.0.0',
     port: 4173,
     proxy: apiProxy,
   },

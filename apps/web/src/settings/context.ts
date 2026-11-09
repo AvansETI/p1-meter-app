@@ -5,6 +5,7 @@ export interface SettingsValue {
   settings: Settings;
   setEmonId: (emonId: string | undefined) => void;
   setTheme: (theme: Theme) => void;
+  dismissInstallHint: () => void;
 }
 
 export const SettingsContext = createContext<SettingsValue | null>(null);

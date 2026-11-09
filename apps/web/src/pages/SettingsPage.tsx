@@ -22,6 +22,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from '../components/BrandLogo';
 import EmonIdForm from '../components/EmonIdForm';
+import InstallSheet from '../install/InstallSheet';
+import { OFFERABLE, useInstall } from '../install/useInstall';
 import { useSession } from '../session/context';
 import { useSettings } from '../settings/context';
 import { ThemeSchema } from '../settings/storage';
@@ -73,6 +75,7 @@ export default function SettingsPage() {
   const { state, clear } = useSession();
   const [changing, setChanging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const install = useInstall();
 
   return (
     <IonPage>
@@ -139,6 +142,28 @@ export default function SettingsPage() {
             </IonSegment>
           </IonItem>
         </IonList>
+
+        {install.method !== 'installed' && (
+          <IonList inset>
+            <IonListHeader>{t('settings.app')}</IonListHeader>
+            {OFFERABLE.has(install.method) ? (
+              <IonItem button detail={false} onClick={install.start}>
+                <IonLabel color="primary">{t('settings.installApp')}</IonLabel>
+              </IonItem>
+            ) : (
+              <IonItem>
+                <IonLabel className="ion-text-wrap">
+                  <IonNote>{t('settings.installUnsupported')}</IonNote>
+                </IonLabel>
+              </IonItem>
+            )}
+          </IonList>
+        )}
+        <InstallSheet
+          method={install.method}
+          isOpen={install.sheetOpen}
+          onClose={install.closeSheet}
+        />
 
         <IonList inset>
           <IonListHeader>{t('settings.about')}</IonListHeader>
