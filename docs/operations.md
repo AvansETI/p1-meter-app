@@ -50,6 +50,14 @@ It never overwrites `/etc/p1-meter-app/env`.
 
 The last three releases are kept in `/opt/p1-meter-app/releases/`.
 
+## Database and backups
+
+Tariffs are stored in SQLite: `/var/lib/p1-meter-app/p1.db` (systemd `StateDirectory`, survives
+deploys and rollbacks). A copy is written daily to `/var/lib/p1-meter-app/backups/`; the
+newest 14 are kept. To restore: stop the app, copy a backup over `p1.db` (remove `p1.db-wal` and
+`p1.db-shm`), start the app. Single households can also restore an earlier version of their
+tariffs in the app (Instellingen → Tarieven → Geschiedenis).
+
 ## Rotating the InfluxDB token
 
 1. Create a new read-only token for bucket `p1-smartmeters` in InfluxDB.

@@ -41,6 +41,16 @@ const schema = z
     INFLUX_TOKEN: optional(z.string().optional()),
     INFLUX_TIMEOUT_MS: positiveInt(10_000),
 
+    // SQLite database and backups. systemd sets STATE_DIRECTORY (StateDirectory=); in
+    // development the repository's data/ directory is used. ":memory:" for tests.
+    DATA_DIR: optional(
+      z
+        .string()
+        .default(
+          process.env.STATE_DIRECTORY ?? fileURLToPath(new URL('../../../data', import.meta.url)),
+        ),
+    ),
+
     // Day-ahead prices (costs, #32); the price job only runs when all three are set.
     PRICES_INFLUX_BUCKET: optional(z.string().optional()),
     PRICES_INFLUX_TOKEN: optional(z.string().optional()),

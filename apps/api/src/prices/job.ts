@@ -15,10 +15,29 @@ export interface PriceFetchers {
   gas(from: Date, to: Date): Promise<ReturnType<typeof parseEnergyZero>>;
 }
 
+/** A failed price request; `retryAfterMs` from a Retry-After header when the source sent one. */
+export class FetchError extends Error {
+  override name = 'FetchError';
+  constructor(
+    readonly status: number,
+    readonly retryAfterMs?: number,
+  ) {
+    super(`HTTP ${status}`);
+  }
+}
+
+/** Retry-After as seconds or an HTTP date (RFC 9110), in milliseconds from `now`. */
+export function parseRetryAfter(value: string | null, now = Date.now()): number | undefined {
+  if (!value) return undefined;
+  if (/^\d+$/.test(value.trim())) return Number(value) * 1000;
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - now);
+}
+
 export function httpFetchers(entsoeToken: string): PriceFetchers {
   const get = async (url: string) => {
     const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new FetchError(res.status, parseRetryAfter(res.headers.get('retry-after')));
     return res;
   };
   return {
@@ -39,9 +58,26 @@ const dayStart = (instant: Date, days = 0) => {
  * when something is missing, and a one-time backfill since August 2023. Idempotent: rewriting a
  * point with the same timestamp overwrites it.
  */
+const HOUR_MS = 3_600_000;
+/** Normal cadence per source; longer after failures (doubling, at most a day). */
+const NORMAL_INTERVAL_MS = HOUR_MS;
+const MAX_BACKOFF_MS = 24 * HOUR_MS;
+
+export type PriceSourceStatus = 'pending' | 'ok' | 'backoff';
+
+interface SourceState {
+  failures: number;
+  nextAttemptAt: number;
+  status: PriceSourceStatus;
+}
+
 export class PriceJob {
   private timer: NodeJS.Timeout | undefined;
   private running = false;
+  private readonly sources: Record<PriceKind, SourceState> = {
+    electricity: { failures: 0, nextAttemptAt: 0, status: 'pending' },
+    gas: { failures: 0, nextAttemptAt: 0, status: 'pending' },
+  };
 
   constructor(
     private readonly store: PriceStore,
@@ -50,8 +86,14 @@ export class PriceJob {
     private readonly options: { pauseMs?: number; now?: () => Date } = {},
   ) {}
 
-  start(intervalMs = 60 * 60_000): void {
-    // First run shortly after start-up, then every hour.
+  /** Status per source for /api/v1/health. */
+  status(): Record<PriceKind, PriceSourceStatus> {
+    return { electricity: this.sources.electricity.status, gas: this.sources.gas.status };
+  }
+
+  start(intervalMs = 5 * 60_000): void {
+    // Checks every 5 minutes; each source fetches at most hourly unless a Retry-After says
+    // otherwise. The first run is shortly after start-up.
     setTimeout(() => void this.tick(), 5_000).unref();
     this.timer = setInterval(() => void this.tick(), intervalMs);
     this.timer.unref();
@@ -65,18 +107,38 @@ export class PriceJob {
     return this.options.now?.() ?? new Date();
   }
 
-  /** One pass: recent days (incl. tomorrow) first, then the backfill. */
+  /**
+   * One pass. Electricity and gas run independently: a failing source backs off (Retry-After,
+   * else 1 h, 2 h, 4 h … up to 24 h) without holding up the other one.
+   */
   async tick(): Promise<void> {
     if (this.running) return;
     this.running = true;
     try {
-      const tomorrowEnd = dayStart(this.now(), 2);
-      await this.fill('electricity', dayStart(this.now(), -7), tomorrowEnd);
-      await this.fill('gas', dayStart(this.now(), -7), tomorrowEnd);
-      await this.fill('electricity', zonedToUtc(BACKFILL_FROM), dayStart(this.now(), -7));
-      await this.fill('gas', zonedToUtc(BACKFILL_FROM), dayStart(this.now(), -7));
-    } catch (error) {
-      this.log.warn({ err: error }, 'price job failed; retrying next hour');
+      for (const kind of ['electricity', 'gas'] as const) {
+        const state = this.sources[kind];
+        const now = this.now().getTime();
+        if (now < state.nextAttemptAt) continue;
+        try {
+          // Recent days (incl. tomorrow) first, then the backfill since August 2023.
+          await this.fill(kind, dayStart(this.now(), -7), dayStart(this.now(), 2));
+          await this.fill(kind, zonedToUtc(BACKFILL_FROM), dayStart(this.now(), -7));
+          state.failures = 0;
+          state.status = 'ok';
+          state.nextAttemptAt = now + NORMAL_INTERVAL_MS;
+        } catch (error) {
+          state.failures++;
+          const retryAfter = error instanceof FetchError ? error.retryAfterMs : undefined;
+          const backoff = Math.min(MAX_BACKOFF_MS, NORMAL_INTERVAL_MS * 2 ** (state.failures - 1));
+          const delay = retryAfter ?? backoff;
+          state.status = 'backoff';
+          state.nextAttemptAt = now + delay;
+          this.log.warn(
+            { err: error, kind, failures: state.failures, retryInMin: Math.round(delay / 60_000) },
+            'price fetch failed; backing off',
+          );
+        }
+      }
     } finally {
       this.running = false;
     }

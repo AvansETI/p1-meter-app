@@ -119,6 +119,13 @@ export default function SettingsPage() {
         </IonList>
 
         <IonList inset>
+          <IonListHeader>{t('settings.costs')}</IonListHeader>
+          <IonItem routerLink="/settings/tariffs" detail>
+            <IonLabel>{t('settings.tariffs')}</IonLabel>
+          </IonItem>
+        </IonList>
+
+        <IonList inset>
           <IonListHeader>{t('settings.display')}</IonListHeader>
           <IonItem>
             <IonLabel>{t('settings.theme')}</IonLabel>
