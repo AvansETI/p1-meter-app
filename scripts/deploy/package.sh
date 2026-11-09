@@ -12,6 +12,10 @@ mkdir -p "$out/app/web"
 pnpm --filter @p1/api deploy --prod "$out/app/api"
 cp -r apps/web/dist "$out/app/web/dist"
 cp .nvmrc LICENSE NOTICE "$out/app/"
+# Server files the update script keeps in sync (systemd units and the updater itself).
+mkdir -p "$out/app/deploy"
+cp scripts/deploy/p1-meter-update scripts/deploy/p1-meter-app.service \
+  scripts/deploy/p1-meter-update.service scripts/deploy/p1-meter-update.timer "$out/app/deploy/"
 
 file="p1-meter-app-${sha:0:12}.tar.gz"
 tar -czf "$out/$file" -C "$out" app

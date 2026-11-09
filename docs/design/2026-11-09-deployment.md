@@ -99,6 +99,12 @@ Timer every 2 minutes (and 1 minute after boot). The oneshot service runs
    Fails → switch `current` back to the previous release, restart, log an error.
 7. Keep the 3 newest releases, delete older ones.
 
+**System files (#21):** the package also contains `deploy/` with the three systemd units and the
+update script. Before every restart (deploy and rollback) the update script installs the ones
+that differ from the installed files and runs `systemctl daemon-reload`. A new update script
+replaces the file atomically and takes effect on the next run. `/etc/p1-meter-app/env` is never
+touched, so `install.sh` is only needed for the first setup.
+
 A lock file prevents overlapping runs. Everything is logged to journald
 (`journalctl -u p1-meter-update`).
 
