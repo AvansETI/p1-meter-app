@@ -11,7 +11,10 @@ import { InfluxDataSource } from './data/influx';
 import type { HouseholdDataSource } from './data/source';
 import { loggerOptions } from './logging';
 import { healthRoutes } from './routes/health';
+import { liveRoutes } from './routes/live';
 import { sessionRoutes } from './routes/session';
+import { LivePoller } from './live/poller';
+import { LiveService } from './live/service';
 import { AttemptCounter, SessionStore } from './sessions';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -28,6 +31,9 @@ function trustProxy(
 
 export interface ServerDeps {
   source?: HouseholdDataSource;
+  /** Overrides for tests. */
+  pollIntervalMs?: number;
+  heartbeatMs?: number;
 }
 
 function createSource(config: Config): HouseholdDataSource {
@@ -78,12 +84,25 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
       Object.assign(new Error('rate_limited'), { statusCode: context.statusCode }),
   });
 
+  const sessions = new SessionStore(config.SESSION_TTL_HOURS * HOUR_MS);
+  const capabilities = new CapabilityService(source);
+  const live = new LiveService(source);
+  const poller = new LivePoller(source, live, app.log, deps.pollIntervalMs);
+  app.addHook('onClose', () => poller.stop());
+
   await app.register(
     async (api) => {
       await api.register(healthRoutes, { source });
+      await api.register(liveRoutes, {
+        sessions,
+        capabilities,
+        live,
+        poller,
+        heartbeatMs: deps.heartbeatMs,
+      });
       await api.register(sessionRoutes, {
-        sessions: new SessionStore(config.SESSION_TTL_HOURS * HOUR_MS),
-        capabilities: new CapabilityService(source),
+        sessions,
+        capabilities,
         failedLookups: new AttemptCounter(HOUR_MS),
         dailyAttempts: new AttemptCounter(24 * HOUR_MS),
         limits: {
