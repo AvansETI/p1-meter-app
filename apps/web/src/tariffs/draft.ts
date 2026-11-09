@@ -6,6 +6,7 @@ import { TariffPeriodSchema, type TariffPeriod } from '@p1/shared';
  */
 export interface PeriodDraft {
   validFrom: string;
+  name: string;
   electricityType: 'single' | 'double' | 'dynamic';
   perKwh: string;
   normalPerKwh: string;
@@ -28,6 +29,7 @@ export interface PeriodDraft {
 
 export const emptyDraft = (validFrom: string, withGas: boolean): PeriodDraft => ({
   validFrom,
+  name: '',
   electricityType: 'single',
   perKwh: '',
   normalPerKwh: '',
@@ -62,6 +64,7 @@ export function toDraft(period: TariffPeriod): PeriodDraft {
   const g = period.gas;
   return {
     validFrom: period.validFrom,
+    name: period.name ?? '',
     electricityType: e.type,
     perKwh: e.type === 'single' ? show(e.perKwh) : '',
     normalPerKwh: e.type === 'double' ? show(e.normalPerKwh) : '',
@@ -85,7 +88,7 @@ export function toDraft(period: TariffPeriod): PeriodDraft {
 
 export type DraftField = keyof PeriodDraft;
 /** Fields typed as amounts (everything except the date and the type choices). */
-export type AmountField = Exclude<DraftField, 'validFrom' | 'electricityType' | 'gasType'>;
+export type AmountField = Exclude<DraftField, 'validFrom' | 'name' | 'electricityType' | 'gasType'>;
 
 /** Converts and validates; returns the period or the fields that are wrong. */
 export function fromDraft(
@@ -120,6 +123,7 @@ export function fromDraft(
         : undefined;
   const candidate = {
     validFrom: draft.validFrom,
+    ...(draft.name.trim() !== '' && { name: draft.name.trim() }),
     electricity,
     export: {
       compensationPerKwh: n(draft.compensationPerKwh),
@@ -141,6 +145,7 @@ export function fromDraft(
   for (const issue of parsed.error.issues) {
     const [group, key] = issue.path.map(String);
     if (group === 'validFrom') fields.add('validFrom');
+    else if (group === 'name') fields.add('name');
     else if (group === 'electricity' && key) fields.add(key as DraftField);
     else if (group === 'export' && key) fields.add(key as DraftField);
     else if (group === 'gas' && key) {

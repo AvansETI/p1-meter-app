@@ -227,7 +227,8 @@
       "gasVatPercent": "Btw",
       "supplierPerMonth": "Vastrecht leverancier per maand",
       "gridPerMonth": "Netbeheerkosten per maand",
-      "taxReductionPerYear": "Vermindering energiebelasting per jaar"
+      "taxReductionPerYear": "Vermindering energiebelasting per jaar",
+      "name": "Naam (optioneel)"
     },
     "validFromHelp": "De datum waarop deze tarieven ingaan.",
     "inclHelp": "Incl. energiebelasting en btw, zoals op je jaarafrekening.",
@@ -243,7 +244,10 @@
     "statementHint": "Bedragen vind je op je contract of jaarafrekening. Gebruik een komma of punt als decimaalteken.",
     "formInvalid": "Controleer de gemarkeerde velden.",
     "invalidAmount": "Vul een geldig bedrag in.",
-    "invalidDate": "Vul een datum in die nog niet in gebruik is."
+    "invalidDate": "Vul een datum in die nog niet in gebruik is.",
+    "namePeriodPlaceholder": "Bijv. Vattenfall vast 2026",
+    "namePeriodHelp": "Om deze periode in de lijst te herkennen.",
+    "fromLower": "vanaf {{date}}"
   },
   "costs": {
     "today": "Kosten vandaag",

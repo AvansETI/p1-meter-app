@@ -105,6 +105,17 @@ export default function PeriodEditor({
         <IonList inset>
           <IonItem>
             <IonInput
+              label={t('tariffs.fields.name')}
+              labelPlacement="stacked"
+              value={draft.name}
+              maxlength={40}
+              placeholder={t('tariffs.namePeriodPlaceholder')}
+              helperText={t('tariffs.namePeriodHelp')}
+              onIonInput={(event) => set('name', String(event.detail.value ?? ''))}
+            />
+          </IonItem>
+          <IonItem>
+            <IonInput
               label={t('tariffs.fields.validFrom')}
               labelPlacement="stacked"
               type="date"

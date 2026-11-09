@@ -122,3 +122,15 @@ describe('PeriodEditor', () => {
     expect(screen.queryByText('Teruglevering')).toBeNull();
   });
 });
+
+describe('TariffsPage period names', () => {
+  it('uses the name as the title of a period', async () => {
+    setup({
+      profiles: { own: { periods: [{ ...period, name: 'Vattenfall vast' }] } },
+      version: 1,
+      updatedAt: '2026-11-09T10:00:00Z',
+    });
+    expect(await screen.findByText('Vattenfall vast')).toBeInTheDocument();
+    expect(screen.getByText(/vanaf 1 januari 2026 · Enkel tarief/)).toBeInTheDocument();
+  });
+});
