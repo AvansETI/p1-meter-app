@@ -374,7 +374,15 @@ ion-menu.app-side-menu ion-item.selected {
   gap: 20px;
   margin: 4px 0;
 }
-.about__partners .brand-logo img {
+.about__partners {
+  padding: 8px 12px;
+  border-radius: var(--app-radius);
+}
+.ion-palette-dark .about__partners {
+  background: #ffffff;
+}
+.about__partners img {
+  display: block;
   height: 24px;
   width: auto;
 }

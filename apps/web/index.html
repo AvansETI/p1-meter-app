@@ -99,24 +99,21 @@
           transform: scaleX(0);
         }
       }
-      /* Partner logos: colour versions in light, white versions in dark (unmodified files). */
+      /* Partner logos always in their own colours; on a light plate in the dark theme. */
       .splash__co {
         display: flex;
         align-items: center;
         gap: 28px;
-        opacity: 0.85;
+        padding: 10px 16px;
+        border-radius: 8px;
+      }
+      .ion-palette-dark .splash__co {
+        background: #ffffff;
       }
       .splash__partner {
         display: block;
         height: 28px;
         width: auto;
-      }
-      .splash__partner--dark,
-      .ion-palette-dark .splash__partner--light {
-        display: none;
-      }
-      .ion-palette-dark .splash__partner--dark {
-        display: block;
       }
       /* Logo intro: the green strokes fly in along their own direction, letters fade in. */
       .splash__ink,
@@ -213,14 +210,8 @@
         <div class="splash__progress" role="progressbar" aria-label="Laden"></div>
       </div>
       <div class="splash__co">
-        <img class="splash__partner splash__partner--light" src="/brand/avans-logo.svg" alt="" />
-        <img
-          class="splash__partner splash__partner--dark"
-          src="/brand/avans-logo-white.svg"
-          alt=""
-        />
-        <img class="splash__partner splash__partner--light" src="/brand/hz-logo.svg" alt="" />
-        <img class="splash__partner splash__partner--dark" src="/brand/hz-logo-white.png" alt="" />
+        <img class="splash__partner" src="/brand/avans-logo.svg" alt="" />
+        <img class="splash__partner" src="/brand/hz-logo.svg" alt="" />
       </div>
     </div>
     <div id="root"></div>
