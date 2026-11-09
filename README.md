@@ -56,6 +56,11 @@ pnpm build && pnpm --filter @p1/web preview
 
 Then open <http://localhost:4173> locally and use the browser's install option or Lighthouse.
 
+## Deployment
+
+Merging into `main` deploys automatically to https://p1-meter.sendlab.nl; see the
+[operations runbook](docs/operations.md).
+
 ## Commits
 
 Conventional Commits with an issue reference, enforced by a commit-msg hook:

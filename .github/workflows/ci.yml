@@ -1,4 +1,7 @@
-# Lint, typecheck, test and build. The job name `ci` is the status check required on main.
+# Lint, typecheck, test, build and package. The job name `ci` is the status check required on
+# main. Every push builds and verifies the deploy package; pushes to main also publish it to the
+# rolling "main-latest" release, which the production server installs automatically
+# (docs/design/2026-11-09-deployment.md).
 # Actions are pinned by commit SHA; the version is in the trailing comment.
 name: CI
 
@@ -13,7 +16,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a run on main halfway through publishing.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   ci:
@@ -39,3 +43,40 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      - run: shellcheck scripts/deploy/*.sh scripts/deploy/p1-meter-update
+
+      - name: Package and verify with the server's update script
+        run: |
+          scripts/deploy/package.sh out
+          scripts/deploy/p1-meter-update --dry-run --manifest out/manifest.json \
+            --package "out/$(jq -r .file out/manifest.json)"
+
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package
+          path: |
+            out/manifest.json
+            out/p1-meter-app-*.tar.gz
+          retention-days: 7
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: package
+          path: out
+
+      - run: scripts/deploy/publish.sh out
+        env:
+          GH_TOKEN: ${{ github.token }}

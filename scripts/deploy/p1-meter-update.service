@@ -1,0 +1,9 @@
+# Installs the newest build of main when there is one (docs/design/2026-11-09-deployment.md §4.4)
+[Unit]
+Description=MNEXT Energiemeter update
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/p1-meter-update
