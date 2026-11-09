@@ -175,7 +175,8 @@ from(bucket: ${literal(this.options.bucket)})
   async ping(): Promise<boolean> {
     try {
       const res = await fetch(new URL('/ping', this.options.url), {
-        signal: AbortSignal.timeout(this.options.timeoutMs),
+        // A ping is a quick reachability check; do not wait the full query timeout.
+        signal: AbortSignal.timeout(Math.min(this.options.timeoutMs, 3000)),
       });
       return res.ok;
     } catch {

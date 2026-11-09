@@ -10,7 +10,8 @@ export const HealthResponseSchema = z.object({
   status: z.literal('ok'),
   version: z.string(),
   uptimeSec: z.number(),
-  influx: z.enum(['ok', 'unavailable']).optional(),
+  /** Last known InfluxDB status; 'unknown' until the first background check finished. */
+  influx: z.enum(['ok', 'unavailable', 'unknown']).optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
