@@ -9,6 +9,7 @@ import {
   IonTabs,
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route } from 'react-router-dom';
 import SideMenu from './components/SideMenu';
@@ -72,12 +73,18 @@ function Shell() {
   );
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
+});
+
 export default function App() {
   return (
-    <SettingsProvider>
-      <SessionProvider>
-        <Shell />
-      </SessionProvider>
-    </SettingsProvider>
+    <QueryClientProvider client={queryClient}>
+      <SettingsProvider>
+        <SessionProvider>
+          <Shell />
+        </SessionProvider>
+      </SettingsProvider>
+    </QueryClientProvider>
   );
 }
