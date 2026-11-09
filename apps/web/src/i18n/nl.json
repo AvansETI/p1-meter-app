@@ -26,7 +26,8 @@
       "not_found": "Voor dit EMON ID zijn geen gegevens gevonden. Controleer het ID; stuurt je meter net pas data, probeer het dan later opnieuw.",
       "rate_limited": "Te veel pogingen. Probeer het over een uur opnieuw.",
       "session_expired": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw.",
-      "upstream_unavailable": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw."
+      "upstream_unavailable": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw.",
+      "conflict": "Iemand anders heeft dit intussen gewijzigd. Laad opnieuw en probeer het nog eens."
     }
   },
   "live": {

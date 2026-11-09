@@ -48,6 +48,8 @@ export const API_ERRORS = [
   'rate_limited',
   'session_expired',
   'upstream_unavailable',
+  /** The data was changed by someone else since it was loaded. */
+  'conflict',
 ] as const;
 export type ApiErrorCode = (typeof API_ERRORS)[number];
 

@@ -13,7 +13,10 @@ import { loggerOptions } from './logging';
 import { healthRoutes } from './routes/health';
 import { HistoryService } from './history/service';
 import { historyRoutes } from './routes/history';
+import { backupDaily, openDatabase } from './db/database';
+import { TariffRepository } from './db/tariffs';
 import { liveRoutes } from './routes/live';
+import { tariffRoutes } from './routes/tariffs';
 import { PriceJob, httpFetchers } from './prices/job';
 import { InfluxPriceStore } from './prices/store';
 import { sessionRoutes } from './routes/session';
@@ -94,6 +97,25 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   const poller = new LivePoller(source, live, app.log, deps.pollIntervalMs);
   app.addHook('onClose', () => poller.stop());
 
+  // App database (tariffs, #36): in memory for tests, a file in DATA_DIR otherwise.
+  const db = openDatabase(config.NODE_ENV === 'test' ? ':memory:' : config.DATA_DIR);
+  const tariffs = new TariffRepository(db);
+  if (config.NODE_ENV !== 'test') {
+    const backup = () => {
+      try {
+        const file = backupDaily(db, config.DATA_DIR);
+        if (file) app.log.info({ file }, 'database backup written');
+      } catch (error) {
+        app.log.error({ err: error }, 'database backup failed');
+      }
+    };
+    backup();
+    const backupTimer = setInterval(backup, 60 * 60_000);
+    backupTimer.unref();
+    app.addHook('onClose', () => clearInterval(backupTimer));
+  }
+  app.addHook('onClose', () => db.close());
+
   // Day-ahead price ingestion (costs phase 1, #33); not in tests.
   const { INFLUX_URL, INFLUX_ORG, PRICES_INFLUX_BUCKET, PRICES_INFLUX_TOKEN, ENTSOE_TOKEN } =
     config;
@@ -124,6 +146,13 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   await app.register(
     async (api) => {
       await api.register(healthRoutes, { source });
+      await api.register(tariffRoutes, {
+        sessions,
+        capabilities,
+        tariffs,
+        writes: new AttemptCounter(HOUR_MS),
+        writesPerHour: 10,
+      });
       await api.register(historyRoutes, {
         sessions,
         capabilities,
