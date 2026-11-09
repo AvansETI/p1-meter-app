@@ -1,15 +1,54 @@
+import { z } from 'zod';
+
 /** Base path of all API routes. */
 export const API_BASE = '/api/v1';
 
-/** Response body of `GET /api/v1/health`. */
-export interface HealthResponse {
-  status: 'ok';
-  version: string;
-  uptimeSec: number;
-}
+/** Header carrying the session ID on authenticated requests. */
+export const SESSION_HEADER = 'x-session';
+
+export const HealthResponseSchema = z.object({
+  status: z.literal('ok'),
+  version: z.string(),
+  uptimeSec: z.number(),
+  influx: z.enum(['ok', 'unavailable']).optional(),
+});
+export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
 export function isHealthResponse(value: unknown): value is HealthResponse {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return v.status === 'ok' && typeof v.version === 'string' && typeof v.uptimeSec === 'number';
+  return HealthResponseSchema.safeParse(value).success;
 }
+
+export const SessionRequestSchema = z.object({
+  emonId: z.string().max(64),
+});
+export type SessionRequest = z.infer<typeof SessionRequestSchema>;
+
+export const CapabilitiesSchema = z.object({
+  hasGas: z.boolean(),
+  hasExport: z.boolean(),
+  /** Influx field that holds the import (grid → home) counter for this household. */
+  importCounter: z.enum(['energy_consumed', 'energy_produced']),
+  counterOrientation: z.enum(['as-named', 'swapped', 'unknown']),
+  /** ISO timestamp of the most recent data point. */
+  lastSeen: z.string(),
+});
+export type Capabilities = z.infer<typeof CapabilitiesSchema>;
+
+export const SessionResponseSchema = z.object({
+  sessionId: z.string(),
+  signature: z.string(),
+  capabilities: CapabilitiesSchema,
+});
+export type SessionResponse = z.infer<typeof SessionResponseSchema>;
+
+export const API_ERRORS = [
+  'invalid_format',
+  'not_found',
+  'rate_limited',
+  'session_expired',
+  'upstream_unavailable',
+] as const;
+export type ApiErrorCode = (typeof API_ERRORS)[number];
+
+export const ErrorResponseSchema = z.object({ error: z.enum(API_ERRORS) });
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
