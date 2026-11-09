@@ -1,7 +1,7 @@
 # Architecture & design
 
 - Issue: #1
-- Status: **draft — awaiting approval**
+- Status: **approved** (2026-11-09)
 - Date: 2026-11-09
 
 ## 1. Purpose and scope
