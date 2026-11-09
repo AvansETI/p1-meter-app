@@ -20,6 +20,7 @@ import {
 import { formatDynamicPart, type Capabilities } from '@p1/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ToolbarLogo from '../components/ToolbarLogo';
 import BrandLogo from '../components/BrandLogo';
 import EmonIdForm from '../components/EmonIdForm';
 import InstallSheet from '../install/InstallSheet';
@@ -83,6 +84,7 @@ export default function SettingsPage() {
       <IonHeader>
         <IonToolbar>
           <IonTitle>{t('settings.title')}</IonTitle>
+          <ToolbarLogo />
         </IonToolbar>
       </IonHeader>
       <IonContent>
