@@ -1,7 +1,7 @@
 # Install hints for the PWA
 
 - Issue: #7
-- Status: **draft — awaiting approval**
+- Status: **approved** (2026-11-09)
 - Date: 2026-11-09
 - Builds on: [monorepo scaffolding](2026-11-09-monorepo-scaffolding.md) §7 (PWA),
   [visual design](2026-11-09-visual-design.md)
