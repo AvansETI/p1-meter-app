@@ -17,6 +17,15 @@ const MIGRATIONS: string[] = [
      created_at TEXT NOT NULL,
      PRIMARY KEY (signature, version)
    );`,
+  // Computed daily costs per tariff profile (costs phase 3, #42).
+  `CREATE TABLE daily_costs (
+     signature      TEXT NOT NULL,
+     profile        TEXT NOT NULL,
+     day            TEXT NOT NULL,
+     tariff_version INTEGER NOT NULL,
+     json           TEXT NOT NULL,
+     PRIMARY KEY (signature, profile, day)
+   );`,
 ];
 
 /** Opens (and migrates) the app database in `dir` (docs/design/2026-11-09-costs.md §5). */

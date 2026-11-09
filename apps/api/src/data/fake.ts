@@ -16,6 +16,8 @@ export interface FakeHousehold {
   deltas?: CounterDeltas;
   recent?: PowerWindow[];
   gas?: GasData;
+  /** Last counter values per quarter start (ms) for quarterCounters. */
+  quarters?: Map<number, Partial<Record<CounterField, number>>>;
   /** Counter values per instant (ms) for countersAt. */
   counters?: Map<number, Partial<Record<CounterField, number>>>;
   firstPoint?: Date;
@@ -80,6 +82,25 @@ export class FakeDataSource implements HouseholdDataSource {
     return this.run(() =>
       instants.map((instant) => this.households[signature]?.counters?.get(instant.getTime()) ?? {}),
     );
+  }
+
+  quarterCounters(
+    signature: string,
+    fields: CounterField[],
+    from: Date,
+    to: Date,
+  ): Promise<Map<CounterField, Map<number, number>>> {
+    return this.run(() => {
+      const result = new Map<CounterField, Map<number, number>>(fields.map((f) => [f, new Map()]));
+      for (const [time, values] of this.households[signature]?.quarters ?? []) {
+        if (time < from.getTime() || time >= to.getTime()) continue;
+        for (const field of fields) {
+          const value = values[field];
+          if (value !== undefined) result.get(field)!.set(time, value);
+        }
+      }
+      return result;
+    });
   }
 
   firstPoint(signature: string): Promise<Date | null> {
