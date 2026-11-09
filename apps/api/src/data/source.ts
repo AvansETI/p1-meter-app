@@ -20,6 +20,14 @@ export interface PowerWindow {
   exportKw: number | null;
 }
 
+/** Gas counter per hour and the moments it increased (for the hourly-update check). */
+export interface GasData {
+  /** Start of hour (ms) → last `gas_delivered` value in that hour. */
+  lastPerHour: Map<number, number>;
+  /** Times (ms) at which the counter increased. */
+  increaseTimes: number[];
+}
+
 /** Read access to household data; InfluxDB in production, a fake in tests. */
 export interface HouseholdDataSource {
   /** Capabilities of a household, or `null` when it has no data in the last 30 days. */
@@ -30,6 +38,8 @@ export interface HouseholdDataSource {
   lastPoint(signature: string): Promise<PowerPoint | null>;
   /** Increase of the given counters since `since`. */
   counterDeltas(signature: string, since: Date, fields: CounterField[]): Promise<CounterDeltas>;
+  /** Gas counter per hour since `from`, and its increase times. */
+  gasHourly(signature: string, from: Date): Promise<GasData>;
   /** 5-minute mean power over the last 24 hours. */
   recentPower(signature: string): Promise<PowerWindow[]>;
   ping(): Promise<boolean>;

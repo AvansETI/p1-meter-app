@@ -55,3 +55,22 @@ export const RecentSeriesSchema = z.object({
   points: z.array(z.object({ t: z.string(), netKw: z.number().nullable() })),
 });
 export type RecentSeries = z.infer<typeof RecentSeriesSchema>;
+
+export const GasHourSchema = z.object({
+  /** ISO start of the hour (whole hours coincide in UTC and Europe/Amsterdam). */
+  start: z.string(),
+  /** Gas used in this hour (m³); null when there is no data. */
+  m3: z.number().nullable(),
+  /** The value covers a gap: everything since `gapStart`, not broken down per hour. */
+  spansGap: z.literal(true).optional(),
+  gapStart: z.string().optional(),
+});
+export type GasHour = z.infer<typeof GasHourSchema>;
+
+export const GasSeriesSchema = z.object({
+  /** The meter reports gas once per hour (DSMR ≤ 4); use shows up an hour later. */
+  hourlyUpdates: z.boolean(),
+  /** 24 hours, oldest first; the last one is the current hour. */
+  hours: z.array(GasHourSchema),
+});
+export type GasSeries = z.infer<typeof GasSeriesSchema>;

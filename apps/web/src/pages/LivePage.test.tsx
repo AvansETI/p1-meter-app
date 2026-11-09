@@ -9,6 +9,9 @@ import LivePage from './LivePage';
 vi.mock('../live/RecentChart', () => ({
   default: () => <div data-testid="recent-chart" />,
 }));
+vi.mock('../live/GasChart', () => ({
+  default: () => <div data-testid="gas-chart" />,
+}));
 
 const snapshot = (overrides: Partial<LiveSnapshot> = {}): LiveSnapshot => ({
   time: new Date().toISOString(),
@@ -35,6 +38,7 @@ function setup(options: { hasExport: boolean; hasGas?: boolean }) {
       },
     },
     '/api/v1/live/recent': { status: 200, body: { stepSec: 300, points: [] } },
+    '/api/v1/live/gas': { status: 200, body: { hourlyUpdates: false, hours: [] } },
   });
   renderWithProviders(<LivePage />, { emonId: SIGNATURE });
 }
@@ -96,6 +100,19 @@ describe('LivePage', () => {
     expect(screen.queryByText('Terug')).toBeNull();
     expect(screen.queryByText('Netto')).toBeNull();
     expect(screen.queryByText('Gas')).toBeNull();
+  });
+
+  it('shows the hourly gas chart only for households with gas', async () => {
+    setup({ hasExport: false, hasGas: true });
+    expect(await screen.findByTestId('gas-chart')).toBeInTheDocument();
+    expect(screen.getByText('Gas per uur')).toBeInTheDocument();
+  });
+
+  it('has no gas chart without gas', async () => {
+    setup({ hasExport: false, hasGas: false });
+    await screen.findByText('Afname');
+    expect(screen.queryByText('Gas per uur')).toBeNull();
+    expect(screen.queryByTestId('gas-chart')).toBeNull();
   });
 
   it('shows the offline notice when the last point is older than an hour', async () => {

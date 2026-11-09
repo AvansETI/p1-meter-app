@@ -2,6 +2,7 @@ import {
   liveStatus,
   netKw,
   type Capabilities,
+  type GasSeries,
   type LiveSnapshot,
   type RecentSeries,
   type TodayTotals,
@@ -9,6 +10,7 @@ import {
 import { LRUCache } from 'lru-cache';
 import type { CounterField, HouseholdDataSource, PowerPoint } from '../data/source';
 import { localMidnight } from '../time';
+import { HOUR_MS, detectHourlyUpdates, hourStart, hourlyGas } from './gas';
 
 const MINUTE_MS = 60_000;
 const round = (value: number, decimals: number) => Number(value.toFixed(decimals));
@@ -41,6 +43,7 @@ export class LiveService {
   });
   private readonly today = new LRUCache<string, TodayTotals>({ max: 10_000, ttl: MINUTE_MS });
   private readonly recent = new LRUCache<string, RecentSeries>({ max: 10_000, ttl: MINUTE_MS });
+  private readonly gas = new LRUCache<string, GasSeries>({ max: 10_000, ttl: MINUTE_MS });
 
   constructor(private readonly source: HouseholdDataSource) {}
 
@@ -93,6 +96,21 @@ export class LiveService {
 
     this.today.set(signature, totals);
     return totals;
+  }
+
+  /** Gas use per hour for the last 24 hours (docs/design/2026-11-09-gas-chart.md). */
+  async gasSeries(signature: string, now = Date.now()): Promise<GasSeries> {
+    const cached = this.gas.get(signature);
+    if (cached) return cached;
+    // One extra hour before the first displayed hour as baseline.
+    const from = new Date(hourStart(now) - 24 * HOUR_MS);
+    const data = await this.source.gasHourly(signature, from);
+    const series: GasSeries = {
+      hourlyUpdates: detectHourlyUpdates(data.increaseTimes),
+      hours: hourlyGas(data.lastPerHour, now),
+    };
+    this.gas.set(signature, series);
+    return series;
   }
 
   async recentSeries(signature: string): Promise<RecentSeries> {

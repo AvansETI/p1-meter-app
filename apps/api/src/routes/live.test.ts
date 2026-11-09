@@ -68,6 +68,19 @@ describe('live routes', () => {
   });
 });
 
+describe('GET /api/v1/live/gas', () => {
+  it('returns 24 hourly values for a household with gas', async () => {
+    const { app, sessionId } = await setup();
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/v1/live/gas',
+      headers: { 'x-session': sessionId },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json<{ hours: unknown[]; hourlyUpdates: boolean }>().hours).toHaveLength(24);
+  });
+});
+
 describe('GET /api/v1/live/stream', () => {
   it('streams server-sent events with a first snapshot and heartbeats', async () => {
     const { app, sessionId } = await setup();

@@ -28,7 +28,8 @@ From the LXC the public InfluxDB name is not reachable; use the internal address
 (`INFLUX_URL=http://192.168.5.30:8086`). **The env file is read only at start**: after editing it,
 run `sudo systemctl restart p1-meter-app`.
 
-The install script is idempotent; rerun it to update the systemd units or the update script.
+The install script is idempotent. It is only needed for the first setup: systemd units and the
+update script are updated automatically with every deploy (logged as "updated …").
 It never overwrites `/etc/p1-meter-app/env`.
 
 ## Everyday commands
@@ -45,7 +46,7 @@ It never overwrites `/etc/p1-meter-app/env`.
 | Pause automatic updates      | `sudo systemctl stop p1-meter-update.timer` (`start` again) |
 | Restart the app              | `sudo systemctl restart p1-meter-app`                       |
 | After changing the env file  | `sudo systemctl restart p1-meter-app` (read only at start)  |
-| Update the systemd units     | rerun `sudo bash install.sh` (the token is kept)            |
+| Update the systemd units     | automatic with every deploy (`install.sh` only for setup)   |
 
 The last three releases are kept in `/opt/p1-meter-app/releases/`.
 

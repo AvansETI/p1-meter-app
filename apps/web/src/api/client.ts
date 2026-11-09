@@ -1,6 +1,7 @@
 import {
   API_BASE,
   CapabilitiesSchema,
+  GasSeriesSchema,
   LiveSnapshotSchema,
   RecentSeriesSchema,
   TodayTotalsSchema,
@@ -9,6 +10,7 @@ import {
   SessionResponseSchema,
   type ApiErrorCode,
   type Capabilities,
+  type GasSeries,
   type LiveSnapshot,
   type RecentSeries,
   type TodayTotals,
@@ -83,6 +85,10 @@ export class ApiClient {
 
   getToday(): Promise<ApiResult<TodayTotals>> {
     return this.authorized('/live/today', {}, TodayTotalsSchema);
+  }
+
+  getGas(): Promise<ApiResult<GasSeries>> {
+    return this.authorized('/live/gas', {}, GasSeriesSchema);
   }
 
   getRecent(): Promise<ApiResult<RecentSeries>> {

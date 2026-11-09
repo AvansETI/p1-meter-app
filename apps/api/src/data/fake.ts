@@ -3,6 +3,7 @@ import {
   UpstreamError,
   type CounterDeltas,
   type CounterField,
+  type GasData,
   type HouseholdDataSource,
   type PowerPoint,
   type PowerWindow,
@@ -14,6 +15,7 @@ export interface FakeHousehold {
   lastPoint?: PowerPoint;
   deltas?: CounterDeltas;
   recent?: PowerWindow[];
+  gas?: GasData;
 }
 
 /** In-memory data source for tests and UI work without InfluxDB. */
@@ -65,6 +67,12 @@ export class FakeDataSource implements HouseholdDataSource {
       const deltas = this.households[signature]?.deltas ?? {};
       return Object.fromEntries(fields.flatMap((f) => (f in deltas ? [[f, deltas[f]]] : [])));
     });
+  }
+
+  gasHourly(signature: string): Promise<GasData> {
+    return this.run(
+      () => this.households[signature]?.gas ?? { lastPerHour: new Map(), increaseTimes: [] },
+    );
   }
 
   recentPower(signature: string): Promise<PowerWindow[]> {
