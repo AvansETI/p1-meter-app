@@ -61,11 +61,25 @@ const hourLabel = new Intl.DateTimeFormat('nl-NL', {
   minute: '2-digit',
   timeZone: TIME_ZONE,
 });
-const weekdayLabel = new Intl.DateTimeFormat('nl-NL', {
+const shortMonth = new Intl.DateTimeFormat('nl-NL', { month: 'short', timeZone: TIME_ZONE });
+const weekdayShort = new Intl.DateTimeFormat('nl-NL', { weekday: 'short', timeZone: TIME_ZONE });
+const dayNumber = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', timeZone: TIME_ZONE });
+const longDay = new Intl.DateTimeFormat('nl-NL', {
   weekday: 'short',
   day: 'numeric',
+  month: 'long',
+  year: 'numeric',
   timeZone: TIME_ZONE,
 });
+const monthYear = new Intl.DateTimeFormat('nl-NL', {
+  month: 'long',
+  year: 'numeric',
+  timeZone: TIME_ZONE,
+});
+const monthOnly = new Intl.DateTimeFormat('nl-NL', { month: 'long', timeZone: TIME_ZONE });
+const yearOnly = new Intl.DateTimeFormat('nl-NL', { year: 'numeric', timeZone: TIME_ZONE });
+const noDots = (value: string) => value.replace(/\./g, '');
+
 const dayOfMonthLabel = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', timeZone: TIME_ZONE });
 const monthLabel = new Intl.DateTimeFormat('nl-NL', { month: 'short', timeZone: TIME_ZONE });
 const fullDateLabel = new Intl.DateTimeFormat('nl-NL', {
@@ -82,7 +96,8 @@ export function bucketLabel(period: Period, startIso: string): string {
     case 'day':
       return hourLabel.format(date);
     case 'week':
-      return weekdayLabel.format(date).replace(/\./g, '');
+      // Two lines so the month is readable: "ma" / "9 nov".
+      return `${noDots(weekdayShort.format(date))}\n${dayNumber.format(date)} ${noDots(shortMonth.format(date))}`;
     case 'month':
       return dayOfMonthLabel.format(date);
     case 'year':
@@ -101,3 +116,29 @@ export function bucketTitle(period: Period, startIso: string, nextStartIso?: str
 }
 
 export const toParam = formatPlainDate;
+
+/**
+ * Line under the x-axis that says which date, month or year the buckets belong to:
+ * "ma 9 november 2026", "november 2026" (or "oktober – november 2026" for a week across two
+ * months), "2026".
+ */
+export function axisTitle(period: Period, bucketStarts: string[]): string {
+  const first = bucketStarts[0];
+  if (!first) return '';
+  const start = new Date(first);
+  switch (period) {
+    case 'day':
+      return noDots(longDay.format(start));
+    case 'month':
+      return monthYear.format(start);
+    case 'year':
+      return yearOnly.format(start);
+    case 'week': {
+      const end = new Date(bucketStarts.at(-1) ?? first);
+      if (monthYear.format(start) === monthYear.format(end)) return monthYear.format(start);
+      return yearOnly.format(start) === yearOnly.format(end)
+        ? `${monthOnly.format(start)} – ${monthYear.format(end)}`
+        : `${monthYear.format(start)} – ${monthYear.format(end)}`;
+    }
+  }
+}

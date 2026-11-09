@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKwh, formatM3, formatMoment } from '../format';
 import { css, useEChart } from '../live/useEChart';
-import { bucketLabel, bucketTitle } from './dates';
+import { axisTitle, bucketLabel, bucketTitle } from './dates';
 import {
   energyChartOption,
   gasHistoryChartOption,
@@ -27,6 +27,7 @@ function useText(history: History): HistoryChartText {
   const starts = history.buckets.map((b) => b.start);
   return {
     labels: starts.map((s) => bucketLabel(history.period, s)),
+    axisName: axisTitle(history.period, starts),
     titles: starts.map((s, i) => bucketTitle(history.period, s, starts[i + 1])),
     formatKwh,
     formatM3,

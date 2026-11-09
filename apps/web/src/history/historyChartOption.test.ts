@@ -39,7 +39,8 @@ const history = (n: number, withGap: boolean): History => ({
 });
 
 const text = (n: number) => ({
-  labels: Array.from({ length: n }, (_, i) => `d${i}`),
+  labels: Array.from({ length: n }, (_, i) => `ma\n${i} nov`),
+  axisName: 'november 2026',
   titles: Array.from({ length: n }, (_, i) => `day ${i}`),
   formatKwh: (v: number) => v.toFixed(1),
   formatM3: (v: number) => v.toFixed(2),

@@ -14,6 +14,8 @@ export interface HistoryChartTheme {
 
 export interface HistoryChartText {
   labels: string[];
+  /** Date, month or year the buckets belong to, shown under the x-axis. */
+  axisName: string;
   titles: string[];
   formatKwh: (value: number) => string;
   formatM3: (value: number) => string;
@@ -32,12 +34,22 @@ const GAP_STYLE = (color: string) => ({
 function base(theme: HistoryChartTheme, text: HistoryChartText) {
   return {
     animation: false,
-    grid: { left: 44, right: 8, top: 12, bottom: 24 },
+    // Room for (two-line) labels plus the axis title below them.
+    grid: {
+      left: 44,
+      right: 8,
+      top: 12,
+      bottom: text.labels.some((l) => l.includes('\n')) ? 64 : 48,
+    },
     textStyle: { fontFamily: theme.fontFamily },
     xAxis: {
       type: 'category',
       data: text.labels,
-      axisLabel: { color: theme.mutedColor, hideOverlap: true },
+      name: text.axisName,
+      nameLocation: 'middle',
+      nameGap: text.labels.some((l) => l.includes('\n')) ? 42 : 28,
+      nameTextStyle: { color: theme.mutedColor, fontWeight: 600 },
+      axisLabel: { color: theme.mutedColor, hideOverlap: true, lineHeight: 14 },
       axisTick: { show: false },
       axisLine: { lineStyle: { color: theme.mutedColor, opacity: 0.4 } },
     },
