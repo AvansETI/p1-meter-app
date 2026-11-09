@@ -5,6 +5,7 @@ import {
   UpstreamError,
   type CounterDeltas,
   type CounterField,
+  type GasData,
   type HouseholdDataSource,
   type PowerPoint,
   type PowerWindow,
@@ -174,6 +175,32 @@ from(bucket: ${literal(this.options.bucket)})
       }
     }
     return deltas;
+  }
+
+  async gasHourly(signature: string, from: Date): Promise<GasData> {
+    assertNormalized(signature);
+    const rows = await this.query(`
+gas = from(bucket: ${literal(this.options.bucket)})
+  |> range(start: ${from.toISOString()})
+  |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
+  |> filter(fn: (r) => r._field == "gas_delivered")
+gas
+  |> aggregateWindow(every: 1h, fn: last, createEmpty: false, timeSrc: "_start")
+  |> yield(name: "hourly")
+gas
+  |> difference()
+  |> filter(fn: (r) => r._value > 0.0)
+  |> keep(columns: ["_time", "_value"])
+  |> yield(name: "increases")`);
+    const lastPerHour = new Map<number, number>();
+    const increaseTimes: number[] = [];
+    for (const row of rows) {
+      const value = num(row._value);
+      if (typeof row._time !== 'string' || value === null) continue;
+      if (row.result === 'hourly') lastPerHour.set(Date.parse(row._time), value);
+      if (row.result === 'increases') increaseTimes.push(Date.parse(row._time));
+    }
+    return { lastPerHour, increaseTimes };
   }
 
   async recentPower(signature: string): Promise<PowerWindow[]> {
