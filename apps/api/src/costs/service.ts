@@ -1,4 +1,5 @@
 import {
+  activeCompare,
   addDays,
   formatPlainDate,
   type Capabilities,
@@ -83,8 +84,9 @@ export class CostService {
 
   /** Whether the household has any tariff period (otherwise the app shows no costs). */
   configured(signature: string): boolean {
-    const { own, compare } = this.tariffs.get(signature).profiles;
-    return own.periods.length > 0 || (compare?.periods.length ?? 0) > 0;
+    const profiles = this.tariffs.get(signature).profiles;
+    const compare = activeCompare(profiles);
+    return profiles.own.periods.length > 0 || (compare?.periods.length ?? 0) > 0;
   }
 
   /**
@@ -120,7 +122,9 @@ export class CostService {
     detail?: PlainDate,
   ): Promise<CostDays> {
     const stored = this.tariffs.get(signature);
-    const { own, compare } = stored.profiles;
+    const own = stored.profiles.own;
+    // A switched-off comparison contract is kept but not computed (#54).
+    const compare = activeCompare(stored.profiles);
     const profiles: Array<[ProfileKey, TariffPeriod[]]> = [['own', own.periods]];
     if (compare) profiles.push(['compare', compare.periods]);
 

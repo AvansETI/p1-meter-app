@@ -592,3 +592,125 @@ ion-menu.app-side-menu ion-item.selected {
   color: var(--app-text-muted);
   font-size: 14px;
 }
+
+/* Hourglass while loading (#52) */
+.hourglass {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hourglass__icon {
+  width: 18px;
+  height: 24px;
+  overflow: visible;
+}
+
+.hourglass__glass {
+  transform-origin: 12px 16px;
+  animation: hourglass-turn 2.4s ease-in-out infinite;
+}
+
+.hourglass__frame,
+.hourglass__outline {
+  fill: none;
+  stroke: var(--ion-text-color);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.hourglass__sand {
+  fill: var(--app-brand-green);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.hourglass__sand--top {
+  animation: hourglass-top 2.4s linear infinite;
+}
+
+.hourglass__sand--bottom {
+  animation: hourglass-bottom 2.4s linear infinite;
+}
+
+.hourglass__stream {
+  stroke: var(--app-brand-green);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 2;
+  animation: hourglass-stream 2.4s linear infinite;
+}
+
+@keyframes hourglass-top {
+  0% {
+    transform: scaleY(1);
+  }
+  80%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes hourglass-bottom {
+  0% {
+    transform: scaleY(0);
+  }
+  80%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes hourglass-stream {
+  0%,
+  78% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  80%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -8;
+  }
+}
+
+/* The glass turns over once the sand has run through; it looks the same upside down. */
+@keyframes hourglass-turn {
+  0%,
+  80% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hourglass__glass,
+  .hourglass__sand,
+  .hourglass__stream {
+    animation: none;
+  }
+  .hourglass__sand--top {
+    transform: scaleY(0.5);
+  }
+  .hourglass__sand--bottom {
+    transform: scaleY(0.5);
+  }
+}
+
+/* History: old figures are dimmed while the next period loads. */
+.history--loading .today-grid,
+.history--loading .cost-summary,
+.history--loading .history-charts {
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+
+.history-loading {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}

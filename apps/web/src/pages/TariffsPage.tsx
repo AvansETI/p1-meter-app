@@ -16,6 +16,7 @@ import {
   IonSpinner,
   IonTitle,
   IonToast,
+  IonToggle,
   IonToolbar,
 } from '@ionic/react';
 import { formatPlainDate, type TariffPeriod, type TariffProfiles } from '@p1/shared';
@@ -62,8 +63,19 @@ function PeriodList({
       {newestFirst.map((period) => (
         <IonItem key={period.validFrom} button detail onClick={() => onEdit(period)}>
           <IonLabel>
-            <h3>{t('tariffs.from', { date: showDate(period.validFrom) })}</h3>
-            <p>{summary(period)}</p>
+            {period.name ? (
+              <>
+                <h3>{period.name}</h3>
+                <p>
+                  {t('tariffs.fromLower', { date: showDate(period.validFrom) })} · {summary(period)}
+                </p>
+              </>
+            ) : (
+              <>
+                <h3>{t('tariffs.from', { date: showDate(period.validFrom) })}</h3>
+                <p>{summary(period)}</p>
+              </>
+            )}
           </IonLabel>
           <IonButton
             slot="end"
@@ -222,6 +234,27 @@ export default function TariffsPage() {
               </IonListHeader>
               {profiles.compare ? (
                 <>
+                  <IonItem>
+                    <IonToggle
+                      checked={profiles.compare.enabled !== false}
+                      onIonChange={(event) =>
+                        profiles.compare &&
+                        store({
+                          ...profiles,
+                          compare: { ...profiles.compare, enabled: event.detail.checked },
+                        })
+                      }
+                    >
+                      {t('tariffs.compareEnabled')}
+                    </IonToggle>
+                  </IonItem>
+                  {profiles.compare.enabled === false && (
+                    <IonItem>
+                      <IonLabel className="ion-text-wrap">
+                        <IonNote>{t('tariffs.compareOffNote')}</IonNote>
+                      </IonLabel>
+                    </IonItem>
+                  )}
                   {section('compare')}
                   <IonItem button detail={false} onClick={() => setNaming(true)}>
                     <IonLabel color="primary">{t('tariffs.rename')}</IonLabel>

@@ -4,6 +4,7 @@ import { emptyDraft, fromDraft, parseAmount, summary, toDraft } from './draft';
 
 const period: TariffPeriod = {
   validFrom: '2026-01-01',
+  name: 'Vattenfall vast',
   electricity: { type: 'double', normalPerKwh: 0.32, offPeakPerKwh: 0.28 },
   export: { compensationPerKwh: 0.05, feePerKwh: 0 },
   gas: { type: 'fixed', perM3: 1.42 },
@@ -28,6 +29,15 @@ describe('draft conversion', () => {
   it('round-trips a period through the form', () => {
     const result = fromDraft(toDraft(period));
     expect(result).toEqual({ ok: true, period });
+  });
+
+  it('leaves out an empty name and rejects one that is too long', () => {
+    const result = fromDraft({ ...toDraft(period), name: '  ' });
+    expect(result.ok && result.period).not.toHaveProperty('name');
+    expect(fromDraft({ ...toDraft(period), name: 'x'.repeat(41) })).toEqual({
+      ok: false,
+      fields: ['name'],
+    });
   });
 
   it('shows amounts with a decimal comma', () => {

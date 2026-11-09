@@ -39,6 +39,8 @@ export const GasTariffSchema = z.discriminatedUnion('type', [
 
 export const TariffPeriodSchema = z.object({
   validFrom: planDate,
+  /** Optional label, e.g. supplier and contract (#53). */
+  name: z.string().trim().min(1).max(40).optional(),
   electricity: ElectricityTariffSchema,
   export: ExportTariffSchema,
   gas: GasTariffSchema.optional(),
@@ -57,7 +59,14 @@ const periods = z
 
 export const TariffProfilesSchema = z.object({
   own: z.object({ periods }),
-  compare: z.object({ name: z.string().trim().min(1).max(40), periods }).optional(),
+  compare: z
+    .object({
+      name: z.string().trim().min(1).max(40),
+      /** False hides the comparison in the app; the contract is kept (#54). Absent = on. */
+      enabled: z.boolean().optional(),
+      periods,
+    })
+    .optional(),
 });
 export type TariffProfiles = z.infer<typeof TariffProfilesSchema>;
 
@@ -79,6 +88,11 @@ export const TariffVersionSchema = z.object({
 export type TariffVersion = z.infer<typeof TariffVersionSchema>;
 
 /** The tariff period that applies on a date (YYYY-MM-DD), or undefined before the first one. */
+/** The comparison contract when it is switched on (#54). */
+export function activeCompare(profiles: TariffProfiles): TariffProfiles['compare'] {
+  return profiles.compare?.enabled === false ? undefined : profiles.compare;
+}
+
 export function periodOn(list: TariffPeriod[], date: string): TariffPeriod | undefined {
   let found: TariffPeriod | undefined;
   for (const period of list) if (period.validFrom <= date) found = period;
