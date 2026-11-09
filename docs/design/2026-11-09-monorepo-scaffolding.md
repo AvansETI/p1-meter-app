@@ -1,7 +1,7 @@
 # Monorepo scaffolding: app shell and PWA
 
 - Issue: #3
-- Status: **draft — awaiting approval**
+- Status: **approved** (2026-11-09)
 - Date: 2026-11-09
 - Builds on: [architecture](2026-11-09-architecture.md), [visual design](2026-11-09-visual-design.md)
 
