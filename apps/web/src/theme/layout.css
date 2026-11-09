@@ -41,3 +41,91 @@ ion-menu.app-side-menu ion-item.selected {
   color: var(--app-text-muted);
   max-width: 60ch;
 }
+
+/* Brand logo: show the white version in the dark theme. */
+.brand-logo {
+  display: inline-block;
+}
+.brand-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.brand-logo__dark,
+.ion-palette-dark .brand-logo__light {
+  display: none;
+}
+.ion-palette-dark .brand-logo__dark {
+  display: block;
+}
+
+/* Welcome screen */
+.welcome {
+  max-width: 440px;
+  margin: 0 auto;
+  padding-top: max(24px, 6vh);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.welcome__logo {
+  width: 96px;
+}
+.welcome__title {
+  margin: 8px 0 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+.welcome__intro {
+  margin: 0 0 12px;
+  color: var(--app-text-muted);
+}
+
+/* EMON ID form */
+.emon-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.emon-form__input {
+  --border-radius: var(--app-radius);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.emon-form__prefix {
+  color: var(--app-text-muted);
+  font-size: 0.85em;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.emon-form__help ion-item {
+  --background: transparent;
+  --padding-start: 0;
+  font-weight: 700;
+}
+
+/* Settings: about block */
+.about {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px 16px 24px;
+}
+.about__logo {
+  width: 72px;
+  margin-bottom: 8px;
+}
+.about__lectorate {
+  font-weight: 800;
+}
+.about p {
+  margin: 0;
+}
+
+.emon-form__error {
+  min-height: 1.2em;
+  margin: 6px 2px 0;
+  color: var(--ion-color-danger);
+  font-size: 14px;
+}

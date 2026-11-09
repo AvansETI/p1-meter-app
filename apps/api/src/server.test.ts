@@ -4,7 +4,16 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { isHealthResponse } from '@p1/shared';
 import { loadConfig } from './config';
+import { FakeDataSource } from './data/fake';
 import { buildServer } from './server';
+
+// Dummy settings: production mode requires them, but tests use a fake data source.
+const influx = {
+  INFLUX_URL: 'https://influx.example.test',
+  INFLUX_ORG: 'org',
+  INFLUX_BUCKET: 'bucket',
+  INFLUX_TOKEN: 'token',
+};
 
 describe('GET /api/v1/health', () => {
   it('returns ok with version and uptime', async () => {
@@ -31,7 +40,10 @@ describe('production static serving', () => {
   });
 
   const build = () =>
-    buildServer(loadConfig({ NODE_ENV: 'production', LOG_LEVEL: 'silent', WEB_DIST: dist }));
+    buildServer(
+      loadConfig({ NODE_ENV: 'production', LOG_LEVEL: 'silent', WEB_DIST: dist, ...influx }),
+      { source: new FakeDataSource() },
+    );
 
   it('serves index.html for client-side routes', async () => {
     const app = await build();

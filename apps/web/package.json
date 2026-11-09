@@ -34,6 +34,7 @@
     "react-i18next": "^17.1.11",
     "react-router": "^6.30.6",
     "react-router-dom": "^6.30.6",
-    "workbox-window": "^7.4.1"
+    "workbox-window": "^7.4.1",
+    "zod": "^4.6.7"
   }
 }
