@@ -3,13 +3,13 @@ import {
   SessionRequestSchema,
   normalizeEmonId,
   type Capabilities,
-  type ErrorResponse,
   type SessionResponse,
 } from '@p1/shared';
 import type { FastifyPluginCallback, FastifyReply } from 'fastify';
 import type { CapabilityService } from '../data/capabilities';
 import { UpstreamError } from '../data/source';
 import type { AttemptCounter, SessionStore } from '../sessions';
+import { fail, resolveHousehold } from './household';
 
 export interface SessionRouteOptions {
   sessions: SessionStore;
@@ -18,9 +18,6 @@ export interface SessionRouteOptions {
   dailyAttempts: AttemptCounter;
   limits: { perMinute: number; perDay: number; failedPerHour: number };
 }
-
-const fail = (reply: FastifyReply, status: number, error: ErrorResponse['error']) =>
-  reply.code(status).send({ error } satisfies ErrorResponse);
 
 const sessionId = (header: string | string[] | undefined) =>
   typeof header === 'string' ? header : undefined;
@@ -74,12 +71,13 @@ export const sessionRoutes: FastifyPluginCallback<SessionRouteOptions> = (app, o
   );
 
   app.get('/capabilities', async (request, reply) => {
-    const signature = sessions.get(sessionId(request.headers[SESSION_HEADER]));
-    if (!signature) return fail(reply, 401, 'session_expired');
-    const result = await lookup(signature, reply);
-    if (result.reply) return result.reply;
-    if (!result.capabilities) return fail(reply, 404, 'not_found');
-    return result.capabilities satisfies Capabilities;
+    const deps = { sessions, capabilities, log: app.log };
+    const household = await resolveHousehold(
+      deps,
+      sessionId(request.headers[SESSION_HEADER]),
+      reply,
+    );
+    return household ? (household.capabilities satisfies Capabilities) : reply;
   });
 
   app.delete('/session', (request, reply) => {

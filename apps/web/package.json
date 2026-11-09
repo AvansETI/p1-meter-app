@@ -27,6 +27,8 @@
     "@ionic/react": "^9.0.10",
     "@ionic/react-router": "^9.0.10",
     "@p1/shared": "workspace:*",
+    "@tanstack/react-query": "^5.105.1",
+    "echarts": "^6.1.0",
     "i18next": "^26.7.1",
     "ionicons": "^8.1.0",
     "react": "^19.3.1",

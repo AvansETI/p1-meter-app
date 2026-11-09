@@ -13,7 +13,7 @@ export const EMON_V01: DeviceProfile = {
   dynamicPattern: /^[0-9A-F]{12}$/,
   measurement: 'dsmr',
   sampleIntervalSec: 20,
-  liveMaxAgeSec: 60,
+  liveMaxAgeSec: 300,
 };
 
 /** Profile used for user input; other prefixes are not supported yet. */

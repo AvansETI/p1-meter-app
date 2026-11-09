@@ -31,8 +31,24 @@
   },
   "live": {
     "title": "Live",
-    "placeholder": "Hier komen je actuele verbruik en teruglevering.",
-    "placeholderNoExport": "Hier komt je actuele verbruik."
+    "statusLive": "live · {{time}}",
+    "statusStale": "geen recente data · laatst {{time}}",
+    "fromGrid": "Van het net",
+    "toGrid": "Terug aan het net",
+    "offlineTitle": "Je meter stuurt sinds {{time}} geen gegevens.",
+    "offlineHelp": "Controleer of de meterkit stroom heeft en of je wifi werkt. Helpt dat niet, haal dan de voeding even los en sluit hem weer aan.",
+    "offlineLink": "Meer hulp in de handleiding",
+    "today": "Vandaag",
+    "todayImport": "Afname",
+    "todayExport": "Terug",
+    "todayNet": "Netto",
+    "todayGas": "Gas",
+    "recent": "Afgelopen 24 uur",
+    "chartLabel": "Grafiek van het netto vermogen in de afgelopen 24 uur",
+    "chartImport": "{{value}} kW van het net",
+    "chartExport": "{{value}} kW terug",
+    "loadError": "Kon de gegevens niet ophalen.",
+    "retry": "Opnieuw"
   },
   "history": {
     "title": "Historie",

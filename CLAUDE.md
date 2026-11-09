@@ -83,6 +83,7 @@ Do not use the home-assistant MCP server in this project.
 - Public access, no login (deliberate). Therefore: never enumerate signatures, respond
   neutrally to unknown signatures, rate-limit to prevent guessing.
 - One active signature and all settings are stored locally in the browser.
-- Live: the latest value counts as live if it is less than 60 s old; otherwise show
+- Live: the latest value counts as live if it is less than 5 minutes old (kits send
+  irregularly, with pauses up to ~2.5 min); otherwise show
   "no recent data" with its timestamp.
 - Show gas only if the household has gas data.

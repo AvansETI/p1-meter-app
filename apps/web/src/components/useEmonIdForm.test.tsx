@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,9 +15,11 @@ afterEach(() => {
 });
 
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <SettingsProvider initial={DEFAULT_SETTINGS}>
-    <SessionProvider>{children}</SessionProvider>
-  </SettingsProvider>
+  <QueryClientProvider client={new QueryClient()}>
+    <SettingsProvider initial={DEFAULT_SETTINGS}>
+      <SessionProvider>{children}</SessionProvider>
+    </SettingsProvider>
+  </QueryClientProvider>
 );
 
 function setup(onDone?: () => void) {

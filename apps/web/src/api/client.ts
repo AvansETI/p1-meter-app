@@ -1,11 +1,17 @@
 import {
   API_BASE,
   CapabilitiesSchema,
+  LiveSnapshotSchema,
+  RecentSeriesSchema,
+  TodayTotalsSchema,
   ErrorResponseSchema,
   SESSION_HEADER,
   SessionResponseSchema,
   type ApiErrorCode,
   type Capabilities,
+  type LiveSnapshot,
+  type RecentSeries,
+  type TodayTotals,
   type SessionResponse,
 } from '@p1/shared';
 import type { z } from 'zod';
@@ -69,6 +75,25 @@ export class ApiClient {
 
   getCapabilities(): Promise<ApiResult<Capabilities>> {
     return this.authorized('/capabilities', {}, CapabilitiesSchema);
+  }
+
+  getLive(): Promise<ApiResult<LiveSnapshot>> {
+    return this.authorized('/live', {}, LiveSnapshotSchema);
+  }
+
+  getToday(): Promise<ApiResult<TodayTotals>> {
+    return this.authorized('/live/today', {}, TodayTotalsSchema);
+  }
+
+  getRecent(): Promise<ApiResult<RecentSeries>> {
+    return this.authorized('/live/recent', {}, RecentSeriesSchema);
+  }
+
+  /** URL of the live event stream; EventSource cannot send headers, so the session is a query parameter. */
+  streamUrl(): string | undefined {
+    return this.sessionId
+      ? `${API_BASE}/live/stream?session=${encodeURIComponent(this.sessionId)}`
+      : undefined;
   }
 
   async closeSession(): Promise<void> {

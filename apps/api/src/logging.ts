@@ -24,6 +24,14 @@ export function loggerOptions(config: Config): FastifyServerOptions['logger'] {
   return {
     level: config.LOG_LEVEL,
     formatters: { log: (object) => maskSignatures(object) },
+    serializers: {
+      // The SSE route carries the session ID in the query string; keep it out of the logs.
+      req: (req: { method: string; url: string; ip?: string }) => ({
+        method: req.method,
+        url: req.url.split('?')[0],
+        ip: req.ip,
+      }),
+    },
     hooks: {
       logMethod(args, method) {
         method.apply(this, maskSignatures(args));
