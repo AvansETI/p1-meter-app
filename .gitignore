@@ -36,3 +36,9 @@ Thumbs.db
 
 # Lefthook local overrides
 .lefthook-local.yml
+
+# Editor swap and backup files (may contain secrets from .env)
+*.swp
+*.swo
+*~
+.*.swp
