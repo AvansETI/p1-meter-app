@@ -81,3 +81,24 @@ describe('security headers', () => {
     await app.close();
   });
 });
+
+describe('health with an unreachable InfluxDB', () => {
+  it('answers immediately and reports the status of the background check', async () => {
+    const source = new FakeDataSource();
+    let resolvePing: (ok: boolean) => void = () => undefined;
+    source.ping = () => new Promise<boolean>((resolve) => (resolvePing = resolve));
+    const app = await buildServer(loadConfig({ NODE_ENV: 'test', LOG_LEVEL: 'silent' }), {
+      source,
+    });
+
+    const first = await app.inject({ method: 'GET', url: '/api/v1/health' });
+    expect(first.statusCode).toBe(200);
+    expect(first.json()).toMatchObject({ status: 'ok', influx: 'unknown' });
+
+    resolvePing(false);
+    await new Promise((resolve) => setImmediate(resolve));
+    const second = await app.inject({ method: 'GET', url: '/api/v1/health' });
+    expect(second.json()).toMatchObject({ influx: 'unavailable' });
+    await app.close();
+  });
+});
