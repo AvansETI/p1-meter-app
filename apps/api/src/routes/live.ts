@@ -1,4 +1,10 @@
-import { SESSION_HEADER, type LiveSnapshot, type RecentSeries, type TodayTotals } from '@p1/shared';
+import {
+  SESSION_HEADER,
+  type GasSeries,
+  type LiveSnapshot,
+  type RecentSeries,
+  type TodayTotals,
+} from '@p1/shared';
 import type { FastifyPluginCallback } from 'fastify';
 import type { CapabilityService } from '../data/capabilities';
 import type { LivePoller } from '../live/poller';
@@ -60,6 +66,18 @@ export const liveRoutes: FastifyPluginCallback<LiveRouteOptions> = (app, options
     if (!household) return reply;
     const series = await upstream(app.log, reply, () => live.recentSeries(household.signature));
     return series === undefined ? reply : (series satisfies RecentSeries);
+  });
+
+  app.get('/live/gas', async (request, reply) => {
+    const household = await resolveHousehold(
+      deps,
+      headerSession(request.headers[SESSION_HEADER]),
+      reply,
+    );
+    if (!household) return reply;
+    if (!household.capabilities.hasGas) return fail(reply, 404, 'not_found');
+    const series = await upstream(app.log, reply, () => live.gasSeries(household.signature));
+    return series === undefined ? reply : (series satisfies GasSeries);
   });
 
   // EventSource cannot send headers, so the session comes as query parameter here.
