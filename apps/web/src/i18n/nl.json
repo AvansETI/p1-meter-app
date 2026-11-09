@@ -1,0 +1,124 @@
+{
+  "app": {
+    "name": "MNEXT Energiemeter",
+    "shortName": "Energiemeter"
+  },
+  "common": {
+    "cancel": "Annuleren",
+    "close": "Sluiten"
+  },
+  "nav": {
+    "live": "Live",
+    "history": "Historie",
+    "settings": "Instellingen"
+  },
+  "welcome": {
+    "intro": "Bekijk het energieverbruik van je huis, live en terug in de tijd.",
+    "label": "EMON ID",
+    "placeholder": "XXXXXX-XXXXXX",
+    "submit": "Starten",
+    "checking": "Controleren…",
+    "helpTitle": "Waar vind ik mijn EMON ID?",
+    "helpText": "Je EMON ID kreeg je te zien toen je de meterkit instelde via het wifi-netwerk \"ETI EMON config\". Kwijt? Haal de voeding van de kit los, houd knop Sw1 ingedrukt en sluit de voeding weer aan. Verbind daarna met \"ETI EMON config\": je EMON ID staat op het scherm.",
+    "helpLink": "Meer uitleg in de handleiding",
+    "errors": {
+      "invalid_format": "Een EMON ID bestaat uit 12 tekens (cijfers 0–9 en letters A–F).",
+      "not_found": "Voor dit EMON ID zijn geen gegevens gevonden. Controleer het ID; stuurt je meter net pas data, probeer het dan later opnieuw.",
+      "rate_limited": "Te veel pogingen. Probeer het over een uur opnieuw.",
+      "session_expired": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw.",
+      "upstream_unavailable": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw."
+    }
+  },
+  "live": {
+    "title": "Live",
+    "statusLive": "live · {{time}}",
+    "statusStale": "geen recente data · laatst {{time}}",
+    "fromGrid": "Van het net",
+    "toGrid": "Terug aan het net",
+    "offlineTitle": "Je meter stuurt sinds {{time}} geen gegevens.",
+    "offlineHelp": "Controleer of de meterkit stroom heeft en of je wifi werkt. Helpt dat niet, haal dan de voeding even los en sluit hem weer aan.",
+    "offlineLink": "Meer hulp in de handleiding",
+    "today": "Vandaag",
+    "todayImport": "Afname",
+    "todayExport": "Terug",
+    "todayNet": "Netto",
+    "todayGas": "Gas",
+    "recent": "Afgelopen 24 uur",
+    "chartLabel": "Grafiek van het netto vermogen in de afgelopen 24 uur",
+    "chartImport": "{{value}} van het net",
+    "chartExport": "{{value}} terug",
+    "loadError": "Kon de gegevens niet ophalen.",
+    "retry": "Opnieuw"
+  },
+  "history": {
+    "title": "Historie",
+    "placeholder": "Hier komen je grafieken per dag, week, maand en jaar."
+  },
+  "settings": {
+    "title": "Instellingen",
+    "meter": "Meter",
+    "emonId": "EMON ID",
+    "change": "Wijzigen",
+    "changeTitle": "EMON ID wijzigen",
+    "remove": "Verwijderen",
+    "removeConfirmTitle": "EMON ID verwijderen?",
+    "removeConfirmText": "De app vergeet je EMON ID en instellingen op dit apparaat. Je kunt het later opnieuw invoeren.",
+    "meterInfo": "Meterinformatie",
+    "loading": "Gegevens ophalen…",
+    "unavailable": "Meterinformatie is nu niet beschikbaar.",
+    "gas": "Gas",
+    "export": "Teruglevering",
+    "measured": "Gemeten",
+    "counters": "Tellers",
+    "countersAsNamed": "Normaal",
+    "countersSwapped": "Omgewisseld, wordt automatisch gecorrigeerd",
+    "countersSwappedHelp": "De tellers voor afname en teruglevering lijken bij jouw meter omgewisseld (mogelijk een aansluitfout). De app corrigeert dit automatisch.",
+    "countersUnknown": "Nog niet vastgesteld",
+    "lastSeen": "Laatste meting",
+    "display": "Weergave",
+    "theme": "Thema",
+    "themeSystem": "Systeem",
+    "themeLight": "Licht",
+    "themeDark": "Donker",
+    "about": "Over",
+    "aboutLectorate": "Lectoraat Smart Energy",
+    "aboutPartners": "Avans Hogeschool en HZ University of Applied Sciences",
+    "aboutAuthor": "Arno Broeders",
+    "aboutProject": "Meer over de meterkit",
+    "version": "Versie {{version}}",
+    "measuredElectricity": "Stroomverbruik",
+    "app": "App",
+    "installApp": "App installeren",
+    "installUnsupported": "Installeren als app kan in Chrome, Edge of Safari.",
+    "aboutLicense": "Open source onder de Apache 2.0-licentie",
+    "aboutThirdParty": "Licenties van gebruikte software"
+  },
+  "pwa": {
+    "updateAvailable": "Er is een nieuwe versie beschikbaar.",
+    "reload": "Vernieuwen"
+  },
+  "install": {
+    "title": "Installeer als app",
+    "installAsApp": "Installeer als app",
+    "bannerText": "Zet Energiemeter op je beginscherm voor snelle toegang.",
+    "install": "Installeren",
+    "how": "Hoe?",
+    "dismiss": "Niet nu",
+    "after": "Daarna open je Energiemeter vanaf je beginscherm, net als een app.",
+    "steps": {
+      "ios": {
+        "1": "Tik op de <strong>Deel</strong>-knop: in Safari onderaan (iPhone) of bovenaan (iPad), in Chrome en Edge naast de adresbalk.",
+        "2": "Scrol en kies <strong>Zet op beginscherm</strong>.",
+        "3": "Tik op <strong>Voeg toe</strong>."
+      },
+      "macos": {
+        "1": "Kies in de menubalk <strong>Archief</strong> → <strong>Voeg toe aan Dock</strong>.",
+        "2": "Klik op <strong>Voeg toe</strong>."
+      },
+      "firefox": {
+        "1": "Tik op het menu (de drie puntjes).",
+        "2": "Kies <strong>Installeren</strong> (of <strong>Toevoegen aan startscherm</strong>)."
+      }
+    }
+  }
+}

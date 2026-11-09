@@ -16,6 +16,18 @@ for one household, read from an existing InfluxDB 2.x instance (bucket `p1-smart
 - Node version: see `.nvmrc` (managed with nvm). Package manager: pnpm.
 - Architecture and design decisions live in `docs/design/`.
 
+## Commands
+
+- `pnpm dev` (api :3000 + web :5173), `pnpm lint`, `pnpm format`, `pnpm typecheck`, `pnpm test`, `pnpm build`
+- Load Node first in non-interactive shells: `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"`
+- Version constraints: TypeScript stays on 6.0.x (typescript-eslint supports < 6.1);
+  react-router stays on 6.x (`@ionic/react-router` 9 requires < 7).
+- New dependencies must pass `pnpm check:licenses` (permissive licenses only for anything
+  shipped; no GPL/AGPL/LGPL). Do not commit generated `third-party-licenses.txt` files.
+- pnpm refuses packages younger than 7 days (`minimumReleaseAge`); use major ranges
+  (e.g. `vitest@5`) so pnpm picks the newest mature version. Install scripts are blocked
+  unless listed under `allowBuilds` in `pnpm-workspace.yaml`.
+
 ## Language
 
 - Respond to the user in **Dutch**.
@@ -73,6 +85,7 @@ Do not use the home-assistant MCP server in this project.
 - Public access, no login (deliberate). Therefore: never enumerate signatures, respond
   neutrally to unknown signatures, rate-limit to prevent guessing.
 - One active signature and all settings are stored locally in the browser.
-- Live: the latest value counts as live if it is less than 60 s old; otherwise show
+- Live: the latest value counts as live if it is less than 5 minutes old (kits send
+  irregularly, with pauses up to ~2.5 min); otherwise show
   "no recent data" with its timestamp.
 - Show gas only if the household has gas data.
