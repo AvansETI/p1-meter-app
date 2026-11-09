@@ -1,7 +1,7 @@
 # Visual design: MNEXT house style
 
 - Issue: #2
-- Status: **draft — awaiting approval**
+- Status: **approved** (2026-11-09)
 - Date: 2026-11-09
 - Related: [architecture](2026-11-09-architecture.md) §11 (web app)
 
