@@ -25,10 +25,10 @@ Source: <https://github.com/AvansETI/SmartMeter_DIY> (firmware, wiki), read 2026
   **7 distinct flash-chip IDs** (6 common ones). The guessable space is therefore about
   2²⁴ × 6 ≈ 10⁸, not 2⁴⁸.
 - **Existing exposure.** The wiki points users to a public Grafana (`viewer`/`viewer`) that
-  lists all signatures, and the README calls the data public. Our measures (no enumeration,
-  neutral responses, rate limits) keep this app from adding exposure; they cannot protect
-  data that is already listed elsewhere. This is outside our scope and is flagged to the
-  product owner.
+  lists all signatures. According to the product owner this dashboard **will be removed**
+  (2026-11-09). This app then becomes the way households view their data, so the measures
+  in §5 (no enumeration, neutral responses, rate limits, lock-out) are the main protection
+  against browsing other households.
 - **Swapped counters.** In 8 of 83 households `energy_consumed`/`energy_produced` are
   reversed (architecture §3.1). The product owner considers a meter wiring fault the most
   likely cause; we cannot fix it, so we **detect, correct and signal** it.
@@ -291,6 +291,6 @@ committed), check orientation "swapped" is detected and the Settings page shows 
 
 | #   | Topic                                    | Proposal                                                               |
 | --- | ---------------------------------------- | ---------------------------------------------------------------------- |
-| 1   | Public Grafana lists all signatures      | Outside this app; product owner to raise with the platform maintainers |
+| 1   | Public Grafana lists all signatures      | Will be removed by the platform maintainers; no action in this app     |
 | 2   | Which ingest pipeline runs in production | Ask the maintainers; detection works regardless                        |
 | 3   | Distributed guessing (many IPs)          | Accepted risk for MVP; revisit with Redis-backed limits if abuse shows |
