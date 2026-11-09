@@ -71,3 +71,11 @@ author.
 
 The MNEXT, Avans and HZ names and logos are trademarks of their owners and are **not**
 covered by this license.
+
+### Third-party licenses
+
+All dependencies use permissive licenses. Each build writes `third-party-licenses.txt` with
+the license and notice texts of the included packages (web: served at
+`/third-party-licenses.txt` and linked from the About screen; API: `apps/api/dist/`).
+`pnpm check:licenses` — also run in CI — fails when a dependency has a license outside the
+allowlist in `scripts/licenses.mjs` (no GPL/AGPL/LGPL or unknown licenses in production).

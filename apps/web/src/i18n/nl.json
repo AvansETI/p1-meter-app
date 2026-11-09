@@ -87,7 +87,8 @@
     "aboutProject": "Meer over de meterkit",
     "version": "Versie {{version}}",
     "measuredElectricity": "Stroomverbruik",
-    "aboutLicense": "Open source onder de Apache 2.0-licentie"
+    "aboutLicense": "Open source onder de Apache 2.0-licentie",
+    "aboutThirdParty": "Licenties van gebruikte software"
   },
   "pwa": {
     "updateAvailable": "Er is een nieuwe versie beschikbaar.",

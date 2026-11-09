@@ -19,7 +19,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "prepare": "lefthook install",
-    "check:signatures": "node scripts/check-signatures.mjs"
+    "check:signatures": "node scripts/check-signatures.mjs",
+    "check:licenses": "node scripts/licenses.mjs check"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

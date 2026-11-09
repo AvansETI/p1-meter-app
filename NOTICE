@@ -19,5 +19,11 @@ permission of their owners.
 
 Third-party software
 --------------------
-This product depends on open-source packages under their own licenses; see the
-package metadata in node_modules or pnpm-lock.yaml.
+This product includes open-source packages under their own (permissive) licenses,
+among others Ionic (MIT), React (MIT), Fastify (MIT), Apache ECharts (Apache-2.0,
+with its own NOTICE) and the Nunito font (SIL Open Font License 1.1).
+
+Every build generates third-party-licenses.txt with the full license and notice
+texts of all included packages: the web app serves it at /third-party-licenses.txt
+(linked from the About screen) and the API build contains it in apps/api/dist/.
+`pnpm check:licenses` (also in CI) only allows licenses from an allowlist.

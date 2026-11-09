@@ -33,6 +33,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm check:signatures
+      - run: pnpm check:licenses
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck

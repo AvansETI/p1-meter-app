@@ -155,6 +155,9 @@ export default function SettingsPage() {
             <a href={LICENSE_URL} target="_blank" rel="noreferrer">
               {t('settings.aboutLicense')}
             </a>
+            <a href="/third-party-licenses.txt" target="_blank" rel="noreferrer">
+              {t('settings.aboutThirdParty')}
+            </a>
           </div>
         </IonList>
 
