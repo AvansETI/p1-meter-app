@@ -3,14 +3,36 @@
     "name": "MNEXT Energiemeter",
     "shortName": "Energiemeter"
   },
+  "common": {
+    "cancel": "Annuleren",
+    "close": "Sluiten"
+  },
   "nav": {
     "live": "Live",
     "history": "Historie",
     "settings": "Instellingen"
   },
+  "welcome": {
+    "intro": "Bekijk het energieverbruik van je huis, live en terug in de tijd.",
+    "label": "EMON ID",
+    "placeholder": "XXXXXX-XXXXXX",
+    "submit": "Starten",
+    "checking": "Controleren…",
+    "helpTitle": "Waar vind ik mijn EMON ID?",
+    "helpText": "Je EMON ID kreeg je te zien toen je de meterkit instelde via het wifi-netwerk \"ETI EMON config\". Kwijt? Haal de voeding van de kit los, houd knop Sw1 ingedrukt en sluit de voeding weer aan. Verbind daarna met \"ETI EMON config\": je EMON ID staat op het scherm.",
+    "helpLink": "Meer uitleg in de handleiding",
+    "errors": {
+      "invalid_format": "Een EMON ID bestaat uit 12 tekens (cijfers 0–9 en letters A–F).",
+      "not_found": "Voor dit EMON ID zijn geen gegevens gevonden. Controleer het ID; stuurt je meter net pas data, probeer het dan later opnieuw.",
+      "rate_limited": "Te veel pogingen. Probeer het over een uur opnieuw.",
+      "session_expired": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw.",
+      "upstream_unavailable": "De gegevens zijn nu niet bereikbaar. Probeer het later opnieuw."
+    }
+  },
   "live": {
     "title": "Live",
-    "placeholder": "Hier komen je actuele verbruik en teruglevering."
+    "placeholder": "Hier komen je actuele verbruik en teruglevering.",
+    "placeholderNoExport": "Hier komt je actuele verbruik."
   },
   "history": {
     "title": "Historie",
@@ -18,8 +40,37 @@
   },
   "settings": {
     "title": "Instellingen",
-    "placeholder": "Hier kun je straks de code van je meter wijzigen.",
-    "version": "Versie {{version}}"
+    "meter": "Meter",
+    "emonId": "EMON ID",
+    "change": "Wijzigen",
+    "changeTitle": "EMON ID wijzigen",
+    "remove": "Verwijderen",
+    "removeConfirmTitle": "EMON ID verwijderen?",
+    "removeConfirmText": "De app vergeet je EMON ID en instellingen op dit apparaat. Je kunt het later opnieuw invoeren.",
+    "meterInfo": "Meterinformatie",
+    "loading": "Gegevens ophalen…",
+    "unavailable": "Meterinformatie is nu niet beschikbaar.",
+    "gas": "Gas",
+    "export": "Teruglevering",
+    "measured": "Gemeten",
+    "counters": "Tellers",
+    "countersAsNamed": "Normaal",
+    "countersSwapped": "Omgewisseld, wordt automatisch gecorrigeerd",
+    "countersSwappedHelp": "De tellers voor afname en teruglevering lijken bij jouw meter omgewisseld (mogelijk een aansluitfout). De app corrigeert dit automatisch.",
+    "countersUnknown": "Nog niet vastgesteld",
+    "lastSeen": "Laatste meting",
+    "display": "Weergave",
+    "theme": "Thema",
+    "themeSystem": "Systeem",
+    "themeLight": "Licht",
+    "themeDark": "Donker",
+    "about": "Over",
+    "aboutLectorate": "Lectoraat Smart Energy",
+    "aboutPartners": "Avans · HZ",
+    "aboutAuthor": "Arno Broeders",
+    "aboutProject": "Meer over de meterkit",
+    "version": "Versie {{version}}",
+    "measuredElectricity": "Stroomverbruik"
   },
   "pwa": {
     "updateAvailable": "Er is een nieuwe versie beschikbaar.",

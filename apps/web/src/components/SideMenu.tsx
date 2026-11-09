@@ -2,6 +2,7 @@ import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonMenu } from '@ionic
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { NAV_ITEMS } from '../navigation';
+import BrandLogo from './BrandLogo';
 
 /** Desktop navigation; only visible when the split pane is expanded (≥ 992 px). */
 export default function SideMenu() {
@@ -11,10 +12,7 @@ export default function SideMenu() {
   return (
     <IonMenu contentId="main" type="overlay" swipeGesture={false} className="app-side-menu">
       <IonContent className="ion-padding">
-        <picture>
-          <source srcSet="/brand/mnext-logo-white.svg" media="(prefers-color-scheme: dark)" />
-          <img className="app-side-menu__logo" src="/brand/mnext-logo.svg" alt="MNEXT" />
-        </picture>
+        <BrandLogo className="app-side-menu__logo" />
         <p className="app-side-menu__name">{t('app.shortName')}</p>
         <IonList lines="none">
           {NAV_ITEMS.map((item) => (

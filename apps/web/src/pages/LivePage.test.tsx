@@ -1,17 +1,24 @@
-import { IonApp } from '@ionic/react';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import '../i18n';
+import { screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SIGNATURE, sessionResponse } from '../test/fixtures';
+import { mockFetch, renderWithProviders } from '../test/render';
 import LivePage from './LivePage';
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('LivePage', () => {
-  it('renders its Dutch title and placeholder', () => {
-    render(
-      <IonApp>
-        <LivePage />
-      </IonApp>,
-    );
-    expect(screen.getByText('Live')).toBeInTheDocument();
-    expect(screen.getByText(/actuele verbruik en teruglevering/)).toBeInTheDocument();
+  it('mentions export for households with export', async () => {
+    mockFetch({ status: 200, body: sessionResponse({ hasExport: true }) });
+    renderWithProviders(<LivePage />, { emonId: SIGNATURE });
+    expect(await screen.findByText(/verbruik en teruglevering/)).toBeInTheDocument();
+  });
+
+  it('leaves out everything about export without export', async () => {
+    mockFetch({ status: 200, body: sessionResponse({ hasExport: false }) });
+    renderWithProviders(<LivePage />, { emonId: SIGNATURE });
+    expect(await screen.findByText('Hier komt je actuele verbruik.')).toBeInTheDocument();
+    expect(screen.queryByText(/teruglevering/i)).toBeNull();
   });
 });

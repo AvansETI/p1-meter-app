@@ -14,6 +14,7 @@
     <link rel="icon" href="/brand/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/brand/mnext-logo.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon-180x180.png" />
+    <script src="/theme-init.js"></script>
     <style>
       /* Splash screen: painted before any JavaScript loads; removed by src/splash.ts. */
       #splash {
@@ -32,12 +33,10 @@
         font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
         transition: opacity 250ms ease-out;
       }
-      @media (prefers-color-scheme: dark) {
-        #splash {
-          --splash-bg: #161d29;
-          --splash-text: #f2f3f6;
-          --splash-ink: #ffffff;
-        }
+      .ion-palette-dark #splash {
+        --splash-bg: #161d29;
+        --splash-text: #f2f3f6;
+        --splash-ink: #ffffff;
       }
       #splash.splash--hide {
         opacity: 0;

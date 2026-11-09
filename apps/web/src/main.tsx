@@ -7,7 +7,7 @@ import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
 import '@ionic/react/css/padding.css';
-import '@ionic/react/css/palettes/dark.system.css';
+import '@ionic/react/css/palettes/dark.class.css';
 import './theme/fonts.css';
 import './theme/variables.css';
 import './theme/layout.css';
