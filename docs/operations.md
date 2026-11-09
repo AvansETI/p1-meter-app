@@ -92,10 +92,12 @@ stays on "geen recente data" through the public URL but works on
 
 ## Troubleshooting
 
-| Symptom                               | Check                                                                              |
-| ------------------------------------- | ---------------------------------------------------------------------------------- |
-| Update log: "INFLUX_TOKEN is empty"   | fill in the token in `/etc/p1-meter-app/env`                                       |
-| Update log: "checksum mismatch"       | download corrupted or release being replaced; the next run retries                 |
-| Update log: "failed health check"     | `journalctl -u p1-meter-app -n 100` for the error; the previous release is running |
-| App log: "Invalid configuration"      | a value in `/etc/p1-meter-app/env` is wrong; the log names it                      |
-| Health shows `"influx":"unavailable"` | outbound HTTPS to influxdb.sendlab.nl, or the token                                |
+| Symptom                               | Check                                                                                                                        |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Update log: "INFLUX_TOKEN is empty"   | fill in the token in `/etc/p1-meter-app/env`                                                                                 |
+| Update log: "checksum mismatch"       | download corrupted or release being replaced; the next run retries                                                           |
+| Update log: "failed health check"     | `journalctl -u p1-meter-app -n 100` for the error; the previous release is running                                           |
+| App log: "Invalid configuration"      | a value in `/etc/p1-meter-app/env` is wrong; the log names it                                                                |
+| Health shows `"influx":"unavailable"` | outbound HTTPS to influxdb.sendlab.nl, or the token                                                                          |
+| Health `prices`: `backoff`            | ENTSO-E or EnergyZero failed; retried after Retry-After or 1–24 h. `journalctl -u p1-meter-app -o cat \| grep 'backing off'` |
+| Health `prices`: `retrying`           | writing to the price bucket failed (e.g. timeout during the InfluxDB backup); retried after 10 min                           |

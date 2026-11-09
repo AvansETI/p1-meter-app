@@ -26,6 +26,25 @@ export class FetchError extends Error {
   }
 }
 
+/**
+ * Our own price database failed (e.g. a write timeout while InfluxDB makes a backup). Not the
+ * price source's fault, so it is retried soon instead of backing off for hours.
+ */
+export class StoreError extends Error {
+  override name = 'StoreError';
+  constructor(override readonly cause: unknown) {
+    super(cause instanceof Error ? cause.message : String(cause));
+  }
+}
+
+const viaStore = async <T>(operation: () => Promise<T>): Promise<T> => {
+  try {
+    return await operation();
+  } catch (error) {
+    throw new StoreError(error);
+  }
+};
+
 /** Retry-After as seconds or an HTTP date (RFC 9110), in milliseconds from `now`. */
 export function parseRetryAfter(value: string | null, now = Date.now()): number | undefined {
   if (!value) return undefined;
@@ -62,8 +81,13 @@ const HOUR_MS = 3_600_000;
 /** Normal cadence per source; longer after failures (doubling, at most a day). */
 const NORMAL_INTERVAL_MS = HOUR_MS;
 const MAX_BACKOFF_MS = 24 * HOUR_MS;
+/** Retry delay after a database error. */
+const STORE_RETRY_MS = 10 * 60_000;
+/** Days per request and write; small enough for a write to finish while InfluxDB is busy. */
+const CHUNK_DAYS = 7;
 
-export type PriceSourceStatus = 'pending' | 'ok' | 'backoff';
+/** `backoff`: the price source failed; `retrying`: our database failed. */
+export type PriceSourceStatus = 'pending' | 'ok' | 'backoff' | 'retrying';
 
 interface SourceState {
   failures: number;
@@ -136,6 +160,15 @@ export class PriceJob {
           state.status = 'ok';
           state.nextAttemptAt = now + NORMAL_INTERVAL_MS;
         } catch (error) {
+          if (error instanceof StoreError) {
+            state.status = 'retrying';
+            state.nextAttemptAt = now + STORE_RETRY_MS;
+            this.log.warn(
+              { err: error.cause, kind, retryInMin: STORE_RETRY_MS / 60_000 },
+              'price database unavailable; retrying',
+            );
+            continue;
+          }
           state.failures++;
           const retryAfter = error instanceof FetchError ? error.retryAfterMs : undefined;
           const backoff = Math.min(MAX_BACKOFF_MS, NORMAL_INTERVAL_MS * 2 ** (state.failures - 1));
@@ -153,9 +186,9 @@ export class PriceJob {
     }
   }
 
-  /** Fetches every incomplete day in [from, to), in chunks of up to 31 days. */
+  /** Fetches every incomplete day in [from, to), in chunks of up to `CHUNK_DAYS` days. */
   async fill(kind: PriceKind, from: Date, to: Date): Promise<number> {
-    const counts = await this.store.pointsPerDay(kind, from, to);
+    const counts = await viaStore(() => this.store.pointsPerDay(kind, from, to));
     const missing: Date[] = [];
     for (let day = from; day < to; day = dayStart(new Date(day.getTime() + DAY_MS + 3_600_000))) {
       if ((counts.get(day.getTime()) ?? 0) < MIN_POINTS_PER_DAY) missing.push(day);
@@ -167,7 +200,7 @@ export class PriceJob {
       let j = i;
       while (
         j + 1 < missing.length &&
-        j - i < 30 &&
+        j - i < CHUNK_DAYS - 1 &&
         missing[j + 1]!.getTime() - missing[j]!.getTime() <= DAY_MS + 3_600_000
       ) {
         j++;
@@ -175,11 +208,11 @@ export class PriceJob {
       const end = dayStart(new Date(missing[j]!.getTime() + DAY_MS + 3_600_000));
       if (kind === 'electricity') {
         const points = await this.fetchers.electricity(start, end);
-        if (points.length > 0) await this.store.writeElectricity(points);
+        if (points.length > 0) await viaStore(() => this.store.writeElectricity(points));
         written += points.length;
       } else {
         const points = await this.fetchers.gas(start, end);
-        if (points.length > 0) await this.store.writeGas(points);
+        if (points.length > 0) await viaStore(() => this.store.writeGas(points));
         written += points.length;
       }
       if (written > 0) {
