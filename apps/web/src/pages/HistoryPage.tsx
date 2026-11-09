@@ -29,7 +29,9 @@ import {
 import { chevronBack, chevronForward } from 'ionicons/icons';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Hourglass from '../components/Hourglass';
 import ToolbarLogo from '../components/ToolbarLogo';
+import { useDelayed } from '../components/useDelayed';
 import HistoryCostSummary from '../costs/HistoryCostSummary';
 import { useSearchParams } from 'react-router-dom';
 import { formatKwh, formatM3 } from '../format';
@@ -193,6 +195,8 @@ export default function HistoryPage() {
     ready,
   );
   const history = query.data;
+  // The previous period stays visible while the next one loads; after 0.5 s show that (#52).
+  const switching = useDelayed(query.isPlaceholderData);
 
   const first = history ? parsePlainDate(history.firstData) : null;
   const isCurrent = formatPlainDate(start) >= formatPlainDate(periodStart(todayDate, period));
@@ -249,7 +253,7 @@ export default function HistoryPage() {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <div className="history">
+        <div className={switching ? 'history history--loading' : 'history'}>
           <IonSegment
             value={period}
             onIonChange={(event) => {
@@ -286,6 +290,11 @@ export default function HistoryPage() {
             </IonButton>
           </div>
 
+          {switching && (
+            <div className="history-loading">
+              <Hourglass label={t('common.loading')} />
+            </div>
+          )}
           {history && <Summary history={history} hasExport={hasExport} hasGas={hasGas} />}
           {history?.costs && <HistoryCostSummary costs={history.costs} period={period} />}
           {query.isPending && <IonSkeletonText animated className="today-grid--skeleton" />}

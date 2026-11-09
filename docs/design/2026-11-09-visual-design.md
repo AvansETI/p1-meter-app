@@ -233,6 +233,12 @@ MNEXT logo on the right of the title bar, 28 px high. The toolbar is navy (light
 so it always uses the white logo. From 992 px the side menu shows the logo instead. Sub-pages,
 the welcome screen and pop-ups have no title bar logo.
 
+**Loading indicator (#52):** when an update takes longer than 0.5 s, an animated hourglass
+(navy/white glass, MNEXT-green sand that runs down, then the glass turns over) appears with a short
+text: on History when switching period or date ("Laden…", the previous figures dimmed) and in the
+Live cost tile on the first load ("Kosten berekenen…"). Background refreshes show no indicator.
+With "reduce motion" the hourglass stands still.
+
 ### 7.2 Live — mobile
 
 ```

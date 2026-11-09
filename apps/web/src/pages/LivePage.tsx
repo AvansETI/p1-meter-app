@@ -10,7 +10,9 @@ import {
 import type { LiveSnapshot, LiveStatus, TodayTotals } from '@p1/shared';
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import Hourglass from '../components/Hourglass';
 import ToolbarLogo from '../components/ToolbarLogo';
+import { useDelayed } from '../components/useDelayed';
 import CostTile from '../costs/CostTile';
 import { useCostsToday } from '../costs/queries';
 import TariffHint from '../costs/TariffHint';
@@ -152,6 +154,8 @@ export default function LivePage() {
   const recent = useRecentSeries(settings.emonId, ready);
   const gas = useGasSeries(settings.emonId, hasGas);
   const costs = useCostsToday(settings.emonId, ready);
+  // The first computation can take a few seconds (e.g. after a tariff change, #52).
+  const costsSlow = useDelayed(ready && costs.isPending);
   const showBanner = shouldShowBanner({
     method: install.method,
     liveStatus: live.status,
@@ -202,6 +206,12 @@ export default function LivePage() {
             <section className="live__costs">
               <h2 className="live__heading">{t('costs.today')}</h2>
               <CostTile costs={costs.data} />
+            </section>
+          )}
+          {costsSlow && (
+            <section className="live__costs">
+              <h2 className="live__heading">{t('costs.today')}</h2>
+              <Hourglass label={t('costs.calculating')} />
             </section>
           )}
           {costs.data?.configured === false && <TariffHint />}
