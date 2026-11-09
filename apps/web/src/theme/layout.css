@@ -309,3 +309,61 @@ ion-menu.app-side-menu ion-item.selected {
     height: 280px;
   }
 }
+
+/* Install hints (docs/design/2026-11-09-install-hints.md) */
+.welcome__install {
+  align-self: center;
+}
+.live-content--banner {
+  --padding-bottom: 96px;
+}
+.install-banner-slot {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--ion-safe-area-bottom, 0px));
+  display: flex;
+  justify-content: center;
+}
+.install-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 520px;
+  padding: 10px 6px 10px 12px;
+  border-radius: var(--app-radius);
+  background: var(--app-surface);
+  box-shadow: 0 4px 16px rgba(15, 20, 28, 0.18);
+}
+.install-banner__icon {
+  flex: none;
+  border-radius: 9px;
+}
+.install-banner__text {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  min-width: 0;
+}
+.install-steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding-left: 22px;
+}
+.install-steps li {
+  padding-left: 4px;
+}
+.install-steps li > span {
+  margin-right: 6px;
+}
+.install-steps__icon {
+  vertical-align: -3px;
+  font-size: 20px;
+  color: var(--ion-color-primary);
+}
+.install-sheet__after {
+  margin-top: 18px;
+  color: var(--app-text-muted);
+}

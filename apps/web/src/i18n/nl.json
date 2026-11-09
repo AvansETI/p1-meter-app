@@ -86,10 +86,37 @@
     "aboutAuthor": "Arno Broeders",
     "aboutProject": "Meer over de meterkit",
     "version": "Versie {{version}}",
-    "measuredElectricity": "Stroomverbruik"
+    "measuredElectricity": "Stroomverbruik",
+    "app": "App",
+    "installApp": "App installeren",
+    "installUnsupported": "Installeren als app kan in Chrome, Edge of Safari."
   },
   "pwa": {
     "updateAvailable": "Er is een nieuwe versie beschikbaar.",
     "reload": "Vernieuwen"
+  },
+  "install": {
+    "title": "Installeer als app",
+    "installAsApp": "Installeer als app",
+    "bannerText": "Zet Energiemeter op je beginscherm voor snelle toegang.",
+    "install": "Installeren",
+    "how": "Hoe?",
+    "dismiss": "Niet nu",
+    "after": "Daarna open je Energiemeter vanaf je beginscherm, net als een app.",
+    "steps": {
+      "ios": {
+        "1": "Tik op de <strong>Deel</strong>-knop: in Safari onderaan (iPhone) of bovenaan (iPad), in Chrome en Edge naast de adresbalk.",
+        "2": "Scrol en kies <strong>Zet op beginscherm</strong>.",
+        "3": "Tik op <strong>Voeg toe</strong>."
+      },
+      "macos": {
+        "1": "Kies in de menubalk <strong>Archief</strong> → <strong>Voeg toe aan Dock</strong>.",
+        "2": "Klik op <strong>Voeg toe</strong>."
+      },
+      "firefox": {
+        "1": "Tik op het menu (de drie puntjes).",
+        "2": "Kies <strong>Installeren</strong> (of <strong>Toevoegen aan startscherm</strong>)."
+      }
+    }
   }
 }

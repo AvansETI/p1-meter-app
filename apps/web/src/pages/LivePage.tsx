@@ -14,6 +14,10 @@ import { formatKw, formatKwh, formatM3, formatMoment } from '../format';
 import { useRecentSeries, useTodayTotals } from '../live/queries';
 import { useLiveSnapshot } from '../live/useLiveSnapshot';
 import { useSession } from '../session/context';
+import { shouldShowBanner } from '../install/banner';
+import InstallBanner from '../install/InstallBanner';
+import InstallSheet from '../install/InstallSheet';
+import { useInstall } from '../install/useInstall';
 import { useSettings } from '../settings/context';
 
 // ECharts is large; load it only when the Live page shows the chart.
@@ -130,14 +134,20 @@ function TodayGrid({ totals }: { totals: TodayTotals }) {
 
 export default function LivePage() {
   const { t } = useTranslation();
-  const { settings } = useSettings();
+  const { settings, dismissInstallHint } = useSettings();
   const { state } = useSession();
+  const install = useInstall();
   const ready = state.status === 'ready';
   const hasExport = ready && state.capabilities.hasExport;
 
   const live = useLiveSnapshot(ready);
   const today = useTodayTotals(settings.emonId, ready);
   const recent = useRecentSeries(settings.emonId, ready);
+  const showBanner = shouldShowBanner({
+    method: install.method,
+    liveStatus: live.status,
+    dismissedAt: settings.installHintDismissedAt,
+  });
 
   return (
     <IonPage>
@@ -146,7 +156,7 @@ export default function LivePage() {
           <IonTitle>{t('live.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent className={showBanner ? 'ion-padding live-content--banner' : 'ion-padding'}>
         <div className="live">
           <div className="live__now">
             {live.snapshot && live.status ? (
@@ -197,6 +207,20 @@ export default function LivePage() {
             )}
           </section>
         </div>
+        {showBanner && (
+          <div slot="fixed" className="install-banner-slot">
+            <InstallBanner
+              method={install.method}
+              onInstall={install.start}
+              onDismiss={dismissInstallHint}
+            />
+          </div>
+        )}
+        <InstallSheet
+          method={install.method}
+          isOpen={install.sheetOpen}
+          onClose={install.closeSheet}
+        />
       </IonContent>
     </IonPage>
   );

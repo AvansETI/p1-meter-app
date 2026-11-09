@@ -14,7 +14,11 @@ import './theme/layout.css';
 
 import './i18n';
 import App from './App';
+import { initInstallPrompt } from './install/prompt';
 import { hideSplash } from './splash';
+
+// Before rendering: Chromium may fire beforeinstallprompt very early.
+initInstallPrompt();
 
 // No forced mode: Ionic uses iOS styling on iOS and Material Design elsewhere.
 setupIonicReact();

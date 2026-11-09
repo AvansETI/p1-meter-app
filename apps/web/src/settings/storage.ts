@@ -10,6 +10,8 @@ const SettingsSchema = z.object({
   version: z.literal(1),
   emonId: z.string().optional(),
   theme: ThemeSchema.catch('system'),
+  /** When the install banner was last dismissed (ISO); it returns after 30 days. */
+  installHintDismissedAt: z.string().optional(),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
