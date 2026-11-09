@@ -26,10 +26,18 @@ export function loggerOptions(config: Config): FastifyServerOptions['logger'] {
     formatters: { log: (object) => maskSignatures(object) },
     serializers: {
       // The SSE route carries the session ID in the query string; keep it out of the logs.
-      req: (req: { method: string; url: string; ip?: string }) => ({
+      // ip: client IP after TRUST_PROXY; remoteAddress: the socket peer (the proxy). Both are
+      // logged so the proxy setup can be verified (docs/operations.md, "Client IP").
+      req: (req: {
+        method: string;
+        url: string;
+        ip?: string;
+        socket?: { remoteAddress?: string };
+      }) => ({
         method: req.method,
         url: req.url.split('?')[0],
         ip: req.ip,
+        remoteAddress: req.socket?.remoteAddress,
       }),
     },
     hooks: {
