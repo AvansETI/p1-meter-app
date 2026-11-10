@@ -24,11 +24,17 @@ export function useTariffVersions(emonId: string | undefined, enabled: boolean) 
 
 /**
  * Saves the whole set against the version it was based on. On a conflict the caller shows a
- * message; the set is reloaded either way, so the screen always shows what is stored.
+ * message; the set is reloaded either way, so the screen always shows what is stored. Costs
+ * depend on the tariffs (and on the comparison switch), so they are reloaded as well.
  */
 export function useSaveTariffs(emonId: string | undefined) {
   const client = useQueryClient();
-  const settle = () => client.invalidateQueries({ queryKey: key(emonId) });
+  const settle = () =>
+    Promise.all(
+      [key(emonId), ['costs-today', emonId], ['history', emonId]].map((queryKey) =>
+        client.invalidateQueries({ queryKey }),
+      ),
+    );
   const save = useMutation({
     mutationFn: ({ profiles, version }: { profiles: TariffProfiles; version: number }) =>
       unwrap(api.saveTariffs(profiles, version)),
