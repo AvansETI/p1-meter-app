@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import ToolbarLogo from '../components/ToolbarLogo';
 import BrandLogo from '../components/BrandLogo';
 import EmonIdForm from '../components/EmonIdForm';
+import LicensesModal from '../components/LicensesModal';
 import InstallSheet from '../install/InstallSheet';
 import { OFFERABLE, useInstall } from '../install/useInstall';
 import { useSession } from '../session/context';
@@ -81,6 +82,7 @@ export default function SettingsPage() {
   const { state, clear } = useSession();
   const [changing, setChanging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [showLicenses, setShowLicenses] = useState(false);
   const install = useInstall();
 
   return (
@@ -196,9 +198,9 @@ export default function SettingsPage() {
             <a href={LICENSE_URL} target="_blank" rel="noreferrer">
               {t('settings.aboutLicense')}
             </a>
-            <a href="/third-party-licenses.txt" target="_blank" rel="noreferrer">
+            <button type="button" className="about__link" onClick={() => setShowLicenses(true)}>
               {t('settings.aboutThirdParty')}
-            </a>
+            </button>
           </div>
         </IonList>
 
@@ -215,6 +217,8 @@ export default function SettingsPage() {
             <EmonIdForm onDone={() => setChanging(false)} />
           </IonContent>
         </IonModal>
+
+        <LicensesModal isOpen={showLicenses} onClose={() => setShowLicenses(false)} />
 
         <IonAlert
           isOpen={confirmRemove}
