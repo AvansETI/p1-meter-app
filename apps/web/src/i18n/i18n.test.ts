@@ -1,5 +1,6 @@
 import { API_ERRORS } from '@p1/shared';
 import { describe, expect, it } from 'vitest';
+import en from './en.json';
 import nl from './nl.json';
 
 // Collect every translation key literal (e.g. 'settings.title') used in the app's source.
@@ -40,5 +41,19 @@ describe('Dutch translations', () => {
 
   it.each([...used])('has a Dutch text for %s', (key) => {
     expect(hasKey(nl, key)).toBe(true);
+  });
+});
+
+function leafKeys(dict: object, prefix = ''): string[] {
+  return Object.entries(dict).flatMap(([key, value]) =>
+    typeof value === 'object' && value !== null
+      ? leafKeys(value as object, `${prefix}${key}.`)
+      : [`${prefix}${key}`],
+  );
+}
+
+describe('English translations', () => {
+  it('have exactly the same keys as the Dutch ones', () => {
+    expect(leafKeys(en).sort()).toEqual(leafKeys(nl).sort());
   });
 });

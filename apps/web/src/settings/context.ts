@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react';
-import type { Settings, Theme } from './storage';
+import type { Language, Settings, Theme } from './storage';
 
 export interface SettingsValue {
   settings: Settings;
   setEmonId: (emonId: string | undefined) => void;
   setTheme: (theme: Theme) => void;
+  setLanguage: (language: Language) => void;
   dismissInstallHint: () => void;
   turnOffTariffHint: () => void;
 }

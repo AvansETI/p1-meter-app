@@ -6,10 +6,15 @@ export const SETTINGS_KEY = 'p1meter.settings';
 export const ThemeSchema = z.enum(['system', 'light', 'dark']);
 export type Theme = z.infer<typeof ThemeSchema>;
 
+/** 'system' follows the device language (docs/design/2026-11-12-language.md). */
+export const LanguageSchema = z.enum(['system', 'nl', 'en']);
+export type Language = z.infer<typeof LanguageSchema>;
+
 const SettingsSchema = z.object({
   version: z.literal(1),
   emonId: z.string().optional(),
   theme: ThemeSchema.catch('system'),
+  language: LanguageSchema.catch('system'),
   /** When the install banner was last dismissed (ISO); it returns after 30 days. */
   installHintDismissedAt: z.string().optional(),
   /** The user chose to never see the "fill in your tariffs" hint again. */
@@ -17,7 +22,7 @@ const SettingsSchema = z.object({
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
-export const DEFAULT_SETTINGS: Settings = { version: 1, theme: 'system' };
+export const DEFAULT_SETTINGS: Settings = { version: 1, theme: 'system', language: 'system' };
 
 /** Reads settings; falls back to defaults when storage is unavailable or the data is invalid. */
 export function loadSettings(storage: Storage | undefined = globalThis.localStorage): Settings {
