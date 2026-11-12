@@ -126,6 +126,7 @@
     "installUnsupported": "Installeren als app kan in Chrome, Edge of Safari.",
     "aboutLicense": "Open source onder de Apache 2.0-licentie",
     "aboutThirdParty": "Licenties van gebruikte software",
+    "licensesError": "De licenties konden niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
     "costs": "Kosten",
     "tariffs": "Tarieven"
   },

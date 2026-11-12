@@ -39,7 +39,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        // Files such as /third-party-licenses.txt are not app routes (#59).
+        navigateFallbackDenylist: [/^\/api\//, /^[^?]*\.\w+(?:\?.*)?$/],
       },
       devOptions: { enabled: false },
     }),

@@ -123,6 +123,24 @@ ion-menu.app-side-menu ion-item.selected {
 .about p {
   margin: 0;
 }
+/* Looks like the links above it, but opens the licenses modal (#59). */
+.about__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ion-color-primary);
+  font: inherit;
+  text-decoration: underline;
+  text-align: left;
+  cursor: pointer;
+}
+.licenses {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 
 .emon-form__error {
   min-height: 1.2em;
