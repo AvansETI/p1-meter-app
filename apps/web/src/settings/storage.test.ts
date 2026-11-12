@@ -18,7 +18,12 @@ function memoryStorage(initial: Record<string, string> = {}): Storage {
 describe('settings storage', () => {
   it('round-trips settings', () => {
     const storage = memoryStorage();
-    const settings = { version: 1 as const, emonId: 'X', theme: 'dark' as const };
+    const settings = {
+      version: 1 as const,
+      emonId: 'X',
+      theme: 'dark' as const,
+      language: 'en' as const,
+    };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
   });
@@ -33,7 +38,18 @@ describe('settings storage', () => {
       version: 1,
       emonId: 'X',
       theme: 'system',
+      language: 'system',
     });
+  });
+
+  it('loads settings from before the language setting as "system"', () => {
+    const raw = JSON.stringify({ version: 1, emonId: 'X', theme: 'dark' });
+    expect(loadSettings(memoryStorage({ [SETTINGS_KEY]: raw })).language).toBe('system');
+  });
+
+  it('repairs an unknown language', () => {
+    const raw = JSON.stringify({ version: 1, theme: 'dark', language: 'de' });
+    expect(loadSettings(memoryStorage({ [SETTINGS_KEY]: raw })).language).toBe('system');
   });
 
   it('survives storage that throws', () => {

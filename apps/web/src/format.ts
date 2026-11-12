@@ -1,3 +1,5 @@
+import { dateFormat } from './i18n/dates';
+
 const number = (decimals: number) =>
   new Intl.NumberFormat('nl-NL', {
     minimumFractionDigits: decimals,
@@ -42,20 +44,22 @@ export function formatEuro(value: number): string {
 /** `0,68` — gas in m³. */
 export const formatM3 = (value: number) => m3.format(value);
 
-const time = new Intl.DateTimeFormat('nl-NL', {
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-});
-const dateTime = new Intl.DateTimeFormat('nl-NL', {
-  day: 'numeric',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-});
+const time = () =>
+  dateFormat({
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+const dateTime = () =>
+  dateFormat({
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
 /** `12:04:31` for today, otherwise `14 okt 15:38`. */
 export function formatMoment(iso: string, now = new Date()): string {
   const date = new Date(iso);
-  return date.toDateString() === now.toDateString() ? time.format(date) : dateTime.format(date);
+  return date.toDateString() === now.toDateString() ? time().format(date) : dateTime().format(date);
 }

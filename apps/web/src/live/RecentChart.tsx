@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { formatKw, formatPowerText } from '../format';
 import { recentChartOption } from './chartOption';
 import { css, useEChart } from './useEChart';
+import { dateFormat } from '../i18n/dates';
 
-const hourMinute = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
+const hourMinute = () => dateFormat({ hour: '2-digit', minute: '2-digit' });
 
 /** Net power over the last 24 hours; colours follow the theme tokens and theme changes. */
 export default function RecentChart({
@@ -33,7 +34,7 @@ export default function RecentChart({
           net: (net) =>
             t(net < 0 ? 'live.chartExport' : 'live.chartImport', { value: formatPowerText(net) }),
           formatKw,
-          formatTime: (date) => hourMinute.format(date),
+          formatTime: (date) => hourMinute().format(date),
         },
         animate,
       ),

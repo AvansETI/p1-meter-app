@@ -28,12 +28,13 @@ import InstallSheet from '../install/InstallSheet';
 import { OFFERABLE, useInstall } from '../install/useInstall';
 import { useSession } from '../session/context';
 import { useSettings } from '../settings/context';
-import { ThemeSchema } from '../settings/storage';
+import { LanguageSchema, ThemeSchema } from '../settings/storage';
+import { dateFormat } from '../i18n/dates';
 
 const PROJECT_URL = 'https://github.com/AvansETI/SmartMeter_DIY';
 const LICENSE_URL = 'https://github.com/AvansETI/p1-meter-app/blob/main/LICENSE';
 
-const dateTime = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
+const dateTime = () => dateFormat({ dateStyle: 'medium', timeStyle: 'short' });
 
 /** Shows only what this household actually has: no export row without export, etc. */
 function MeterInfo({ capabilities }: { capabilities: Capabilities }) {
@@ -70,7 +71,7 @@ function MeterInfo({ capabilities }: { capabilities: Capabilities }) {
       </IonItem>
       <IonItem>
         <IonLabel>{t('settings.lastSeen')}</IonLabel>
-        <IonNote slot="end">{dateTime.format(new Date(capabilities.lastSeen))}</IonNote>
+        <IonNote slot="end">{dateTime().format(new Date(capabilities.lastSeen))}</IonNote>
       </IonItem>
     </>
   );
@@ -78,7 +79,7 @@ function MeterInfo({ capabilities }: { capabilities: Capabilities }) {
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { settings, setTheme } = useSettings();
+  const { settings, setTheme, setLanguage } = useSettings();
   const { state, clear } = useSession();
   const [changing, setChanging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -154,6 +155,30 @@ export default function SettingsPage() {
               </IonSegmentButton>
               <IonSegmentButton value="dark">
                 <IonLabel>{t('settings.themeDark')}</IonLabel>
+              </IonSegmentButton>
+            </IonSegment>
+          </IonItem>
+          <IonItem>
+            <IonLabel>{t('settings.language')}</IonLabel>
+          </IonItem>
+          <IonItem lines="none">
+            {/* Language names in their own language, so they can be found in either. */}
+            <IonSegment
+              className="language-segment"
+              value={settings.language}
+              onIonChange={(event) => {
+                const language = LanguageSchema.safeParse(event.detail.value);
+                if (language.success) setLanguage(language.data);
+              }}
+            >
+              <IonSegmentButton value="system">
+                <IonLabel>{t('settings.languageSystem')}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="nl" lang="nl">
+                <IonLabel>{t('settings.languageNl')}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="en" lang="en">
+                <IonLabel>{t('settings.languageEn')}</IonLabel>
               </IonSegmentButton>
             </IonSegment>
           </IonItem>

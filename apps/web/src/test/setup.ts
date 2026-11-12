@@ -6,6 +6,10 @@ afterEach(() => {
   cleanup();
 });
 
+// The app follows the device language by default; tests expect the Dutch texts.
+if (typeof navigator !== 'undefined')
+  Object.defineProperty(navigator, 'languages', { configurable: true, value: ['nl-NL'] });
+
 // <ion-app> starts its focus and keyboard helpers in a 32 ms timer after it loads. In a short
 // test file that timer could fire after jsdom was torn down ("window is not defined").
 afterAll(() => new Promise((resolve) => setTimeout(resolve, 100)));

@@ -30,12 +30,13 @@ import { useSettings } from '../settings/context';
 import { emptyDraft, summary, toDraft, type PeriodDraft } from '../tariffs/draft';
 import PeriodEditor from '../tariffs/PeriodEditor';
 import { useSaveTariffs, useTariffs, useTariffVersions } from '../tariffs/queries';
+import { dateFormat } from '../i18n/dates';
 
 type ProfileKey = 'own' | 'compare';
 
-const longDate = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'long' });
-const dateTime = new Intl.DateTimeFormat('nl-NL', { dateStyle: 'medium', timeStyle: 'short' });
-const showDate = (plain: string) => longDate.format(new Date(`${plain}T12:00:00`));
+const longDate = () => dateFormat({ dateStyle: 'long' });
+const dateTime = () => dateFormat({ dateStyle: 'medium', timeStyle: 'short' });
+const showDate = (plain: string) => longDate().format(new Date(`${plain}T12:00:00`));
 
 interface Editing {
   profile: ProfileKey;
@@ -284,7 +285,7 @@ export default function TariffsPage() {
                   {data.updatedAt && (
                     <IonNote slot="end">
                       {t('tariffs.lastChanged', {
-                        time: dateTime.format(new Date(data.updatedAt)),
+                        time: dateTime().format(new Date(data.updatedAt)),
                       })}
                     </IonNote>
                   )}
@@ -332,7 +333,7 @@ export default function TariffsPage() {
                       {t('tariffs.version', { version: version.version })}
                       {version.version === data?.version && ` · ${t('tariffs.current')}`}
                     </h3>
-                    <p>{dateTime.format(new Date(version.createdAt))}</p>
+                    <p>{dateTime().format(new Date(version.createdAt))}</p>
                     <p>
                       {t('tariffs.versionSummary', {
                         count: version.ownPeriods,

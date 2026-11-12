@@ -40,6 +40,7 @@ import { dateOfInstant, periodLabel, today } from '../history/dates';
 import { useHistory } from '../history/queries';
 import { useSession } from '../session/context';
 import { useSettings } from '../settings/context';
+import { currentDateLocale } from '../i18n/dates';
 
 // ECharts is large; load the charts only when they are shown.
 const EnergyChart = lazy(() =>
@@ -371,7 +372,7 @@ export default function HistoryPage() {
           <IonContent className="ion-padding">
             <IonDatetime
               presentation={PRESENTATION[period]}
-              locale="nl-NL"
+              locale={currentDateLocale()}
               firstDayOfWeek={1}
               value={formatPlainDate(date)}
               min={history?.firstData}
