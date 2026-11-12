@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { formatM3 } from '../format';
 import { gasChartOption } from './gasChartOption';
 import { css, useEChart } from './useEChart';
+import { dateFormat } from '../i18n/dates';
 
-const hourFormat = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
+const hourFormat = () => dateFormat({ hour: '2-digit', minute: '2-digit' });
 
 /** Gas use per hour over the last 24 hours. */
 export default function GasChart({ series }: { series: GasSeries }) {
@@ -23,7 +24,7 @@ export default function GasChart({ series }: { series: GasSeries }) {
         },
         {
           formatM3,
-          formatHour: (date) => hourFormat.format(date),
+          formatHour: (date) => hourFormat().format(date),
           gapNote: t('live.gasGap'),
           hourlyNote: series.hourlyUpdates ? t('live.gasHourlyNote') : undefined,
         },

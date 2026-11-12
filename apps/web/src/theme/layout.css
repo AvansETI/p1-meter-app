@@ -134,6 +134,13 @@ ion-menu.app-side-menu ion-item.selected {
   text-align: left;
   cursor: pointer;
 }
+/* "Nederlands" is the longest label; Material's padding and letter spacing cut it off. */
+.language-segment ion-segment-button {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  min-width: 0;
+  letter-spacing: 0;
+}
 .licenses {
   margin: 0;
   font-size: 12px;
