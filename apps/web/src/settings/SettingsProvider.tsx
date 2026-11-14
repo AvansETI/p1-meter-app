@@ -29,6 +29,7 @@ export function SettingsProvider({
       setEmonId: (emonId) => update({ emonId }),
       setTheme: (theme) => update({ theme }),
       setLanguage: (language) => update({ language }),
+      setFestive: (festive) => update({ festive }),
       dismissInstallHint: () => update({ installHintDismissedAt: new Date().toISOString() }),
       turnOffTariffHint: () => update({ tariffHintOff: true }),
     }),
