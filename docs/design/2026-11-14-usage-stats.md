@@ -60,8 +60,9 @@ export class UsageTracker {
 - `hash = HMAC-SHA256(salt, signature)` (hex). The salt is 32 random bytes generated on first
   start and stored in `app_meta` (`usage_salt`); `app_meta.usage_since` holds the first day.
 - An in-memory set of `signature|day` avoids a database write on every request.
-- `record()` is called from two places: a successful `POST /session`, and
-  `resolveHousehold()` (every data request with a valid session).
+- `record()` is called by `SessionStore` (an `onUse` callback) whenever a session is opened
+  (`POST /session`, only for known signatures) or used (every data request with a valid
+  session).
 
 Honest note: the hash keeps signatures out of this table, but the salt lives in the same
 database and the database already holds signatures in plain text (tariffs). It is data
