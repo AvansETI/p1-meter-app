@@ -144,8 +144,7 @@
     "tariffs": "Tariffs"
   },
   "pwa": {
-    "updateAvailable": "A new version is available.",
-    "reload": "Reload"
+    "updated": "Updated to version {{version}}"
   },
   "install": {
     "title": "Install as app",
