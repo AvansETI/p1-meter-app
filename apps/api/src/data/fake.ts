@@ -137,6 +137,10 @@ export class FakeDataSource implements HouseholdDataSource {
     return this.run(() => this.households[signature]?.recent ?? []);
   }
 
+  activeSignatureCount(): Promise<number> {
+    return this.run(() => Object.keys(this.households).length);
+  }
+
   ping(): Promise<boolean> {
     return Promise.resolve(this.available);
   }

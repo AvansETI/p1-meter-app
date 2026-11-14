@@ -49,6 +49,17 @@ export const SessionResponseSchema = z.object({
 });
 export type SessionResponse = z.infer<typeof SessionResponseSchema>;
 
+/** Aggregate usage numbers for Settings → About (#63); never per household. */
+export const StatsResponseSchema = z.object({
+  days: z.number(),
+  activeUsers: z.number(),
+  /** Absent when InfluxDB could not be queried. */
+  activeInstallations: z.number().optional(),
+  /** First day of user counting (YYYY-MM-DD) while that is less than `days` days ago. */
+  usersSince: z.string().optional(),
+});
+export type StatsResponse = z.infer<typeof StatsResponseSchema>;
+
 export const API_ERRORS = [
   'invalid_format',
   'not_found',

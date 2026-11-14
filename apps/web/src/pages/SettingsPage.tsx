@@ -26,6 +26,7 @@ import FestiveDecoration from '../festive/FestiveDecoration';
 import BrandLogo from '../components/BrandLogo';
 import EmonIdForm from '../components/EmonIdForm';
 import LicensesModal from '../components/LicensesModal';
+import UsageStats from '../components/UsageStats';
 import InstallSheet from '../install/InstallSheet';
 import { OFFERABLE, useInstall } from '../install/useInstall';
 import { useSession } from '../session/context';
@@ -228,6 +229,7 @@ export default function SettingsPage() {
             </div>
             <p>{t('settings.aboutAuthor')}</p>
             <IonNote>{t('settings.version', { version: __APP_VERSION__ })}</IonNote>
+            <UsageStats />
             <a href={PROJECT_URL} target="_blank" rel="noreferrer">
               {t('settings.aboutProject')}
             </a>
