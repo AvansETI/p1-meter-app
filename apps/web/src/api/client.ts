@@ -8,6 +8,7 @@ import {
   TariffVersionSchema,
   LiveSnapshotSchema,
   RecentSeriesSchema,
+  StatsResponseSchema,
   TodayTotalsSchema,
   ErrorResponseSchema,
   SESSION_HEADER,
@@ -25,6 +26,7 @@ import {
   type RecentSeries,
   type TodayTotals,
   type SessionResponse,
+  type StatsResponse,
 } from '@p1/shared';
 import type { z } from 'zod';
 
@@ -83,6 +85,11 @@ export class ApiClient {
   ensureSession(emonId: string): Promise<ApiResult<SessionResponse>> {
     this.opening ??= this.openSession(emonId).finally(() => (this.opening = undefined));
     return this.opening;
+  }
+
+  /** Active users and meter kits (#63); public, no session needed. */
+  getStats(): Promise<ApiResult<StatsResponse>> {
+    return call('/stats', {}, StatsResponseSchema);
   }
 
   getCapabilities(): Promise<ApiResult<Capabilities>> {

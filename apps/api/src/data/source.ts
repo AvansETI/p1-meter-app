@@ -65,6 +65,8 @@ export interface HouseholdDataSource {
   gasHourly(signature: string, from: Date): Promise<GasData>;
   /** 5-minute mean power over the last 24 hours. */
   recentPower(signature: string): Promise<PowerWindow[]>;
+  /** Number of distinct households (signatures) with data in the last `days` days. */
+  activeSignatureCount(days: number): Promise<number>;
   ping(): Promise<boolean>;
 }
 

@@ -24,6 +24,8 @@ import { TARIFF_WRITES_PER_HOUR, tariffRoutes } from './routes/tariffs';
 import { PriceJob, httpFetchers } from './prices/job';
 import { InfluxPriceStore, type PriceReader } from './prices/store';
 import { sessionRoutes } from './routes/session';
+import { STATS_DAYS, statsRoutes } from './routes/stats';
+import { UsageTracker } from './usage/tracker';
 import { LivePoller } from './live/poller';
 import { LiveService } from './live/service';
 import { AttemptCounter, SessionStore } from './sessions';
@@ -97,7 +99,6 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
       Object.assign(new Error('rate_limited'), { statusCode: context.statusCode }),
   });
 
-  const sessions = new SessionStore(config.SESSION_TTL_HOURS * HOUR_MS);
   const capabilities = new CapabilityService(source);
   const live = new LiveService(source);
   const poller = new LivePoller(source, live, app.log, deps.pollIntervalMs);
@@ -106,19 +107,34 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   // App database (tariffs, #36): in memory for tests, a file in DATA_DIR otherwise.
   const db = openDatabase(config.NODE_ENV === 'test' ? ':memory:' : config.DATA_DIR);
   const tariffs = new TariffRepository(db);
+  // Every opened or used session counts its household as an active user (#63).
+  const usage = new UsageTracker(db);
+  const sessions = new SessionStore(config.SESSION_TTL_HOURS * HOUR_MS, undefined, (signature) => {
+    try {
+      usage.record(signature);
+    } catch (error) {
+      app.log.error({ err: error }, 'recording app usage failed');
+    }
+  });
   if (config.NODE_ENV !== 'test') {
-    const backup = () => {
+    // Hourly: today's backup (once per day) and dropping usage older than 30 days.
+    const maintenance = () => {
       try {
         const file = backupDaily(db, config.DATA_DIR);
         if (file) app.log.info({ file }, 'database backup written');
       } catch (error) {
         app.log.error({ err: error }, 'database backup failed');
       }
+      try {
+        usage.prune(STATS_DAYS);
+      } catch (error) {
+        app.log.error({ err: error }, 'pruning app usage failed');
+      }
     };
-    backup();
-    const backupTimer = setInterval(backup, 60 * 60_000);
-    backupTimer.unref();
-    app.addHook('onClose', () => clearInterval(backupTimer));
+    maintenance();
+    const maintenanceTimer = setInterval(maintenance, 60 * 60_000);
+    maintenanceTimer.unref();
+    app.addHook('onClose', () => clearInterval(maintenanceTimer));
   }
   app.addHook('onClose', () => db.close());
 
@@ -185,6 +201,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
         poller,
         heartbeatMs: deps.heartbeatMs,
       });
+      await api.register(statsRoutes, { source, usage });
       await api.register(sessionRoutes, {
         sessions,
         capabilities,
