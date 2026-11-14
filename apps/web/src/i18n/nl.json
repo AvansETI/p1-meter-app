@@ -144,8 +144,7 @@
     "tariffs": "Tarieven"
   },
   "pwa": {
-    "updateAvailable": "Er is een nieuwe versie beschikbaar.",
-    "reload": "Vernieuwen"
+    "updated": "Bijgewerkt naar versie {{version}}"
   },
   "install": {
     "title": "Installeer als app",
