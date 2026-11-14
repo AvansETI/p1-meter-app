@@ -119,12 +119,20 @@
     "languageSystem": "Systeem",
     "languageNl": "Nederlands",
     "languageEn": "English",
+    "festive": "Feestversiering",
     "about": "Over",
     "aboutLectorate": "Lectoraat Smart Energy",
     "aboutPartners": "Avans Hogeschool en HZ University of Applied Sciences",
     "aboutAuthor": "Arno Broeders",
     "aboutProject": "Meer over de meterkit",
     "version": "Versie {{version}}",
+    "statsUsers_one": "{{count}} actieve gebruiker",
+    "statsUsers_other": "{{count}} actieve gebruikers",
+    "statsUsersSince_one": "{{count}} actieve gebruiker sinds {{date}}",
+    "statsUsersSince_other": "{{count}} actieve gebruikers sinds {{date}}",
+    "statsKits_one": "{{count}} actieve meterkit",
+    "statsKits_other": "{{count}} actieve meterkits",
+    "statsPeriod": "(laatste {{days}} dagen)",
     "measuredElectricity": "Stroomverbruik",
     "app": "App",
     "installApp": "App installeren",
@@ -136,8 +144,7 @@
     "tariffs": "Tarieven"
   },
   "pwa": {
-    "updateAvailable": "Er is een nieuwe versie beschikbaar.",
-    "reload": "Vernieuwen"
+    "updated": "Bijgewerkt naar versie {{version}}"
   },
   "install": {
     "title": "Installeer als app",

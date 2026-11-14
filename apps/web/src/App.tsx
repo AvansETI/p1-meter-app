@@ -19,7 +19,7 @@ import LivePage from './pages/LivePage';
 import SettingsPage from './pages/SettingsPage';
 import TariffsPage from './pages/TariffsPage';
 import WelcomePage from './pages/WelcomePage';
-import UpdatePrompt from './pwa/UpdatePrompt';
+import AppUpdate from './pwa/AppUpdate';
 import { SessionProvider } from './session/SessionProvider';
 import { useSettings } from './settings/context';
 import { SettingsProvider } from './settings/SettingsProvider';
@@ -70,7 +70,7 @@ function Shell() {
   return (
     <IonApp>
       <IonReactRouter>{settings.emonId ? <MainLayout /> : <WelcomeLayout />}</IonReactRouter>
-      <UpdatePrompt />
+      <AppUpdate />
     </IonApp>
   );
 }

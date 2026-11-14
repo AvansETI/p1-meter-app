@@ -5,18 +5,26 @@ import { LRUCache } from 'lru-cache';
 export class SessionStore {
   private readonly sessions: LRUCache<string, string>;
 
-  constructor(ttlMs: number, max = 10_000) {
+  /** `onUse` hears every opened or used session, e.g. to count active users (#63). */
+  constructor(
+    ttlMs: number,
+    max = 10_000,
+    private readonly onUse: (signature: string) => void = () => {},
+  ) {
     this.sessions = new LRUCache({ max, ttl: ttlMs, updateAgeOnGet: true });
   }
 
   create(signature: string): string {
     const id = randomBytes(16).toString('base64url');
     this.sessions.set(id, signature);
+    this.onUse(signature);
     return id;
   }
 
   get(id: string | undefined): string | undefined {
-    return id ? this.sessions.get(id) : undefined;
+    const signature = id ? this.sessions.get(id) : undefined;
+    if (signature) this.onUse(signature);
+    return signature;
   }
 
   delete(id: string | undefined): void {

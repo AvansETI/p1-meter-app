@@ -12,6 +12,7 @@ import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Hourglass from '../components/Hourglass';
 import ToolbarLogo from '../components/ToolbarLogo';
+import FestiveDecoration from '../festive/FestiveDecoration';
 import { useDelayed } from '../components/useDelayed';
 import CostTile from '../costs/CostTile';
 import { useCostsToday } from '../costs/queries';
@@ -169,6 +170,7 @@ export default function LivePage() {
           <IonTitle>{t('live.title')}</IonTitle>
           <ToolbarLogo />
         </IonToolbar>
+        <FestiveDecoration />
       </IonHeader>
       <IonContent className={showBanner ? 'ion-padding live-content--banner' : 'ion-padding'}>
         <div className="live">

@@ -19,10 +19,17 @@ const SettingsSchema = z.object({
   installHintDismissedAt: z.string().optional(),
   /** The user chose to never see the "fill in your tariffs" hint again. */
   tariffHintOff: z.boolean().optional(),
+  /** Holiday decoration in the title bar (docs/design/2026-11-14-festive-decoration.md). */
+  festive: z.boolean().catch(true),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
-export const DEFAULT_SETTINGS: Settings = { version: 1, theme: 'system', language: 'system' };
+export const DEFAULT_SETTINGS: Settings = {
+  version: 1,
+  theme: 'system',
+  language: 'system',
+  festive: true,
+};
 
 /** Reads settings; falls back to defaults when storage is unavailable or the data is invalid. */
 export function loadSettings(storage: Storage | undefined = globalThis.localStorage): Settings {

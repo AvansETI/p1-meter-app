@@ -315,6 +315,15 @@ from(bucket: ${literal(this.options.bucket)})
     );
   }
 
+  async activeSignatureCount(days: number): Promise<number> {
+    // tagValues reads the index instead of the data, so 30 days are cheap.
+    const rows = await this.query(`import "influxdata/influxdb/schema"
+schema.tagValues(bucket: ${literal(this.options.bucket)}, tag: "signature", start: -${Math.round(days)}d)
+  |> count()`);
+    const value = rows[0]?._value;
+    return typeof value === 'number' ? value : 0;
+  }
+
   async ping(): Promise<boolean> {
     try {
       const res = await fetch(new URL('/ping', this.options.url), {

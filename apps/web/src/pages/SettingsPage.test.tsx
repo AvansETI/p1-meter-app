@@ -50,6 +50,11 @@ describe('SettingsPage', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
+  it('shows the holiday decorations switch', async () => {
+    renderPage();
+    expect((await screen.findByText('Feestversiering')).closest('ion-toggle')).not.toBeNull();
+  });
+
   it('shows the meter information with each value under its label', async () => {
     const caps = { hasExport: true, hasGas: true };
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {

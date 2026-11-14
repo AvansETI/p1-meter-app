@@ -28,6 +28,15 @@ const MIGRATIONS: string[] = [
    );`,
   // Gap handling changed (#49): recompute all cached costs.
   `DELETE FROM daily_costs;`,
+  // Active users (#63): a salted hash per household and its last day of use, no signature.
+  `CREATE TABLE app_usage (
+     hash     TEXT PRIMARY KEY,
+     last_day TEXT NOT NULL
+   );
+   CREATE TABLE app_meta (
+     key   TEXT PRIMARY KEY,
+     value TEXT NOT NULL
+   );`,
 ];
 
 /** Opens (and migrates) the app database in `dir` (docs/design/2026-11-09-costs.md §5). */

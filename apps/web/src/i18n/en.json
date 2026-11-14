@@ -119,12 +119,20 @@
     "languageSystem": "System",
     "languageNl": "Nederlands",
     "languageEn": "English",
+    "festive": "Holiday decorations",
     "about": "About",
     "aboutLectorate": "Lectoraat Smart Energy",
     "aboutPartners": "Avans Hogeschool and HZ University of Applied Sciences",
     "aboutAuthor": "Arno Broeders",
     "aboutProject": "More about the meter kit",
     "version": "Version {{version}}",
+    "statsUsers_one": "{{count}} active user",
+    "statsUsers_other": "{{count}} active users",
+    "statsUsersSince_one": "{{count}} active user since {{date}}",
+    "statsUsersSince_other": "{{count}} active users since {{date}}",
+    "statsKits_one": "{{count}} active meter kit",
+    "statsKits_other": "{{count}} active meter kits",
+    "statsPeriod": "(last {{days}} days)",
     "measuredElectricity": "Electricity use",
     "app": "App",
     "installApp": "Install app",
@@ -136,8 +144,7 @@
     "tariffs": "Tariffs"
   },
   "pwa": {
-    "updateAvailable": "A new version is available.",
-    "reload": "Reload"
+    "updated": "Updated to version {{version}}"
   },
   "install": {
     "title": "Install as app",

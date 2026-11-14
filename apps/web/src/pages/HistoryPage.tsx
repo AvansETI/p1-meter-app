@@ -31,6 +31,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Hourglass from '../components/Hourglass';
 import ToolbarLogo from '../components/ToolbarLogo';
+import FestiveDecoration from '../festive/FestiveDecoration';
 import { useDelayed } from '../components/useDelayed';
 import HistoryCostSummary from '../costs/HistoryCostSummary';
 import { useSearchParams } from 'react-router-dom';
@@ -252,6 +253,7 @@ export default function HistoryPage() {
           <IonTitle>{t('history.title')}</IonTitle>
           <ToolbarLogo />
         </IonToolbar>
+        <FestiveDecoration />
       </IonHeader>
       <IonContent className="ion-padding">
         <div className={switching ? 'history history--loading' : 'history'}>
