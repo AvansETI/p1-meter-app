@@ -6,6 +6,7 @@ export interface SettingsValue {
   setEmonId: (emonId: string | undefined) => void;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
+  setFestive: (festive: boolean) => void;
   dismissInstallHint: () => void;
   turnOffTariffHint: () => void;
 }

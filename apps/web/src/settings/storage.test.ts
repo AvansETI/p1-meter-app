@@ -23,6 +23,7 @@ describe('settings storage', () => {
       emonId: 'X',
       theme: 'dark' as const,
       language: 'en' as const,
+      festive: false,
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
@@ -39,6 +40,7 @@ describe('settings storage', () => {
       emonId: 'X',
       theme: 'system',
       language: 'system',
+      festive: true,
     });
   });
 
@@ -50,6 +52,13 @@ describe('settings storage', () => {
   it('repairs an unknown language', () => {
     const raw = JSON.stringify({ version: 1, theme: 'dark', language: 'de' });
     expect(loadSettings(memoryStorage({ [SETTINGS_KEY]: raw })).language).toBe('system');
+  });
+
+  it('loads settings from before the festive setting as on', () => {
+    const raw = JSON.stringify({ version: 1, theme: 'dark', festive: 'yes' });
+    expect(loadSettings(memoryStorage({ [SETTINGS_KEY]: raw })).festive).toBe(true);
+    const old = JSON.stringify({ version: 1, theme: 'dark' });
+    expect(loadSettings(memoryStorage({ [SETTINGS_KEY]: old })).festive).toBe(true);
   });
 
   it('survives storage that throws', () => {

@@ -15,12 +15,14 @@ import {
   IonSegmentButton,
   IonSpinner,
   IonTitle,
+  IonToggle,
   IonToolbar,
 } from '@ionic/react';
 import { formatDynamicPart, type Capabilities } from '@p1/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ToolbarLogo from '../components/ToolbarLogo';
+import FestiveDecoration from '../festive/FestiveDecoration';
 import BrandLogo from '../components/BrandLogo';
 import EmonIdForm from '../components/EmonIdForm';
 import LicensesModal from '../components/LicensesModal';
@@ -79,7 +81,7 @@ function MeterInfo({ capabilities }: { capabilities: Capabilities }) {
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { settings, setTheme, setLanguage } = useSettings();
+  const { settings, setTheme, setLanguage, setFestive } = useSettings();
   const { state, clear } = useSession();
   const [changing, setChanging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -93,6 +95,7 @@ export default function SettingsPage() {
           <IonTitle>{t('settings.title')}</IonTitle>
           <ToolbarLogo />
         </IonToolbar>
+        <FestiveDecoration />
       </IonHeader>
       <IonContent>
         <IonList inset>
@@ -181,6 +184,14 @@ export default function SettingsPage() {
                 <IonLabel>{t('settings.languageEn')}</IonLabel>
               </IonSegmentButton>
             </IonSegment>
+          </IonItem>
+          <IonItem>
+            <IonToggle
+              checked={settings.festive}
+              onIonChange={(event) => setFestive(event.detail.checked)}
+            >
+              {t('settings.festive')}
+            </IonToggle>
           </IonItem>
         </IonList>
 
