@@ -1,9 +1,11 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import '../i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SettingsProvider } from '../settings/SettingsProvider';
 import { useSettings } from '../settings/context';
 import { DEFAULT_SETTINGS, SETTINGS_KEY } from '../settings/storage';
 import FestiveDecoration, { Decoration } from './FestiveDecoration';
+import { SEASONS } from './season';
 
 afterEach(() => {
   localStorage.clear();
@@ -46,6 +48,30 @@ describe('Decoration', () => {
     setReducedMotion(true);
     const { container } = render(<Decoration season="newyear" />);
     expect(container.querySelector('canvas')).not.toBeInTheDocument();
+  });
+});
+
+describe('Decoration: every season', () => {
+  it.each(SEASONS.filter((season) => season !== 'newyear'))('draws %s', (season) => {
+    const { container } = render(<Decoration season={season} />);
+    const layer = container.querySelector(`.festive--${season}`);
+    expect(layer).toHaveAttribute('aria-hidden', 'true');
+    expect(layer!.childElementCount).toBeGreaterThan(0);
+  });
+
+  it('lights the shamash and one more candle each evening of Chanoeka', () => {
+    const flames = (now: Date) =>
+      render(<Decoration season="hanukkah" now={now} />).container.querySelectorAll('.fx-flame')
+        .length;
+    expect(flames(new Date(2026, 11, 4))).toBe(2);
+    expect(flames(new Date(2026, 11, 8))).toBe(6);
+    expect(flames(new Date(2026, 11, 12))).toBe(9);
+  });
+
+  it('tells what the holiday is about on tap', async () => {
+    render(<Decoration season="stmartin" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Over deze feestdag: Sint-Maarten' }));
+    expect(await screen.findByText(/zelfgemaakte lampionnen/)).toBeInTheDocument();
   });
 });
 

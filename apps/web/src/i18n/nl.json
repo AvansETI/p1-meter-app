@@ -301,5 +301,108 @@
     "hintNever": "Deze melding niet meer tonen?",
     "hintNeverAction": "Nooit meer",
     "calculating": "Kosten berekenen…"
+  },
+  "festive": {
+    "about": "Over deze feestdag: {{name}}",
+    "lunarnewyear": {
+      "name": "Chinees Nieuwjaar",
+      "about": "Het nieuwe jaar volgens de Chinese maankalender, ook wel Lentefeest. Families komen samen, rode lampionnen en draken brengen geluk en er is vuurwerk; in Nederland onder meer gevierd in de Chinatowns van Amsterdam, Rotterdam en Den Haag."
+    },
+    "sweater": {
+      "name": "Warme Truiendag",
+      "about": "Een dag van het Klimaatverbond: zet de verwarming een graad lager en trek een warme trui aan. Dat scheelt zo'n 6% energie voor verwarming."
+    },
+    "valentine": {
+      "name": "Valentijnsdag",
+      "about": "Op 14 februari laten mensen elkaar met een kaartje, bloemen of iets lekkers weten dat ze om elkaar geven. De dag is genoemd naar de heilige Valentijn."
+    },
+    "carnival": {
+      "name": "Carnaval",
+      "about": "Vooral in Brabant en Limburg vieren mensen in de dagen voor Aswoensdag feest, verkleed of in boerenkiel, met optochten en muziek. Daarna begint voor christenen de vastentijd voor Pasen."
+    },
+    "eidfitr": {
+      "name": "Suikerfeest",
+      "about": "Het Suikerfeest (Eid al-Fitr) sluit de vastenmaand ramadan af. Moslims bezoeken familie en vrienden, delen lekkernijen en geven aan wie het minder heeft."
+    },
+    "holi": {
+      "name": "Holi Phagwa",
+      "about": "Het hindoeïstische lentefeest waarbij het goede wint van het kwade. Op de dag na het vreugdevuur gooien mensen elkaar met gekleurd poeder; in Nederland vooral gevierd door de Surinaams-Hindoestaanse gemeenschap."
+    },
+    "nowruz": {
+      "name": "Nowruz",
+      "about": "Nieuwjaar bij het begin van de lente, gevierd door onder meer Iraanse, Afghaanse en Koerdische Nederlanders. Op tafel staan symbolen voor een nieuw begin, zoals ontkiemd graan (sabzeh) en een goudvisje."
+    },
+    "earthhour": {
+      "name": "Earth Hour",
+      "about": "Op de laatste zaterdag van maart doen mensen en gebouwen wereldwijd een uur lang het licht uit, van 20.30 tot 21.30 uur, als teken voor het klimaat."
+    },
+    "easter": {
+      "name": "Pasen",
+      "about": "Christenen gedenken met Goede Vrijdag de dood en met Pasen de opstanding van Jezus. Gekleurde eieren en de paashaas staan voor nieuw leven en de lente."
+    },
+    "songkran": {
+      "name": "Songkran",
+      "about": "Het Thaise nieuwjaar, van 13 tot 15 april. Water staat voor reiniging en een frisse start: mensen besprenkelen ouderen met respect en elkaar met veel plezier."
+    },
+    "earthday": {
+      "name": "Dag van de Aarde",
+      "about": "Op 22 april staan mensen wereldwijd stil bij de zorg voor de aarde: minder energie verbruiken, minder verspillen en de natuur beschermen."
+    },
+    "kingsday": {
+      "name": "Koningsdag",
+      "about": "De verjaardag van koning Willem-Alexander op 27 april (of 26 april als 27 april op zondag valt). Nederland kleurt oranje, met vrijmarkten, muziek en de avond ervoor Koningsnacht."
+    },
+    "eidadha": {
+      "name": "Offerfeest",
+      "about": "Het Offerfeest (Eid al-Adha) herdenkt het geloof van de profeet Ibrahim. Moslims komen samen voor het gebed, bezoeken familie en delen eten met anderen, ook met wie het minder heeft."
+    },
+    "liberation": {
+      "name": "Bevrijdingsdag",
+      "about": "Op 5 mei viert Nederland het einde van de Duitse bezetting in 1945 en staan we stil bij het belang van vrijheid. De avond ervoor, op 4 mei, herdenken we de doden."
+    },
+    "solstice": {
+      "name": "Langste dag",
+      "about": "Rond 21 juni staat de zon het hoogst en is het het langst licht van het jaar. Zonnepanelen leveren dan het meest op."
+    },
+    "ketikoti": {
+      "name": "Keti Koti",
+      "about": "Op 1 juli herdenken en vieren we de afschaffing van de slavernij in Suriname en de voormalige Nederlandse Antillen in 1863. Keti Koti betekent 'de ketenen zijn verbroken'. Veel mensen dragen koto's en angisa's in kleurrijke stoffen."
+    },
+    "pride": {
+      "name": "Pride Amsterdam",
+      "about": "Een week vol evenementen voor gelijke rechten en acceptatie van lhbtiq+-personen, met de Canal Parade over de Amsterdamse grachten op de eerste zaterdag van augustus."
+    },
+    "halloween": {
+      "name": "Halloween",
+      "about": "Op 31 oktober verkleden mensen zich griezelig en zetten ze uitgeholde pompoenen met een kaarsje neer. Het feest komt uit Ierland en is via Amerika ook in Nederland populair geworden."
+    },
+    "diwali": {
+      "name": "Divali",
+      "about": "Het lichtfeest van hindoes, sikhs en jains: het licht wint van het duister. Huizen worden verlicht met olielampjes (diya's) en versierd met rangoli; in Nederland groot in de Surinaams-Hindoestaanse gemeenschap."
+    },
+    "stmartin": {
+      "name": "Sint-Maarten",
+      "about": "Op 11 november lopen kinderen 's avonds met zelfgemaakte lampionnen langs de deuren en zingen ze liedjes voor iets lekkers. Het feest herdenkt Sint-Maarten, die zijn mantel deelde met een bedelaar."
+    },
+    "loykrathong": {
+      "name": "Loy Krathong",
+      "about": "Een Thais lichtfeest bij volle maan in november. Mensen laten krathongs, bootjes van bananenblad met bloemen en een kaarsje, op het water drijven om dank te zeggen en zorgen los te laten."
+    },
+    "sinterklaas": {
+      "name": "Sinterklaas",
+      "about": "Begin december brengen Sinterklaas en zijn pieten cadeautjes, met op 5 december pakjesavond: surprises, gedichten en pepernoten."
+    },
+    "hanukkah": {
+      "name": "Chanoeka",
+      "about": "Het Joodse lichtfeest van acht dagen herdenkt de herinwijding van de Tempel in Jeruzalem. Elke avond gaat er een kaarsje meer aan in de chanoekia."
+    },
+    "christmas": {
+      "name": "Kerst",
+      "about": "Christenen vieren met Kerstmis de geboorte van Jezus. Voor veel mensen een tijd van samenzijn, lichtjes en een versierde boom."
+    },
+    "newyear": {
+      "name": "Oud en Nieuw",
+      "about": "Het afscheid van het oude en de start van het nieuwe jaar, met oliebollen, aftellen tot middernacht en vuurwerk."
+    }
   }
 }
