@@ -20,7 +20,8 @@
     "test": "vitest run",
     "prepare": "lefthook install",
     "check:signatures": "node scripts/check-signatures.mjs",
-    "check:licenses": "node scripts/licenses.mjs check"
+    "check:licenses": "node scripts/licenses.mjs check",
+    "changelog": "node scripts/changelog.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

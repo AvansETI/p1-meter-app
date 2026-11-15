@@ -15,7 +15,7 @@ export default function SideMenu({ hasGas }: { hasGas: boolean }) {
         <BrandLogo className="app-side-menu__logo" />
         <p className="app-side-menu__name">{t('app.shortName')}</p>
         <IonList lines="none">
-          {navItems(hasGas).map((item) => (
+          {navItems(hasGas, true).map((item) => (
             <IonItem
               key={item.tab}
               routerLink={item.path}
