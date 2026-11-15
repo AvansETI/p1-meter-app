@@ -75,11 +75,15 @@ only the message is skipped.
 An update found at start-up used to show the splash twice: the first splash, the reload, and
 a second splash with the intro and the 3.5 s loading bar starting over. Now:
 
-- Before the reload `useReloadWhenIdle` sets `data-splash="updating"` on `<html>`: a splash
-  that is still showing says "Bijwerken…" / "Updating…" under a running (indeterminate) bar.
-- `theme-init.js` sets the same attribute before first paint when `p1meter.updatedFrom` is
-  in `sessionStorage`, so after the reload the splash continues with the same text and bar,
-  without the logo intro, and `hideSplash` adds no minimum time.
+- As soon as a new version is found, `data-splash="updating"` is set on `<html>`, while the
+  splash still shows. That happens on the registration's `updatefound`, or right away when
+  the browser's own start-up check is already installing it, but not on the very first visit
+  without a controlling service worker. The splash then says "Bijwerken…" / "Updating…" under a
+  running (indeterminate) bar and stays until the reload. If the install fails, it gives up
+  after 15 s.
+- `theme-init.js` sets `data-splash="updated"` before first paint when `p1meter.updatedFrom` is
+  in `sessionStorage`. After the reload the splash continues with the same text and bar,
+  without the logo intro, for at least 2 s (`SPLASH_UPDATED_MS`), so the message can be read.
 - `theme-init.js` also sets `data-splash-lang` (the chosen language, or the device's first
   language as in `resolveLanguage`), because the splash is shown before i18n loads.
 

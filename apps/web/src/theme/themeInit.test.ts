@@ -31,7 +31,7 @@ describe('theme-init.js splash', () => {
     localStorage.setItem('p1meter.settings', JSON.stringify({ language: 'en' }));
     sessionStorage.setItem('p1meter.updatedFrom', '0.13.0');
     run();
-    expect(html.dataset.splash).toBe('updating');
+    expect(html.dataset.splash).toBe('updated');
     expect(html.dataset.splashLang).toBe('en');
   });
 });
