@@ -345,7 +345,7 @@ filter it on `capabilities.gas`, and `/gas` redirects to `/live` without gas.
 - **Comparison bands:** the values sit under their own positions, and a legend explains the
   bands.
 
-## 11. Year division (extension, 2026-11-15)
+## 11. Year division and settlement forecast (extension, 2026-11-15)
 
 ### 11.1 Year division
 
@@ -375,12 +375,30 @@ A new setting, Settings → Gas analysis → **Year division**:
 - **CBS:** CBS publishes calendar years only. The CBS column in the Years table is therefore
   shown only for calendar years. The comparison card (last 12 months) does not change.
 
-### 11.2 No costs
+### 11.2 Settlement forecast in m³
 
-At first a gas cost forecast (euros, with an optional advance payment) was planned here. It was
-dropped: fixed costs and the reduction of energy tax cannot be attributed to gas, and without
-them the comparison with an advance payment is misleading. The gas analysis stays in m³; costs
-remain on the Live and History pages.
+Costs stay out (fixed costs and the reduction of energy tax cannot be attributed to gas), but
+the user does want to know how the annual settlement will turn out. Suppliers base the advance
+payment on an **expected annual use in m³**, which is on the contract and on the annual
+statement. The comparison is made with that number.
+
+- **Setting:** "Expected annual use (m³)", optional, in Settings → Gas analysis next to the
+  year division.
+- **Tile "Settlement <year>"** (only with the setting filled in):
+  - The forecast m³ for the current year (§3.5, in the chosen division) against the expected
+    m³.
+  - Shown as the expected difference, e.g. "−85 m³ (−9%), less than expected".
+- **Tile "So far"** (only with the setting filled in):
+  - Use so far against what was expected up to today, at the actual weather.
+  - Expected so far = baseline × elapsed days + (expected − baseline × 365) × degree days so
+    far ÷ normal degree days of the year.
+  - A cold start of the year therefore does not count against the household; a mild one does
+    not count in its favour.
+  - Shown as e.g. "320 of 360 m³ expected (−11%)".
+- **Without the setting:** only the existing forecast tile, with a link to fill in the
+  expected use.
+- **Footnote:** "Forecast in m³; the settlement also depends on prices, fixed costs and the
+  reduction of energy tax."
 
 ### 11.3 Testing
 
@@ -389,10 +407,12 @@ remain on the Live and History pages.
 - **API:**
   - The contract start from the tariffs and from an override.
   - The fallback to 1 January.
+- **Shared:** expected use so far at the actual weather.
 - **Web:**
   - The year division setting.
   - The labels "2026-2027".
   - The CBS column hidden outside calendar years.
+  - The settlement and so-far tiles, with and without the expected annual use.
 
 ## 12. Out of scope
 
