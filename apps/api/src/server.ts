@@ -3,7 +3,8 @@ import Fastify, { type FastifyError } from 'fastify';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
-import { API_BASE, type ErrorResponse } from '@p1/shared';
+import { API_BASE, VERSION_HEADER, type ErrorResponse } from '@p1/shared';
+import pkg from '../package.json' with { type: 'json' };
 import type { Config } from './config';
 import { CapabilityService } from './data/capabilities';
 import { FakeDataSource } from './data/fake';
@@ -97,6 +98,12 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
       // HTTPS is enforced by the reverse proxy; upgrading here breaks plain-HTTP LAN testing.
       directives: { 'upgrade-insecure-requests': null },
     },
+  });
+
+  // An open app compares this with its own version and then looks for the new one.
+  app.addHook('onRequest', (request, reply, done) => {
+    if (request.url.startsWith(API_BASE)) reply.header(VERSION_HEADER, pkg.version);
+    done();
   });
 
   await app.register(rateLimit, {

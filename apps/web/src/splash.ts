@@ -20,7 +20,8 @@ export interface HideSplashOptions {
 export function hideSplash(
   el: HTMLElement | null = document.getElementById('splash'),
   {
-    minMs = SPLASH_MIN_MS,
+    // After an update reload the splash already showed its full time (see index.html).
+    minMs = document.documentElement.dataset.splash === 'updating' ? 0 : SPLASH_MIN_MS,
     now = () => performance.now(),
     reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   }: HideSplashOptions = {},
