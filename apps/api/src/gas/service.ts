@@ -15,6 +15,10 @@ import {
   periods,
   quantile,
   rateDays,
+  REFERENCE_BASE,
+  REFERENCE_METHOD,
+  REFERENCE_STATION,
+  referenceAnnual,
   RECENT_DAYS,
   rollingCorrected,
   stationForPostcode,
@@ -329,9 +333,40 @@ export class GasService {
     );
   }
 
+  /**
+   * Computes and stores the household's reference value (design §4.1) with its own station
+   * when its postcode is known and that weather is complete, else De Bilt. False when the
+   * household has too little data.
+   */
+  async updateReference(signature: string, from: Date): Promise<boolean> {
+    const own = this.stationOf(signature);
+    const station = own !== undefined && this.job.ready(own) ? own : REFERENCE_STATION;
+    const [gas, weather, normals] = await Promise.all([
+      this.recentGasDays(signature, from),
+      this.weather.daily(station),
+      this.weather.normals(station, REFERENCE_BASE, REFERENCE_METHOD),
+    ]);
+    const first = [...gas.keys()].sort()[0];
+    if (!first) return false;
+    const yesterday = dayKey(new Date(this.now().getTime() - DAY_MS));
+    const annual = referenceAnnual(mergeDays(gas, weather, first, yesterday), normals.annual);
+    if (annual === null) return false;
+    this.db
+      .prepare(
+        'INSERT OR REPLACE INTO gas_reference (hash, annual_m3, updated_day) VALUES (?, ?, ?)',
+      )
+      .run(this.hash(signature), annual, dayKey(this.now()));
+    return true;
+  }
+
   async comparison(signature: string, profile: GasProfile): Promise<GasComparison> {
     const hash = this.hash(signature);
-    const references = this.references();
+    let references = this.references();
+    // Not computed yet (new household, or the nightly run has not reached it): do it now.
+    if (!references.has(hash)) {
+      await this.updateReference(signature, new Date(this.now().getTime() - 367 * DAY_MS));
+      references = this.references();
+    }
     const own = references.get(hash) ?? null;
     const profiles = this.sharedProfiles();
     const ownShared = profiles.get(hash);

@@ -313,6 +313,8 @@ describe('gas routes', () => {
     const comparison = async () =>
       (await get(session, '/api/v1/gas/comparison?type=terraced')).json<GasComparison>();
     expect(await comparison()).toMatchObject({ shared: true, all: null, group: null });
+    // The own reference value is computed on first use, not only by the nightly run.
+    expect((await comparison()).own).toBeGreaterThan(0);
     const del = await app.inject({
       method: 'DELETE',
       url: '/api/v1/gas/profile',

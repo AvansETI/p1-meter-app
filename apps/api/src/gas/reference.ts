@@ -1,13 +1,11 @@
 import type { DatabaseSync } from 'node:sqlite';
-import { REFERENCE_BASE, REFERENCE_METHOD, REFERENCE_STATION, referenceAnnual } from '@p1/shared';
+import { REFERENCE_STATION } from '@p1/shared';
 import type { FastifyBaseLogger } from 'fastify';
 import type { HouseholdDataSource } from '../data/source';
 import type { OpenDataJob } from '../opendata/job';
 import { zonedHour } from '../time';
 import { dayKey } from '../usage/tracker';
-import { mergeDays } from './days';
 import { REFERENCE_MAX_AGE_DAYS, type GasService } from './service';
-import type { WeatherService } from './weather';
 
 const DAY_MS = 86_400_000;
 /** KNMI has published the previous day by then (design §4.2). */
@@ -29,7 +27,6 @@ export class ReferenceJob {
   constructor(
     private readonly source: HouseholdDataSource,
     private readonly gas: GasService,
-    private readonly weather: WeatherService,
     private readonly openData: OpenDataJob,
     private readonly db: DatabaseSync,
     private readonly hash: (signature: string) => string,
@@ -74,31 +71,12 @@ export class ReferenceJob {
     try {
       const now = this.now();
       const today = dayKey(now);
-      const yesterday = dayKey(new Date(now.getTime() - DAY_MS));
       const from = new Date(now.getTime() - WINDOW_DAYS * DAY_MS);
       const signatures = await this.source.gasSignatures(from);
-      const upsert = this.db.prepare(
-        'INSERT OR REPLACE INTO gas_reference (hash, annual_m3, updated_day) VALUES (?, ?, ?)',
-      );
       let stored = 0;
       for (const signature of signatures) {
         try {
-          // The household's own station when its postcode is known and that weather is
-          // complete; De Bilt otherwise (design §4.1).
-          const own = this.gas.stationOf(signature);
-          const station = own !== undefined && this.openData.ready(own) ? own : REFERENCE_STATION;
-          const [gas, weather, normals] = await Promise.all([
-            this.gas.recentGasDays(signature, from),
-            this.weather.daily(station),
-            this.weather.normals(station, REFERENCE_BASE, REFERENCE_METHOD),
-          ]);
-          const first = [...gas.keys()].sort()[0];
-          if (!first) continue;
-          const annual = referenceAnnual(mergeDays(gas, weather, first, yesterday), normals.annual);
-          if (annual !== null) {
-            upsert.run(this.hash(signature), annual, today);
-            stored++;
-          }
+          if (await this.gas.updateReference(signature, from)) stored++;
         } catch (error) {
           this.log.warn({ err: error }, 'gas reference for a household failed');
         }

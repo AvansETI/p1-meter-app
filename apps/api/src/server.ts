@@ -216,7 +216,6 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
     const reference = new ReferenceJob(
       source,
       gas,
-      weather,
       openData,
       db,
       (sig) => usage.hash(sig),
