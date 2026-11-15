@@ -100,16 +100,16 @@
         }
       }
       /*
-       * Updating to a new version (#64; data-splash set by src/pwa/autoUpdate.ts before the
-       * reload and by theme-init.js after it): "Bijwerken…" under a running bar, and after the
-       * reload the splash continues without replaying the intro, so it does not start twice.
+       * Updating to a new version (#64): data-splash="updating" as soon as src/pwa/autoUpdate.ts
+       * finds a new version, "updated" from theme-init.js after the reload. "Bijwerken…" under
+       * a running bar, and after the reload the splash continues without replaying the intro.
        */
       .splash__status {
         margin: 8px 0 0;
         font-size: 14px;
         visibility: hidden;
       }
-      [data-splash='updating'] .splash__status {
+      [data-splash] .splash__status {
         visibility: visible;
       }
       .splash__status [lang='en'],
@@ -119,15 +119,15 @@
       [data-splash-lang='en'] .splash__status [lang='en'] {
         display: inline;
       }
-      [data-splash='updating'] .splash__progress::after {
+      [data-splash] .splash__progress::after {
         right: auto;
         width: 40%;
         animation: splash-busy 1200ms ease-in-out infinite;
       }
-      [data-splash='updating'] .splash__ink,
-      [data-splash='updating'] .splash__slash-long,
-      [data-splash='updating'] .splash__slash-short,
-      [data-splash='updating'] .splash__text {
+      [data-splash] .splash__ink,
+      [data-splash] .splash__slash-long,
+      [data-splash] .splash__slash-short,
+      [data-splash] .splash__text {
         animation: none;
       }
       @keyframes splash-busy {
@@ -210,7 +210,7 @@
         .splash__slash-short,
         .splash__text,
         .splash__progress::after,
-        [data-splash='updating'] .splash__progress::after {
+        [data-splash] .splash__progress::after {
           animation: none;
         }
       }

@@ -20,7 +20,7 @@
   document.documentElement.setAttribute('data-splash-lang', language);
   try {
     if (sessionStorage.getItem('p1meter.updatedFrom') !== null) {
-      document.documentElement.setAttribute('data-splash', 'updating');
+      document.documentElement.setAttribute('data-splash', 'updated');
     }
   } catch (e) {
     // Without storage the splash simply shows as on a normal start.
