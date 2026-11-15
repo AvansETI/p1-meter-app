@@ -840,3 +840,679 @@
     right: 130px;
   }
 }
+
+/* ---- Round three (#66): falling figures and more animations ---- */
+
+.festive__falling {
+  position: absolute;
+  inset: 0;
+}
+
+.festive__faller {
+  position: absolute;
+  top: -12px;
+  display: block;
+}
+
+.festive__faller svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fx-fall {
+  animation: festive-fall 7s linear infinite;
+}
+
+@keyframes festive-fall {
+  from {
+    transform: translate(0, 0) rotate(0);
+  }
+  to {
+    transform: translate(10px, 80px) rotate(180deg);
+  }
+}
+
+.fx-leaf-fall {
+  animation: festive-leaf-fall 8s ease-in-out infinite;
+}
+
+@keyframes festive-leaf-fall {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  25% {
+    transform: translate(12px, 20px) rotate(60deg);
+  }
+  50% {
+    transform: translate(-6px, 40px) rotate(-30deg);
+  }
+  100% {
+    transform: translate(8px, 80px) rotate(120deg);
+  }
+}
+
+.fx-float-sky {
+  top: 4px;
+  opacity: 0.55;
+  animation: festive-float-sky 20s linear infinite;
+}
+
+@keyframes festive-float-sky {
+  from {
+    transform: translate(-40px, 30px);
+  }
+  to {
+    transform: translate(60px, -10px);
+  }
+}
+
+.fx-shoot {
+  opacity: 0;
+  animation: festive-shoot 4s ease-in infinite;
+}
+
+@keyframes festive-shoot {
+  0%,
+  70% {
+    opacity: 0;
+    transform: translate(-30px, 0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(60px, 24px);
+  }
+}
+
+.fx-twinkle-static {
+  top: auto;
+  animation: festive-twinkle-star 2s ease-in-out infinite alternate;
+}
+
+.festive__faller.fx-twinkle-static:nth-child(odd) {
+  top: 8px;
+}
+
+.festive__faller.fx-twinkle-static:nth-child(even) {
+  top: 26px;
+}
+
+/* Night of the Night: the bar goes dark. */
+.festive--nightofthenight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0.4;
+}
+
+/* April Fools' Day: the logo stands on its head now and then. */
+ion-header:has(.festive--aprilfools) .toolbar-logo img {
+  animation: festive-fool 10s ease-in-out infinite;
+}
+
+@keyframes festive-fool {
+  0%,
+  80%,
+  100% {
+    transform: rotate(0);
+  }
+  85%,
+  95% {
+    transform: rotate(180deg);
+  }
+}
+
+.fx-buzz {
+  animation: festive-buzz 3s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-buzz {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -5px) rotate(8deg);
+  }
+  50% {
+    transform: translate(14px, 2px);
+  }
+  75% {
+    transform: translate(5px, 5px) rotate(-8deg);
+  }
+}
+
+.fx-wiggle {
+  animation: festive-wiggle 1.2s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-wiggle {
+  from {
+    transform: rotate(-8deg) scaleX(0.95);
+  }
+  to {
+    transform: rotate(8deg) scaleX(1.05);
+  }
+}
+
+.fx-bounce {
+  animation: festive-bounce 1s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-bounce {
+  from {
+    transform: translateY(-7px);
+  }
+  to {
+    transform: translateY(5px);
+  }
+}
+
+.fx-kite {
+  animation: festive-kite 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes festive-kite {
+  from {
+    transform: translate(-6px, 3px) rotate(-14deg);
+  }
+  to {
+    transform: translate(6px, -3px) rotate(12deg);
+  }
+}
+
+.fx-grow-in {
+  transform-origin: 50% 100%;
+  animation: festive-grow 4s ease-out infinite;
+  animation-delay: var(--d);
+}
+
+.fx-glide {
+  animation: festive-glide 5s ease-in-out infinite alternate;
+}
+
+@keyframes festive-glide {
+  from {
+    transform: translate(-10px, 4px);
+  }
+  to {
+    transform: translate(14px, -3px);
+  }
+}
+
+.fx-jump {
+  animation: festive-jump 3s ease-in-out infinite;
+}
+
+@keyframes festive-jump {
+  0%,
+  60%,
+  100% {
+    transform: translateY(6px) rotate(0);
+  }
+  75% {
+    transform: translateY(-14px) rotate(-30deg);
+  }
+  90% {
+    transform: translateY(4px) rotate(30deg);
+  }
+}
+
+.fx-pop {
+  animation: festive-pop 2.8s ease-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  15% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  25%,
+  80% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.fx-flutter-fly {
+  animation: festive-flutter-fly 6s ease-in-out infinite;
+}
+
+@keyframes festive-flutter-fly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(16px, -6px);
+  }
+  50% {
+    transform: translate(30px, 2px);
+  }
+  75% {
+    transform: translate(12px, 6px);
+  }
+}
+
+.fx-crawl {
+  animation: festive-crawl 8s linear infinite alternate;
+}
+
+@keyframes festive-crawl {
+  to {
+    transform: translateX(-24px);
+  }
+}
+
+.fx-pingpong {
+  animation: festive-pingpong 2s ease-in-out infinite alternate;
+}
+
+@keyframes festive-pingpong {
+  from {
+    transform: translate(-10px, 0);
+  }
+  50% {
+    transform: translate(0, -8px);
+  }
+  to {
+    transform: translate(10px, 0);
+  }
+}
+
+.fx-peek-sun {
+  animation: festive-peek-sun 8s ease-in-out infinite;
+}
+
+@keyframes festive-peek-sun {
+  0%,
+  100% {
+    transform: translateY(18px);
+  }
+  45%,
+  55% {
+    transform: translateY(6px);
+  }
+}
+
+/* Parts inside the SVG figures. */
+.fx-page {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: festive-page 3s ease-in-out infinite;
+}
+
+@keyframes festive-page {
+  0%,
+  40% {
+    transform: scaleX(1);
+  }
+  70%,
+  100% {
+    transform: scaleX(-1);
+  }
+}
+
+.fx-flag-wave {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: festive-flutter 1.2s ease-in-out infinite alternate;
+}
+
+.fx-fill {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-fill 4s ease-in-out infinite;
+}
+
+@keyframes festive-fill {
+  0% {
+    transform: scaleY(0.1);
+  }
+  80%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.fx-hand {
+  transform-origin: 12px 12px;
+  animation: festive-spin 4s linear infinite;
+}
+
+.fx-steam {
+  animation: festive-steam 2.4s ease-in-out infinite;
+}
+
+@keyframes festive-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.fx-flap,
+.fx-wings {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-flap 0.5s ease-in-out infinite alternate;
+}
+
+.fx-wings {
+  transform-origin: 50% 50%;
+  animation-duration: 0.3s;
+}
+
+@keyframes festive-flap {
+  to {
+    transform: scaleY(0.4);
+  }
+}
+
+.fx-peck {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-peck 3s ease-in-out infinite;
+}
+
+@keyframes festive-peck {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0);
+  }
+  80% {
+    transform: rotate(18deg);
+  }
+  90% {
+    transform: rotate(-6deg);
+  }
+}
+
+.fx-write {
+  stroke-dasharray: 60;
+  animation: festive-write 4s linear infinite;
+}
+
+@keyframes festive-write {
+  from {
+    stroke-dashoffset: 60;
+  }
+  70%,
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.fx-tail {
+  transform-box: fill-box;
+  transform-origin: 0 100%;
+  animation: festive-sway-low 0.5s ease-in-out infinite alternate;
+}
+
+.fx-tongue {
+  animation: festive-bob 0.4s ease-in-out infinite alternate;
+}
+
+.fx-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: festive-lid 4s ease-in-out infinite;
+}
+
+@keyframes festive-lid {
+  0%,
+  60%,
+  100% {
+    transform: scaleY(1);
+  }
+  75%,
+  90% {
+    transform: scaleY(-1);
+  }
+}
+
+.fx-open {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-grow 5s ease-out infinite;
+}
+
+.fx-scribble {
+  animation: festive-scribble 1s ease-in-out infinite alternate;
+}
+
+@keyframes festive-scribble {
+  from {
+    transform: translate(-2px, 1px) rotate(-6deg);
+  }
+  to {
+    transform: translate(2px, -1px) rotate(6deg);
+  }
+}
+
+.fx-poke {
+  animation: festive-poke 2s ease-in-out infinite;
+}
+
+@keyframes festive-poke {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(4px);
+  }
+}
+
+.fx-blink {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-blink 4s steps(1) infinite;
+}
+
+@keyframes festive-blink {
+  0%,
+  92% {
+    transform: scaleY(1);
+  }
+  93%,
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+
+.fx-jingle {
+  animation: festive-bob 0.3s ease-in-out infinite alternate;
+}
+
+.fx-wave-arm {
+  transform-box: fill-box;
+  transform-origin: 0 100%;
+  animation: festive-wave-hand 0.7s ease-in-out infinite alternate;
+}
+
+.fx-rain {
+  animation: festive-rain 1s linear infinite;
+}
+
+@keyframes festive-rain {
+  from {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+.fx-knit {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-sway-low 0.6s ease-in-out infinite alternate;
+}
+
+.fx-beam {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-beam 3.3s ease-in-out infinite alternate;
+}
+
+@keyframes festive-beam {
+  from {
+    transform: rotate(-35deg);
+  }
+  to {
+    transform: rotate(35deg);
+  }
+}
+
+.fx-drip {
+  animation: festive-drip 1.8s ease-in infinite;
+}
+
+@keyframes festive-drip {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+.fx-ripple {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-ripple-ring 1.8s ease-out infinite;
+}
+
+@keyframes festive-ripple-ring {
+  0%,
+  85% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.fx-trace {
+  stroke-dasharray: 70;
+  animation: festive-trace 2s linear infinite;
+}
+
+@keyframes festive-trace {
+  from {
+    stroke-dashoffset: 70;
+  }
+  to {
+    stroke-dashoffset: -70;
+  }
+}
+
+.fx-flip {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-flip 2.4s ease-in-out infinite;
+}
+
+@keyframes festive-flip {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  70% {
+    transform: translateY(-7px) scaleY(-1);
+  }
+}
+
+.fx-cursor {
+  animation: festive-onoff 1s steps(1) infinite;
+}
+
+.fx-highfive-left,
+.fx-highfive-right {
+  animation: festive-highfive 2.4s ease-in-out infinite;
+}
+
+.fx-highfive-right {
+  animation-name: festive-highfive-right;
+}
+
+@keyframes festive-highfive {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  45%,
+  55% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes festive-highfive-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  45%,
+  55% {
+    transform: translateX(-3px);
+  }
+}
+
+.fx-door {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: festive-lid 5s ease-in-out infinite;
+}
+
+.fx-tilt {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-sway-low 2s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festive__faller,
+  ion-header:has(.festive--aprilfools) .toolbar-logo img {
+    animation: none;
+  }
+}

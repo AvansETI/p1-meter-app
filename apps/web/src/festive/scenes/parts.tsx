@@ -78,3 +78,35 @@ export function Bunting({ colours, slow = false }: { colours: string[]; slow?: b
 export function Edge({ kind }: { kind: 'vine' | 'water' }) {
   return <div className={`festive__edge festive__edge--${kind}`} />;
 }
+
+/** Copies of a small figure falling (or flying) across the whole title bar. */
+export function Falling({
+  count = 12,
+  fx = 'fall',
+  s = 10,
+  children,
+}: {
+  count?: number;
+  fx?: string;
+  s?: number;
+  children: ReactNode;
+}) {
+  return (
+    <div className="festive__falling">
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className={`festive__faller fx-${fx}`}
+          style={{
+            left: `${((i * 37) % 100) + 1}%`,
+            width: `${s - (i % 3) * 2}px`,
+            animationDelay: `${-((i * 7) % 13) * 0.6}s`,
+            animationDuration: `${6 + (i % 5)}s`,
+          }}
+        >
+          {children}
+        </span>
+      ))}
+    </div>
+  );
+}

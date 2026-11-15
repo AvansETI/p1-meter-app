@@ -82,8 +82,10 @@ describe('FestiveDecoration', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows nothing outside the holidays', () => {
-    expect(renderAt(new Date(2026, 10, 14)).container).toBeEmptyDOMElement();
+  it('shows the time of year on a day without a holiday', () => {
+    expect(
+      renderAt(new Date(2027, 4, 28)).container.querySelector('.festive--spring'),
+    ).toBeInTheDocument();
   });
 
   it('shows nothing when switched off', () => {

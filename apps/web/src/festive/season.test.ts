@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   TABLE_UNTIL,
+  adventCandles,
   activeSeason,
   easterSunday,
   hanukkahNight,
@@ -37,61 +38,120 @@ describe('kingsDay', () => {
   });
 });
 
-describe('seasonAt: boundaries', () => {
+describe('seasonsAt: boundaries', () => {
+  // [date, season, active on that date]
   it.each([
-    // Christmas and New Year
-    [at(2026, 12, 21, 23, 59), null],
-    [at(2026, 12, 22, 0, 0), 'christmas'],
-    [at(2026, 12, 30, 23, 59), 'christmas'],
-    [at(2026, 12, 31, 0, 0), 'newyear'],
-    [at(2027, 1, 2, 23, 59), 'newyear'],
-    [at(2027, 1, 3, 0, 0), null],
-    // Fixed dates
-    [at(2027, 2, 14), 'valentine'],
-    [at(2027, 3, 20), 'nowruz'],
-    [at(2027, 3, 23), null],
-    [at(2027, 4, 13), 'songkran'],
-    [at(2027, 4, 15), 'songkran'],
-    [at(2027, 4, 22), 'earthday'],
-    [at(2027, 5, 4), null], // Remembrance Day: no decoration
-    [at(2027, 5, 5), 'liberation'],
-    [at(2027, 6, 21), 'solstice'],
-    [at(2027, 7, 1), 'ketikoti'],
-    [at(2026, 10, 24), null],
-    [at(2026, 10, 25), 'halloween'],
-    [at(2026, 10, 31), 'halloween'],
-    [at(2026, 11, 11), 'stmartin'],
-    [at(2027, 12, 1), 'sinterklaas'],
-    [at(2027, 12, 5), 'sinterklaas'],
-    [at(2027, 12, 6), null],
+    [at(2026, 12, 21, 23, 59), 'christmas', false],
+    [at(2026, 12, 22, 0, 0), 'christmas', true],
+    [at(2026, 12, 30, 23, 59), 'christmas', true],
+    [at(2026, 12, 31, 0, 0), 'newyear', true],
+    [at(2027, 1, 2, 23, 59), 'newyear', true],
+    [at(2027, 1, 3, 0, 0), 'newyear', false],
+    [at(2027, 2, 14), 'valentine', true],
+    [at(2027, 3, 20), 'nowruz', true],
+    [at(2027, 3, 23), 'nowruz', false],
+    [at(2027, 4, 13), 'songkran', true],
+    [at(2027, 4, 15), 'songkran', true],
+    [at(2027, 4, 22), 'earthday', true],
+    [at(2027, 5, 4), 'liberation', false], // Remembrance Day
+    [at(2027, 5, 5), 'liberation', true],
+    [at(2027, 6, 21), 'solstice', true],
+    [at(2027, 7, 1), 'ketikoti', true],
+    [at(2026, 10, 24), 'halloween', false],
+    [at(2026, 10, 25), 'halloween', true],
+    [at(2026, 10, 31), 'halloween', true],
+    [at(2026, 11, 11), 'stmartin', true],
+    [at(2026, 11, 11), 'elevenelven', true],
+    [at(2027, 12, 1), 'sinterklaas', true],
+    [at(2027, 12, 5), 'sinterklaas', true],
+    [at(2027, 12, 6), 'sinterklaas', false],
     // Easter-based (2027: Easter 28 March)
-    [at(2027, 2, 4), null],
-    [at(2027, 2, 9), 'carnival'],
-    [at(2027, 2, 10), null], // Ash Wednesday
-    [at(2027, 3, 26), 'easter'],
-    [at(2027, 3, 29), 'easter'],
-    [at(2027, 3, 30), null],
+    [at(2027, 2, 4), 'carnival', false],
+    [at(2027, 2, 9), 'carnival', true],
+    [at(2027, 2, 10), 'carnival', false], // Ash Wednesday
+    [at(2027, 3, 26), 'easter', true],
+    [at(2027, 3, 29), 'easter', true],
+    [at(2027, 3, 30), 'easter', false],
+    [at(2027, 5, 6), 'ascension', true],
+    [at(2027, 5, 16), 'pentecost', true],
+    [at(2027, 5, 17), 'pentecost', true],
     // Rules
-    [at(2027, 2, 5), 'sweater'],
-    [at(2026, 2, 6), 'sweater'], // first Friday of February 2026
-    [at(2026, 3, 28), 'earthhour'], // last Saturday of March 2026
-    [at(2026, 4, 26), 'kingsday'], // Koningsnacht
-    [at(2026, 4, 27), 'kingsday'],
-    [at(2026, 4, 28), null],
-    [at(2025, 4, 25), 'kingsday'], // 27 April 2025 was a Sunday
-    [at(2025, 4, 27), null],
-    [at(2027, 7, 31), 'pride'], // Saturday before the first Saturday of August
-    [at(2027, 8, 8), 'pride'], // Sunday after the Canal Parade (7 August)
-    [at(2027, 8, 9), null],
+    [at(2027, 2, 5), 'sweater', true], // first Friday of February 2027
+    [at(2026, 3, 28), 'earthhour', true], // last Saturday of March 2026
+    [at(2026, 4, 26), 'kingsday', true], // Koningsnacht
+    [at(2026, 4, 27), 'kingsday', true],
+    [at(2026, 4, 28), 'kingsday', false],
+    [at(2025, 4, 25), 'kingsday', true], // 27 April 2025 was a Sunday
+    [at(2025, 4, 27), 'kingsday', false],
+    [at(2027, 4, 23), 'kingsgames', true], // last Friday before King's Day
+    [at(2027, 7, 31), 'pride', true], // Saturday before the first Saturday of August
+    [at(2027, 8, 8), 'pride', true], // Sunday after the Canal Parade (7 August)
+    [at(2027, 8, 9), 'pride', false],
+    [at(2027, 9, 21), 'prinsjesdag', true], // third Tuesday of September
+    [at(2027, 12, 10), 'purplefriday', true], // second Friday of December
+    [at(2027, 5, 9), 'mothersday', true], // second Sunday of May
+    [at(2027, 6, 20), 'fathersday', true], // third Sunday of June
+    [at(2027, 7, 20), 'fourdays', true], // third Tuesday of July
+    [at(2027, 7, 23), 'fourdays', true],
+    [at(2027, 9, 13), 'programmersday', true], // 256th day
+    [at(2028, 9, 12), 'programmersday', true], // leap year
+    [at(2026, 11, 14), 'arrival', true], // Saturday between 12 and 18 November
+    [at(2026, 11, 15), 'sinttime', true],
+    [at(2026, 3, 29), 'clockchange', true], // last Sunday of March
+    [at(2026, 10, 25), 'clockchange', true], // last Sunday of October
+    [at(2027, 10, 6), 'childrensbookweek', true], // first Wednesday of October, 12 days
+    [at(2027, 10, 17), 'childrensbookweek', true],
+    [at(2027, 10, 18), 'childrensbookweek', false],
     // Table seasons
-    [at(2027, 3, 12), 'eidfitr'],
-    [at(2027, 5, 16), 'eidadha'],
-    [at(2026, 3, 3), 'holi'],
-    [at(2026, 11, 8), 'diwali'],
-    [at(2026, 11, 24), 'loykrathong'],
-    [at(2026, 12, 12), 'hanukkah'],
-  ])('%s → %s', (date, season) => {
-    expect(seasonAt(date)).toBe(season);
+    [at(2027, 3, 12), 'eidfitr', true],
+    [at(2027, 5, 16), 'eidadha', true],
+    [at(2026, 3, 3), 'holi', true],
+    [at(2026, 11, 8), 'diwali', true],
+    [at(2026, 11, 24), 'loykrathong', true],
+    [at(2026, 12, 12), 'hanukkah', true],
+    [at(2027, 4, 22), 'passover', true],
+    [at(2027, 10, 2), 'roshhashanah', true],
+    [at(2027, 9, 15), 'midautumn', true],
+    [at(2027, 5, 20), 'vesak', true],
+    [at(2027, 7, 15), 'summerbreak', true],
+  ] as const)('%s: %s %s', (date, season, active) => {
+    expect(seasonsAt(date).includes(season)).toBe(active);
+  });
+});
+
+describe('levels', () => {
+  it('fills every day of the year with at least the time of year', () => {
+    for (
+      let d = at(2027, 1, 1);
+      d.getFullYear() === 2027;
+      d = at(2027, d.getMonth() + 1, d.getDate() + 1)
+    ) {
+      expect(seasonsAt(d).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('shows the time of year only when nothing else is on', () => {
+    expect(seasonsAt(at(2027, 1, 20))).toEqual(['dryjanuary']);
+    expect(seasonsAt(at(2027, 5, 28))).toEqual(['spring']);
+    expect(seasonsAt(at(2027, 12, 21))).toEqual(['shortestday']);
+  });
+
+  it('lets a holiday win over a month-long season', () => {
+    // Valentine's Day 2027 falls in Ramadan.
+    expect(seasonsAt(at(2027, 2, 14))).toEqual(['valentine']);
+    // Halfway Ramadan, nothing else: Ramadan.
+    expect(seasonsAt(at(2027, 2, 24))).toEqual(['ramadan', 'springbreak']);
+  });
+});
+
+describe('adventCandles', () => {
+  it('lights one more candle each Advent Sunday', () => {
+    // Advent 2026 starts on Sunday 29 November.
+    expect(adventCandles(at(2026, 11, 29))).toBe(1);
+    expect(adventCandles(at(2026, 12, 5))).toBe(1);
+    expect(adventCandles(at(2026, 12, 6))).toBe(2);
+    expect(adventCandles(at(2026, 12, 20))).toBe(4);
+    expect(adventCandles(at(2026, 7, 1))).toBe(4);
   });
 });
 
@@ -147,11 +207,11 @@ describe('seasonOverride', () => {
 
 describe('activeSeason', () => {
   const christmas = at(2026, 12, 24);
-  const quiet = at(2026, 9, 1);
+  const quiet = at(2027, 5, 28); // nothing but spring
 
   it('follows the date when enabled', () => {
     expect(activeSeason({ override: undefined, enabled: true, now: christmas })).toBe('christmas');
-    expect(activeSeason({ override: undefined, enabled: true, now: quiet })).toBeNull();
+    expect(activeSeason({ override: undefined, enabled: true, now: quiet })).toBe('spring');
   });
 
   it('shows nothing when switched off', () => {

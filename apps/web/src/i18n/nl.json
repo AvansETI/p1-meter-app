@@ -403,6 +403,366 @@
     "newyear": {
       "name": "Oud en Nieuw",
       "about": "Het afscheid van het oude en de start van het nieuwe jaar, met oliebollen, aftellen tot middernacht en vuurwerk."
+    },
+    "winter": {
+      "name": "Winter",
+      "about": "De koude maanden van het jaar: korte dagen, misschien sneeuw. Juist dan verbruikt een huis de meeste energie voor verwarming en licht."
+    },
+    "spring": {
+      "name": "Lente",
+      "about": "De dagen worden langer, bloemen komen op en de bijen gaan weer vliegen. Zonnepanelen leveren elke week meer op."
+    },
+    "summer": {
+      "name": "Zomer",
+      "about": "Lange, lichte dagen: tijd voor ijsjes, het strand en zeilen. Zonnepanelen leveren nu het meest op, vaak meer dan het huis verbruikt."
+    },
+    "autumn": {
+      "name": "Herfst",
+      "about": "De bladeren kleuren en vallen, de dagen worden korter. De verwarming gaat weer aan."
+    },
+    "dryjanuary": {
+      "name": "IkPas (Dry January)",
+      "about": "In januari doen veel mensen een maand zonder alcohol mee met IkPas of Dry January, om te ontdekken hoe dat voelt."
+    },
+    "movember": {
+      "name": "Movember",
+      "about": "In november laten mannen een snor staan om aandacht en geld te vragen voor de gezondheid van mannen, zoals prostaat- en zaadbalkanker en mentale gezondheid."
+    },
+    "bulbtime": {
+      "name": "Bollentijd",
+      "about": "Van eind maart tot half mei staan de bollenvelden in bloei en is de Keukenhof open: hele velden vol tulpen, narcissen en hyacinten."
+    },
+    "ramadan": {
+      "name": "Ramadan",
+      "about": "De vastenmaand van de islam. Moslims eten en drinken overdag niet en breken 's avonds samen het vasten met de iftar. De maand eindigt met het Suikerfeest."
+    },
+    "advent": {
+      "name": "Advent",
+      "about": "De vier weken voor Kerstmis. In veel huizen en kerken gaat elke zondag een kaars meer aan op de adventskrans."
+    },
+    "sinttime": {
+      "name": "Sinterklaastijd",
+      "about": "Sinterklaas is in het land! Kinderen zetten hun schoen bij de schoorsteen en zingen liedjes, in de hoop op pepernoten of een cadeautje."
+    },
+    "football": {
+      "name": "EK/WK voetbal",
+      "about": "Er wordt een Europees of wereldkampioenschap voetbal gespeeld. Nederland kleurt oranje en kijkt samen naar de wedstrijden."
+    },
+    "springbreak": {
+      "name": "Krokusvakantie",
+      "about": "De voorjaarsvakantie in februari: voor veel gezinnen tijd voor wintersport of een weekje rust."
+    },
+    "maybreak": {
+      "name": "Meivakantie",
+      "about": "Een week schoolvakantie rond Koningsdag en Bevrijdingsdag: tijd om buiten te spelen, bijvoorbeeld met een vlieger."
+    },
+    "summerbreak": {
+      "name": "Zomervakantie",
+      "about": "De lange schoolvakantie. Veel mensen gaan op vakantie; een huis dat leeg staat, verbruikt vooral sluipstroom."
+    },
+    "autumnbreak": {
+      "name": "Herfstvakantie",
+      "about": "Een week schoolvakantie in oktober: regenlaarzen aan en het bos in."
+    },
+    "epiphany": {
+      "name": "Driekoningen",
+      "about": "Op 6 januari herdenken christenen de drie wijzen die de ster volgden naar het kindje Jezus. Op sommige plaatsen gaan kinderen met een ster langs de deuren."
+    },
+    "tulipday": {
+      "name": "Nationale Tulpendag",
+      "about": "Op de derde zaterdag van januari opent het tulpenseizoen met een grote pluktuin op de Dam in Amsterdam, waar iedereen gratis tulpen mag plukken."
+    },
+    "poetryday": {
+      "name": "Gedichtendag",
+      "about": "Op de laatste donderdag van januari staan gedichten centraal: lees er een, schrijf er een of stuur er een naar iemand."
+    },
+    "birdcount": {
+      "name": "Nationale Tuinvogeltelling",
+      "about": "In het laatste weekend van januari tellen tienduizenden mensen een halfuur de vogels in hun tuin, voor onderzoek van de Vogelbescherming."
+    },
+    "cleanenergyday": {
+      "name": "Dag van Schone Energie",
+      "about": "Op 26 januari vragen de Verenigde Naties aandacht voor schone energie voor iedereen: zon, wind en zuinig gebruik."
+    },
+    "candlemas": {
+      "name": "Lichtmis",
+      "about": "Op 2 februari, veertig dagen na Kerstmis, worden in de kerk kaarsen gezegend. In Limburg, Brabant en België eten mensen dan pannenkoeken."
+    },
+    "wetlandsday": {
+      "name": "Wereld Wetlandsdag",
+      "about": "Op 2 februari staan moerassen, rivieren en natte natuur centraal: ze zuiveren water, slaan CO2 op en bieden ruimte aan vogels zoals de reiger."
+    },
+    "efficiencyday": {
+      "name": "Dag van de Energie-efficiëntie",
+      "about": "Op 5 maart draait alles om slimmer omgaan met energie: dezelfde warmte en hetzelfde licht met minder kilowatturen."
+    },
+    "piday": {
+      "name": "Pi-dag",
+      "about": "Op 14 maart (3/14) vieren wiskundeliefhebbers het getal pi, 3,14159…, het liefst met een taart."
+    },
+    "womensday": {
+      "name": "Internationale Vrouwendag",
+      "about": "Op 8 maart vieren we wat vrouwen bereikt hebben en vragen we aandacht voor gelijke rechten. Paars en mimosa-geel zijn de kleuren van de dag."
+    },
+    "booksweek": {
+      "name": "Boekenweek",
+      "about": "In maart vieren boekhandels en bibliotheken het boek. Wie een boek koopt, krijgt het Boekenweekgeschenk cadeau."
+    },
+    "cleanupday": {
+      "name": "Nationale Opschoondag",
+      "about": "Op een zaterdag in maart ruimen tienduizenden vrijwilligers zwerfafval op in hun buurt."
+    },
+    "treeday": {
+      "name": "Boomfeestdag",
+      "about": "Op de derde woensdag van maart planten schoolkinderen in heel Nederland bomen."
+    },
+    "waterday": {
+      "name": "Wereldwaterdag",
+      "about": "Op 22 maart vragen de Verenigde Naties aandacht voor schoon drinkwater, dat voor miljoenen mensen nog niet vanzelfsprekend is."
+    },
+    "clockchange": {
+      "name": "Zomer- of wintertijd",
+      "about": "In de nacht van de laatste zaterdag op zondag van maart gaat de klok een uur vooruit (zomertijd), in oktober een uur terug (wintertijd)."
+    },
+    "aprilfools": {
+      "name": "1 april",
+      "about": "De dag van de grappen: geloof niet alles wat je vandaag hoort. Ook ons logo doet af en toe gek."
+    },
+    "passover": {
+      "name": "Pesach",
+      "about": "Het Joodse paasfeest herdenkt de uittocht uit Egypte. Acht dagen lang eten Joden matzes, ongerezen brood, en de eerste avonden is er de sedermaaltijd."
+    },
+    "healthday": {
+      "name": "Wereldgezondheidsdag",
+      "about": "Op 7 april, de oprichtingsdag van de Wereldgezondheidsorganisatie, staat gezondheid voor iedereen centraal."
+    },
+    "artday": {
+      "name": "Wereldkunstdag",
+      "about": "Op 15 april, de verjaardag van Leonardo da Vinci, vieren we kunst en creativiteit."
+    },
+    "bookday": {
+      "name": "Wereldboekendag",
+      "about": "Op 23 april vieren we boeken en lezen, op de sterfdag van Shakespeare en Cervantes."
+    },
+    "kingsgames": {
+      "name": "Koningsspelen",
+      "about": "Op de vrijdag voor Koningsdag beginnen basisscholen de dag met een gezamenlijk ontbijt en doen ze daarna sport en spel, in het oranje."
+    },
+    "sunday": {
+      "name": "Internationale Zonnedag",
+      "about": "Op 3 mei staat de zon als energiebron centraal. Een paar zonnepanelen op het dak leveren een flink deel van de stroom van een huishouden."
+    },
+    "europeday": {
+      "name": "Europadag",
+      "about": "Op 9 mei vieren we de samenwerking in Europa, op de dag van de Schuman-verklaring uit 1950."
+    },
+    "nursesday": {
+      "name": "Dag van de Verpleging",
+      "about": "Op 12 mei, de verjaardag van Florence Nightingale, bedanken we verpleegkundigen en verzorgenden."
+    },
+    "millday": {
+      "name": "Nationale Molendag",
+      "about": "Op de tweede zaterdag van mei draaien veel van de ruim 1200 Nederlandse molens en mag je vaak naar binnen. Al eeuwen halen we energie uit de wind."
+    },
+    "mothersday": {
+      "name": "Moederdag",
+      "about": "Op de tweede zondag van mei verwennen we moeders met bloemen, ontbijt op bed of een zelfgemaakt cadeautje."
+    },
+    "ascension": {
+      "name": "Hemelvaartsdag",
+      "about": "Veertig dagen na Pasen herdenken christenen de hemelvaart van Jezus. Voor veel mensen een vrije dag, soms met een lang weekend."
+    },
+    "idahot": {
+      "name": "Dag tegen Homofobie",
+      "about": "Op 17 mei is het de Internationale Dag tegen Homofobie, Bifobie en Transfobie (IDAHOT): voor acceptatie en gelijke rechten."
+    },
+    "museumday": {
+      "name": "Internationale Museumdag",
+      "about": "Op 18 mei vieren musea wereldwijd hun rol voor kunst, cultuur en geschiedenis, vaak met speciale activiteiten."
+    },
+    "beeday": {
+      "name": "Wereldbijendag",
+      "about": "Op 20 mei staan bijen en andere bestuivers centraal: zonder hen geen fruit en veel minder bloemen."
+    },
+    "biodiversityday": {
+      "name": "Dag van de Biodiversiteit",
+      "about": "Op 22 mei vieren we de rijkdom aan planten en dieren, van lieveheersbeestje tot vlinder, en hoe we die beschermen."
+    },
+    "towelday": {
+      "name": "Handdoekdag",
+      "about": "Op 25 mei nemen fans van Douglas Adams' 'Het Transgalactisch Liftershandboek' een handdoek mee. Het antwoord op alles? 42."
+    },
+    "vesak": {
+      "name": "Vesak",
+      "about": "Boeddhisten vieren bij volle maan in mei de geboorte, verlichting en het overlijden van Boeddha, met lichtjes en lotusbloemen."
+    },
+    "pentecost": {
+      "name": "Pinksteren",
+      "about": "Vijftig dagen na Pasen vieren christenen de komst van de Heilige Geest, vaak verbeeld als duif of vlammetjes. Tweede pinksterdag is een vrije dag."
+    },
+    "childrensday": {
+      "name": "Internationale Kinderdag",
+      "about": "Op 1 juni staan kinderen en hun rechten centraal, in veel landen een feestdag."
+    },
+    "oceansday": {
+      "name": "Wereld Oceanendag",
+      "about": "Op 8 juni vragen de Verenigde Naties aandacht voor de oceanen, die een groot deel van onze zuurstof leveren."
+    },
+    "flagday": {
+      "name": "Vlaggetjesdag",
+      "about": "In juni opent Scheveningen feestelijk het haringseizoen: de schepen zijn versierd met vlaggetjes en de eerste Hollandse Nieuwe wordt geproefd."
+    },
+    "windday": {
+      "name": "Wereldwinddag",
+      "about": "Op 15 juni staat windenergie centraal. Een moderne windturbine op land levert stroom voor een paar duizend huishoudens."
+    },
+    "picnicday": {
+      "name": "Internationale Picknickdag",
+      "about": "Op 18 juni: pak een mand in, een kleedje mee en eet buiten."
+    },
+    "refugeeday": {
+      "name": "Wereldvluchtelingendag",
+      "about": "Op 20 juni staan we stil bij de miljoenen mensen die hun huis moesten ontvluchten. De vlinder staat voor de vrijheid om te bewegen."
+    },
+    "fathersday": {
+      "name": "Vaderdag",
+      "about": "Op de derde zondag van juni verwennen we vaders, met een kop koffie, een tekening of een das."
+    },
+    "emojiday": {
+      "name": "Wereld Emojidag",
+      "about": "Op 17 juli, de datum op het kalender-emoji, vieren we de kleine plaatjes die we dagelijks sturen."
+    },
+    "fourdays": {
+      "name": "Nijmeegse Vierdaagse",
+      "about": "In de derde week van juli lopen tienduizenden wandelaars vier dagen lang 30 tot 50 kilometer per dag rond Nijmegen, toegejuicht door publiek. Na afloop: een medaille en gladiolen."
+    },
+    "friendshipday": {
+      "name": "Dag van de Vriendschap",
+      "about": "Op 30 juli vieren we vriendschap tussen mensen, landen en culturen."
+    },
+    "perseids": {
+      "name": "Perseïden",
+      "about": "Half augustus is de beste tijd voor vallende sterren: de aarde trekt door het stof van een komeet. Zoek een donker plekje en kijk omhoog."
+    },
+    "schoolstart": {
+      "name": "Start schooljaar",
+      "about": "Begin september gaan de scholen weer open: nieuwe klas, nieuwe juf of meester, nieuwe potloden."
+    },
+    "evday": {
+      "name": "Wereld EV-dag",
+      "about": "Op 9 september staan elektrische auto's centraal. Een EV laden met eigen zonnestroom is de goedkoopste en schoonste kilometer."
+    },
+    "programmersday": {
+      "name": "Dag van de Programmeur",
+      "about": "Op de 256e dag van het jaar (2⁸) bedanken we de programmeurs, ook die van deze app."
+    },
+    "monumentday": {
+      "name": "Open Monumentendag",
+      "about": "In het tweede weekend van september openen duizenden monumenten gratis hun deuren: molens, kerken, kastelen en fabrieken."
+    },
+    "roshhashanah": {
+      "name": "Rosj Hasjana",
+      "about": "Het Joodse nieuwjaar. De sjofar, een ramshoorn, wordt geblazen en mensen eten appel met honing voor een zoet nieuw jaar."
+    },
+    "prinsjesdag": {
+      "name": "Prinsjesdag",
+      "about": "Op de derde dinsdag van september rijdt de koning in de koets naar de Ridderzaal voor de troonrede, en presenteert de minister van Financiën de begroting in het koffertje."
+    },
+    "peaceweek": {
+      "name": "Vredesweek",
+      "about": "Rond 21 september, de Internationale Dag van de Vrede, organiseert PAX in heel Nederland activiteiten voor vrede."
+    },
+    "midautumn": {
+      "name": "Midherfstfeest",
+      "about": "Het Chinese maanfeest bij volle maan in september of oktober: familie komt samen, er zijn lampionnen en iedereen eet maancakes."
+    },
+    "neighboursday": {
+      "name": "Burendag",
+      "about": "Op de vierde zaterdag van september doen buren samen iets leuks of nuttigs voor hun straat."
+    },
+    "languagesday": {
+      "name": "Europese Dag van de Talen",
+      "about": "Op 26 september vieren we de vele talen in Europa. Hallo, hello, salam, hola!"
+    },
+    "tourismday": {
+      "name": "Wereldtoerismedag",
+      "about": "Op 27 september staat reizen centraal, en hoe we dat duurzaam kunnen doen."
+    },
+    "heartday": {
+      "name": "Wereld Hartdag",
+      "about": "Op 29 september vragen we aandacht voor een gezond hart: bewegen, gezond eten en niet roken."
+    },
+    "eldersday": {
+      "name": "Dag van de Ouderen",
+      "about": "Op 1 oktober zetten we ouderen in het zonnetje, met een bezoekje, een kopje thee of een praatje."
+    },
+    "childrensbookweek": {
+      "name": "Kinderboekenweek",
+      "about": "In oktober staan kinderboeken twaalf dagen centraal, op school, in de bibliotheek en in de boekwinkel."
+    },
+    "animalday": {
+      "name": "Dierendag",
+      "about": "Op 4 oktober verwennen we huisdieren en staan we stil bij het welzijn van alle dieren."
+    },
+    "teachersday": {
+      "name": "Dag van de Leraar",
+      "about": "Op 5 oktober bedanken we leraren voor alles wat ze ons leren."
+    },
+    "hydrogenday": {
+      "name": "Waterstofdag",
+      "about": "Op 8 oktober (1,008 is het atoomgewicht van waterstof) staat waterstof centraal als manier om duurzame energie op te slaan."
+    },
+    "sustainabilityday": {
+      "name": "Dag van de Duurzaamheid",
+      "about": "Op 10 oktober laten mensen in heel Nederland zien wat ze doen voor een duurzamere wereld, bijvoorbeeld met zonnepanelen of een zuiniger huis."
+    },
+    "foodday": {
+      "name": "Wereldvoedseldag",
+      "about": "Op 16 oktober staat voedsel centraal: genoeg en gezond eten voor iedereen, en minder verspilling."
+    },
+    "nightofthenight": {
+      "name": "Nacht van de Nacht",
+      "about": "Op de laatste zaterdag van oktober gaan op veel plaatsen de lichten uit, zodat je de sterren weer ziet en nachtdieren rust hebben."
+    },
+    "natureday": {
+      "name": "Natuurwerkdag",
+      "about": "Op de eerste zaterdag van november werken duizenden vrijwilligers een dag in de natuur: snoeien, planten en opruimen."
+    },
+    "glow": {
+      "name": "GLOW Eindhoven",
+      "about": "Acht avonden in november verandert Eindhoven in een lichtfestival met kunstwerken van licht."
+    },
+    "carersday": {
+      "name": "Dag van de Mantelzorg",
+      "about": "Op 10 november bedanken we de mensen die zorgen voor een naaste die ziek is of hulp nodig heeft."
+    },
+    "elevenelven": {
+      "name": "De elfde van de elfde",
+      "about": "Op 11 november om 11.11 uur begint in het zuiden het carnavalsseizoen, met de bekendmaking van de nieuwe prins carnaval."
+    },
+    "arrival": {
+      "name": "Intocht van Sinterklaas",
+      "about": "Half november komt Sinterklaas met de stoomboot aan in Nederland, live op televisie. Daarna mogen kinderen hun schoen zetten."
+    },
+    "volunteersday": {
+      "name": "Nationale Vrijwilligersdag",
+      "about": "Op 7 december bedanken we de miljoenen vrijwilligers die zich inzetten voor anderen."
+    },
+    "purplefriday": {
+      "name": "Paarse Vrijdag",
+      "about": "Op de tweede vrijdag van december dragen leerlingen en docenten paars, om te laten zien dat iedereen op school zichzelf mag zijn, ook lhbtiq+-jongeren."
+    },
+    "shortestday": {
+      "name": "Kortste dag",
+      "about": "Rond 21 december staat de zon het laagst en is het het kortst licht. Zonnepanelen leveren nu het minst; vanaf morgen worden de dagen weer langer."
+    },
+    "bikeday": {
+      "name": "Wereldfietsdag",
+      "about": "Op 3 juni vieren we de fiets: gezond, schoon en in Nederland met meer fietsen dan inwoners."
+    },
+    "environmentday": {
+      "name": "Wereldmilieudag",
+      "about": "Op 5 juni vragen de Verenigde Naties aandacht voor de bescherming van het milieu, van schone lucht tot vlinders in de berm."
     }
   }
 }

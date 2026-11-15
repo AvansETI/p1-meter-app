@@ -18,7 +18,9 @@ import {
   WarmSweater,
 } from './scenes/spring';
 import { KetiKoti, KingsDay, Liberation, Pride, Solstice } from './scenes/summer';
-import { activeSeason, hanukkahNight, seasonOverride, type Season } from './season';
+import { Advent } from './scenes/advent';
+import { MORE_SCENES } from './scenes/more';
+import { activeSeason, adventCandles, hanukkahNight, seasonOverride, type Season } from './season';
 import './festive.css';
 
 /** Read once at startup: navigating inside the app drops the query string. */
@@ -68,7 +70,8 @@ function Fireworks() {
   return <canvas ref={canvas} className="festive__fireworks" />;
 }
 
-const SCENES: Record<Exclude<Season, 'christmas' | 'newyear' | 'hanukkah'>, () => ReactNode> = {
+const SCENES: Partial<Record<Season, () => ReactNode>> = {
+  ...MORE_SCENES,
   lunarnewyear: LunarNewYear,
   sweater: WarmSweater,
   valentine: Valentine,
@@ -98,8 +101,9 @@ function Scene({ season, now }: { season: Season; now: Date }) {
   if (season === 'newyear') return reducedMotion() ? null : <Fireworks />;
   // A preview outside Chanoeka shows all candles.
   if (season === 'hanukkah') return <Hanukkah night={hanukkahNight(now)} />;
+  if (season === 'advent') return <Advent lit={adventCandles(now)} />;
   const Picture = SCENES[season];
-  return <Picture />;
+  return Picture ? <Picture /> : null;
 }
 
 const INFO_MS = 10_000;
