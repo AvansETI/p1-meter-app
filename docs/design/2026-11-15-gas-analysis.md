@@ -1,7 +1,7 @@
 # Gas analysis with degree days and household comparison
 
 - Issue: #68
-- Status: draft
+- Status: **approved** (2026-11-15)
 - Date: 2026-11-15
 - Builds on: [architecture](2026-11-09-architecture.md), [gas chart](2026-11-09-gas-chart.md),
   [costs](2026-11-09-costs.md) §5 (SQLite), [usage stats](2026-11-14-usage-stats.md) (hashing)
@@ -286,7 +286,29 @@ filter it on `capabilities.gas`, and `/gas` redirects to `/live` without gas.
   settings page (postcode → station, toggles, sharing calls).
 - **Manual:** the dev server with real data for the user's own household, plus screenshots.
 
-## 9. Out of scope
+## 9. Findings during implementation
+
+- **Influx shards:** the `open-data` bucket needs a shard group duration of 52 weeks. With the
+  default 7 days for unlimited retention, 20 years of hourly data would make over 1,000
+  shards, and writes timed out.
+- **Writes:** points are written in chunks of 750, roughly a month of hours each.
+- **KNMI request window:** KNMI reads `start` and `end` as a date range plus an hour window
+  applied to every day. Requests therefore always ask for hours 01–24, i.e. whole days.
+- **Gap repair:** the current year is fetched again from 1 January when it lacks more than
+  72 hours.
+- **Gas query speed:**
+  - Aggregating a year of 5-minute gas readings per day takes about 3.5 s.
+  - The history is therefore read in quarters.
+  - It is kept per household in memory and afterwards only topped up.
+  - The first analysis of a household takes about 15 s; after that it answers in
+    milliseconds.
+- **CBS rows:** loaded into memory after every job pass, not on the first comparison.
+- **CBS band:** CBS publishes deciles, so the inner CBS band uses P20–P80 instead of the
+  quartiles.
+- **Pending station:** while the weather of a new station is being fetched, the page shows
+  only a notice and refreshes every 15 seconds.
+
+## 10. Out of scope
 
 - Electricity analysis.
 - Exports.
