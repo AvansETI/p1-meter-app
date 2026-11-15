@@ -301,5 +301,468 @@
     "hintNever": "Stop showing this message?",
     "hintNeverAction": "Never again",
     "calculating": "Calculating costs…"
+  },
+  "festive": {
+    "about": "About this holiday: {{name}}",
+    "lunarnewyear": {
+      "name": "Chinese New Year",
+      "about": "The new year of the Chinese lunar calendar, also called the Spring Festival. Families get together, red lanterns and dragons bring luck and there are fireworks; in the Netherlands it is celebrated in the Chinatowns of Amsterdam, Rotterdam and The Hague, among others."
+    },
+    "sweater": {
+      "name": "Warme Truiendag",
+      "about": "A day of the Dutch Klimaatverbond: turn the heating down one degree and put on a warm sweater. That saves about 6% of heating energy."
+    },
+    "valentine": {
+      "name": "Valentine's Day",
+      "about": "On 14 February people show each other they care with a card, flowers or a treat. The day is named after Saint Valentine."
+    },
+    "carnival": {
+      "name": "Carnival",
+      "about": "Mainly in Brabant and Limburg, people celebrate in the days before Ash Wednesday, dressed up or in a boerenkiel (farmer's smock), with parades and music. Then Lent, the Christian time of fasting before Easter, begins."
+    },
+    "eidfitr": {
+      "name": "Suikerfeest (Eid al-Fitr)",
+      "about": "Eid al-Fitr ends the fasting month of Ramadan. Muslims visit family and friends, share sweets and give to those who have less."
+    },
+    "holi": {
+      "name": "Holi Phagwa",
+      "about": "The Hindu spring festival of good winning over evil. The day after the bonfire people throw coloured powder at each other; in the Netherlands it is mainly celebrated by the Surinamese-Hindustani community."
+    },
+    "nowruz": {
+      "name": "Nowruz",
+      "about": "New Year at the start of spring, celebrated by Iranian, Afghan and Kurdish Dutch people, among others. The table holds symbols of a new beginning, such as sprouted wheat (sabzeh) and a goldfish."
+    },
+    "earthhour": {
+      "name": "Earth Hour",
+      "about": "On the last Saturday of March, people and buildings around the world switch off their lights for an hour, from 20:30 to 21:30, as a sign for the climate."
+    },
+    "easter": {
+      "name": "Easter",
+      "about": "On Good Friday Christians remember the death of Jesus, and at Easter his resurrection. Coloured eggs and the Easter hare stand for new life and spring."
+    },
+    "songkran": {
+      "name": "Songkran",
+      "about": "The Thai New Year, 13 to 15 April. Water stands for cleansing and a fresh start: people respectfully sprinkle their elders and happily soak each other."
+    },
+    "earthday": {
+      "name": "Earth Day",
+      "about": "On 22 April people around the world think about caring for the earth: using less energy, wasting less and protecting nature."
+    },
+    "kingsday": {
+      "name": "King's Day",
+      "about": "The birthday of King Willem-Alexander on 27 April (or 26 April when the 27th is a Sunday). The Netherlands turns orange, with flea markets, music and Koningsnacht the evening before."
+    },
+    "eidadha": {
+      "name": "Offerfeest (Eid al-Adha)",
+      "about": "Eid al-Adha remembers the faith of the prophet Ibrahim. Muslims come together for prayer, visit family and share food with others, including those who have less."
+    },
+    "liberation": {
+      "name": "Liberation Day",
+      "about": "On 5 May the Netherlands celebrates the end of the German occupation in 1945 and reflects on the value of freedom. The evening before, on 4 May, the dead are remembered."
+    },
+    "solstice": {
+      "name": "Longest day",
+      "about": "Around 21 June the sun is at its highest and the day is the longest of the year. Solar panels yield the most."
+    },
+    "ketikoti": {
+      "name": "Keti Koti",
+      "about": "On 1 July the abolition of slavery in Suriname and the former Netherlands Antilles in 1863 is commemorated and celebrated. Keti Koti means 'the chains are broken'. Many people wear koto and angisa in colourful fabrics."
+    },
+    "pride": {
+      "name": "Pride Amsterdam",
+      "about": "A week of events for equal rights and acceptance of LGBTIQ+ people, with the Canal Parade on the Amsterdam canals on the first Saturday of August."
+    },
+    "halloween": {
+      "name": "Halloween",
+      "about": "On 31 October people dress up spookily and put out carved pumpkins with a candle. The festival comes from Ireland and became popular in the Netherlands via America."
+    },
+    "diwali": {
+      "name": "Divali",
+      "about": "The festival of lights of Hindus, Sikhs and Jains: light wins over darkness. Homes are lit with oil lamps (diyas) and decorated with rangoli; in the Netherlands it is big in the Surinamese-Hindustani community."
+    },
+    "stmartin": {
+      "name": "Sint-Maarten",
+      "about": "On the evening of 11 November children go from door to door with home-made lanterns and sing songs for a treat. It remembers Saint Martin, who shared his cloak with a beggar."
+    },
+    "loykrathong": {
+      "name": "Loy Krathong",
+      "about": "A Thai festival of lights at the full moon in November. People float krathongs, little boats of banana leaf with flowers and a candle, to give thanks and let go of worries."
+    },
+    "sinterklaas": {
+      "name": "Sinterklaas",
+      "about": "In early December Sinterklaas and his helpers (pieten) bring presents, with pakjesavond on 5 December: surprises, poems and pepernoten."
+    },
+    "hanukkah": {
+      "name": "Hanukkah",
+      "about": "The eight-day Jewish festival of lights remembers the rededication of the Temple in Jerusalem. Each evening one more candle is lit in the hanukkiah."
+    },
+    "christmas": {
+      "name": "Christmas",
+      "about": "At Christmas Christians celebrate the birth of Jesus. For many people a time of being together, lights and a decorated tree."
+    },
+    "newyear": {
+      "name": "New Year's Eve",
+      "about": "Saying goodbye to the old year and welcoming the new one, with oliebollen, the countdown to midnight and fireworks."
+    },
+    "winter": {
+      "name": "Winter",
+      "about": "The cold months of the year: short days, maybe snow. This is when a home uses the most energy for heating and light."
+    },
+    "spring": {
+      "name": "Spring",
+      "about": "The days get longer, flowers come up and the bees fly again. Solar panels yield more every week."
+    },
+    "summer": {
+      "name": "Summer",
+      "about": "Long, light days: time for ice cream, the beach and sailing. Solar panels yield the most now, often more than the home uses."
+    },
+    "autumn": {
+      "name": "Autumn",
+      "about": "The leaves change colour and fall, the days get shorter. The heating goes back on."
+    },
+    "dryjanuary": {
+      "name": "Dry January",
+      "about": "In January many people take part in Dry January (IkPas in the Netherlands): a month without alcohol, to see how it feels."
+    },
+    "movember": {
+      "name": "Movember",
+      "about": "In November men grow a moustache to raise awareness and money for men's health, such as prostate and testicular cancer and mental health."
+    },
+    "bulbtime": {
+      "name": "Bulb season",
+      "about": "From late March to mid-May the bulb fields are in bloom and Keukenhof is open: fields full of tulips, daffodils and hyacinths."
+    },
+    "ramadan": {
+      "name": "Ramadan",
+      "about": "The Islamic month of fasting. Muslims do not eat or drink during the day and break the fast together in the evening with iftar. The month ends with Eid al-Fitr."
+    },
+    "advent": {
+      "name": "Advent",
+      "about": "The four weeks before Christmas. In many homes and churches one more candle is lit on the Advent wreath each Sunday."
+    },
+    "sinttime": {
+      "name": "Sinterklaas season",
+      "about": "Sinterklaas is in the country! Children put their shoe by the chimney and sing songs, hoping for pepernoten or a small present."
+    },
+    "football": {
+      "name": "Football championship",
+      "about": "A European or World Cup football tournament is on. The Netherlands turns orange and watches the matches together."
+    },
+    "springbreak": {
+      "name": "Spring half-term",
+      "about": "The February school holiday: for many families time for winter sports or a quiet week."
+    },
+    "maybreak": {
+      "name": "May holiday",
+      "about": "A week of school holiday around King's Day and Liberation Day: time to play outside, for example with a kite."
+    },
+    "summerbreak": {
+      "name": "Summer holiday",
+      "about": "The long school holiday. Many people go away; an empty home mainly uses standby power."
+    },
+    "autumnbreak": {
+      "name": "Autumn half-term",
+      "about": "A week of school holiday in October: on with the wellies and into the woods."
+    },
+    "epiphany": {
+      "name": "Epiphany",
+      "about": "On 6 January Christians remember the three wise men who followed the star to the infant Jesus. In some places children go from door to door with a star."
+    },
+    "tulipday": {
+      "name": "National Tulip Day",
+      "about": "On the third Saturday of January the tulip season opens with a big picking garden on Dam Square in Amsterdam, where everyone can pick tulips for free."
+    },
+    "poetryday": {
+      "name": "Poetry Day",
+      "about": "On the last Thursday of January poems take centre stage: read one, write one or send one to someone."
+    },
+    "birdcount": {
+      "name": "Garden Bird Count",
+      "about": "On the last weekend of January tens of thousands of people count the birds in their garden for half an hour, for research by the Dutch bird protection society."
+    },
+    "cleanenergyday": {
+      "name": "International Day of Clean Energy",
+      "about": "On 26 January the United Nations calls attention to clean energy for everyone: sun, wind and using it wisely."
+    },
+    "candlemas": {
+      "name": "Candlemas",
+      "about": "On 2 February, forty days after Christmas, candles are blessed in church. In Limburg, Brabant and Belgium people eat pancakes."
+    },
+    "wetlandsday": {
+      "name": "World Wetlands Day",
+      "about": "On 2 February marshes, rivers and wetlands are in the spotlight: they clean water, store CO2 and give room to birds such as the heron."
+    },
+    "efficiencyday": {
+      "name": "World Energy Efficiency Day",
+      "about": "On 5 March it is all about using energy smarter: the same warmth and light with fewer kilowatt-hours."
+    },
+    "piday": {
+      "name": "Pi Day",
+      "about": "On 14 March (3/14) maths lovers celebrate the number pi, 3.14159…, preferably with a pie."
+    },
+    "womensday": {
+      "name": "International Women's Day",
+      "about": "On 8 March we celebrate what women have achieved and call for equal rights. Purple and mimosa yellow are the colours of the day."
+    },
+    "booksweek": {
+      "name": "Book Week",
+      "about": "In March bookshops and libraries celebrate books. Buy a book and you get the Book Week gift."
+    },
+    "cleanupday": {
+      "name": "National Clean-up Day",
+      "about": "On a Saturday in March tens of thousands of volunteers pick up litter in their neighbourhood."
+    },
+    "treeday": {
+      "name": "Tree Day",
+      "about": "On the third Wednesday of March schoolchildren all over the Netherlands plant trees."
+    },
+    "waterday": {
+      "name": "World Water Day",
+      "about": "On 22 March the United Nations calls attention to clean drinking water, which millions of people still cannot take for granted."
+    },
+    "clockchange": {
+      "name": "Clocks change",
+      "about": "On the night of the last Saturday to Sunday of March the clocks go forward an hour (summer time); in October they go back an hour (winter time)."
+    },
+    "aprilfools": {
+      "name": "April Fools' Day",
+      "about": "The day of pranks: don't believe everything you hear today. Even our logo acts up now and then."
+    },
+    "passover": {
+      "name": "Passover",
+      "about": "The Jewish festival of Passover remembers the exodus from Egypt. For eight days Jews eat matzah, unleavened bread, and the first evenings have the seder meal."
+    },
+    "healthday": {
+      "name": "World Health Day",
+      "about": "On 7 April, the founding day of the World Health Organization, the focus is on health for everyone."
+    },
+    "artday": {
+      "name": "World Art Day",
+      "about": "On 15 April, Leonardo da Vinci's birthday, we celebrate art and creativity."
+    },
+    "bookday": {
+      "name": "World Book Day",
+      "about": "On 23 April we celebrate books and reading, on the day Shakespeare and Cervantes died."
+    },
+    "kingsgames": {
+      "name": "King's Games",
+      "about": "On the Friday before King's Day primary schools start with a shared breakfast and then play sports and games, dressed in orange."
+    },
+    "sunday": {
+      "name": "International Sun Day",
+      "about": "On 3 May the sun as a source of energy is in the spotlight. A few solar panels on the roof supply a good share of a household's electricity."
+    },
+    "europeday": {
+      "name": "Europe Day",
+      "about": "On 9 May we celebrate cooperation in Europe, on the anniversary of the 1950 Schuman Declaration."
+    },
+    "nursesday": {
+      "name": "International Nurses Day",
+      "about": "On 12 May, Florence Nightingale's birthday, we thank nurses and carers."
+    },
+    "millday": {
+      "name": "National Mill Day",
+      "about": "On the second Saturday of May many of the more than 1,200 Dutch windmills turn and you can often go inside. We have been harvesting wind energy for centuries."
+    },
+    "mothersday": {
+      "name": "Mother's Day",
+      "about": "On the second Sunday of May we treat mothers to flowers, breakfast in bed or a home-made present."
+    },
+    "ascension": {
+      "name": "Ascension Day",
+      "about": "Forty days after Easter Christians remember the ascension of Jesus. For many people a day off, sometimes with a long weekend."
+    },
+    "idahot": {
+      "name": "IDAHOBIT",
+      "about": "On 17 May it is the International Day against Homophobia, Biphobia and Transphobia: for acceptance and equal rights."
+    },
+    "museumday": {
+      "name": "International Museum Day",
+      "about": "On 18 May museums around the world celebrate their role for art, culture and history, often with special activities."
+    },
+    "beeday": {
+      "name": "World Bee Day",
+      "about": "On 20 May bees and other pollinators are in the spotlight: without them there would be no fruit and far fewer flowers."
+    },
+    "biodiversityday": {
+      "name": "Biodiversity Day",
+      "about": "On 22 May we celebrate the richness of plants and animals, from ladybird to butterfly, and how we protect it."
+    },
+    "towelday": {
+      "name": "Towel Day",
+      "about": "On 25 May fans of Douglas Adams' 'The Hitchhiker's Guide to the Galaxy' carry a towel. The answer to everything? 42."
+    },
+    "vesak": {
+      "name": "Vesak",
+      "about": "At the full moon in May Buddhists celebrate the birth, enlightenment and passing of the Buddha, with lights and lotus flowers."
+    },
+    "pentecost": {
+      "name": "Pentecost",
+      "about": "Fifty days after Easter Christians celebrate the coming of the Holy Spirit, often shown as a dove or flames. Whit Monday is a day off."
+    },
+    "childrensday": {
+      "name": "International Children's Day",
+      "about": "On 1 June children and their rights are in the spotlight; in many countries it is a holiday."
+    },
+    "oceansday": {
+      "name": "World Oceans Day",
+      "about": "On 8 June the United Nations calls attention to the oceans, which provide a large part of our oxygen."
+    },
+    "flagday": {
+      "name": "Flag Day (Vlaggetjesdag)",
+      "about": "In June Scheveningen opens the herring season: the boats are decked with flags and the first Hollandse Nieuwe herring is tasted."
+    },
+    "windday": {
+      "name": "Global Wind Day",
+      "about": "On 15 June wind energy is in the spotlight. A modern onshore wind turbine supplies electricity for a few thousand households."
+    },
+    "picnicday": {
+      "name": "International Picnic Day",
+      "about": "On 18 June: pack a basket, bring a blanket and eat outside."
+    },
+    "refugeeday": {
+      "name": "World Refugee Day",
+      "about": "On 20 June we reflect on the millions of people who had to flee their homes. The butterfly stands for the freedom to move."
+    },
+    "fathersday": {
+      "name": "Father's Day",
+      "about": "On the third Sunday of June we treat fathers, with a cup of coffee, a drawing or a tie."
+    },
+    "emojiday": {
+      "name": "World Emoji Day",
+      "about": "On 17 July, the date shown on the calendar emoji, we celebrate the little pictures we send every day."
+    },
+    "fourdays": {
+      "name": "Nijmegen Four Days Marches",
+      "about": "In the third week of July tens of thousands of walkers cover 30 to 50 kilometres a day for four days around Nijmegen, cheered on by crowds. At the end: a medal and gladioli."
+    },
+    "friendshipday": {
+      "name": "International Day of Friendship",
+      "about": "On 30 July we celebrate friendship between people, countries and cultures."
+    },
+    "perseids": {
+      "name": "Perseids",
+      "about": "Mid-August is the best time for shooting stars: the earth passes through the dust of a comet. Find a dark spot and look up."
+    },
+    "schoolstart": {
+      "name": "Back to school",
+      "about": "In early September schools open again: new class, new teacher, new pencils."
+    },
+    "evday": {
+      "name": "World EV Day",
+      "about": "On 9 September electric vehicles are in the spotlight. Charging an EV with your own solar power is the cheapest and cleanest kilometre."
+    },
+    "programmersday": {
+      "name": "Day of the Programmer",
+      "about": "On the 256th day of the year (2⁸) we thank programmers, including those of this app."
+    },
+    "monumentday": {
+      "name": "Heritage Days",
+      "about": "On the second weekend of September thousands of monuments open their doors for free: windmills, churches, castles and factories."
+    },
+    "roshhashanah": {
+      "name": "Rosh Hashanah",
+      "about": "The Jewish New Year. The shofar, a ram's horn, is blown and people eat apple with honey for a sweet new year."
+    },
+    "prinsjesdag": {
+      "name": "Prinsjesdag",
+      "about": "On the third Tuesday of September the King rides in his coach to the Hall of Knights for the speech from the throne, and the finance minister presents the budget in the briefcase."
+    },
+    "peaceweek": {
+      "name": "Peace Week",
+      "about": "Around 21 September, the International Day of Peace, PAX organises events for peace all over the Netherlands."
+    },
+    "midautumn": {
+      "name": "Mid-Autumn Festival",
+      "about": "The Chinese moon festival at the full moon in September or October: families get together, there are lanterns and everyone eats mooncakes."
+    },
+    "neighboursday": {
+      "name": "Neighbours' Day",
+      "about": "On the fourth Saturday of September neighbours do something fun or useful together for their street."
+    },
+    "languagesday": {
+      "name": "European Day of Languages",
+      "about": "On 26 September we celebrate the many languages of Europe. Hallo, hello, salam, hola!"
+    },
+    "tourismday": {
+      "name": "World Tourism Day",
+      "about": "On 27 September travel is in the spotlight, and how to do it sustainably."
+    },
+    "heartday": {
+      "name": "World Heart Day",
+      "about": "On 29 September we call attention to a healthy heart: exercise, healthy food and not smoking."
+    },
+    "eldersday": {
+      "name": "International Day of Older Persons",
+      "about": "On 1 October we put older people in the spotlight, with a visit, a cup of tea or a chat."
+    },
+    "childrensbookweek": {
+      "name": "Children's Book Week",
+      "about": "In October children's books take centre stage for twelve days, at school, in the library and in bookshops."
+    },
+    "animalday": {
+      "name": "World Animal Day",
+      "about": "On 4 October we spoil our pets and think about the welfare of all animals."
+    },
+    "teachersday": {
+      "name": "World Teachers' Day",
+      "about": "On 5 October we thank teachers for everything they teach us."
+    },
+    "hydrogenday": {
+      "name": "Hydrogen Day",
+      "about": "On 8 October (1.008 is the atomic weight of hydrogen) the focus is on hydrogen as a way to store renewable energy."
+    },
+    "sustainabilityday": {
+      "name": "Sustainability Day",
+      "about": "On 10 October people all over the Netherlands show what they do for a more sustainable world, for example with solar panels or a more efficient home."
+    },
+    "foodday": {
+      "name": "World Food Day",
+      "about": "On 16 October food is in the spotlight: enough healthy food for everyone, and less waste."
+    },
+    "nightofthenight": {
+      "name": "Night of the Night",
+      "about": "On the last Saturday of October the lights go out in many places, so you can see the stars again and nocturnal animals get some peace."
+    },
+    "natureday": {
+      "name": "Nature Work Day",
+      "about": "On the first Saturday of November thousands of volunteers spend a day working in nature: pruning, planting and tidying."
+    },
+    "glow": {
+      "name": "GLOW Eindhoven",
+      "about": "For eight evenings in November Eindhoven turns into a light festival with works of art made of light."
+    },
+    "carersday": {
+      "name": "Carers' Day",
+      "about": "On 10 November we thank the people who care for a loved one who is ill or needs help."
+    },
+    "elevenelven": {
+      "name": "The eleventh of the eleventh",
+      "about": "On 11 November at 11:11 the carnival season starts in the south of the Netherlands, with the announcement of the new carnival prince."
+    },
+    "arrival": {
+      "name": "Sinterklaas arrives",
+      "about": "In mid-November Sinterklaas arrives in the Netherlands by steamboat, live on television. After that children may put out their shoe."
+    },
+    "volunteersday": {
+      "name": "Volunteers' Day",
+      "about": "On 7 December we thank the millions of volunteers who help others."
+    },
+    "purplefriday": {
+      "name": "Purple Friday",
+      "about": "On the second Friday of December pupils and teachers wear purple to show that everyone at school can be themselves, including LGBTIQ+ young people."
+    },
+    "shortestday": {
+      "name": "Shortest day",
+      "about": "Around 21 December the sun is at its lowest and the day is the shortest. Solar panels yield the least now; from tomorrow the days get longer again."
+    },
+    "bikeday": {
+      "name": "World Bicycle Day",
+      "about": "On 3 June we celebrate the bicycle: healthy, clean, and in the Netherlands there are more bikes than people."
+    },
+    "environmentday": {
+      "name": "World Environment Day",
+      "about": "On 5 June the United Nations calls attention to protecting the environment, from clean air to butterflies along the roadside."
+    }
   }
 }

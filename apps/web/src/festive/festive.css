@@ -1,0 +1,1518 @@
+/* Holiday decoration over the title bar of the main pages (#62). It never takes taps. */
+.festive {
+  position: absolute;
+  inset: env(safe-area-inset-top, 0px) 0 0 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 11;
+}
+
+.festive__fireworks {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Christmas: a string of lights along the bottom edge, one bulb per 32 px of wire. */
+.festive__lights {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='18'%3E%3Cpath d='M0 2 Q16 12 32 2' fill='none' stroke='%2363806b' stroke-width='1.2'/%3E%3C/svg%3E")
+    repeat-x;
+}
+
+.festive__bulb {
+  position: relative;
+  flex: 0 0 32px;
+  --bulb: #ff4d4d;
+}
+
+.festive__bulb--1 {
+  --bulb: #ffc93c;
+}
+
+.festive__bulb--2 {
+  --bulb: #4cd964;
+}
+
+.festive__bulb--3 {
+  --bulb: #4da3ff;
+}
+
+/* Cap */
+.festive__bulb::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 6px;
+  width: 4px;
+  height: 3px;
+  border-radius: 1px;
+  background: #8a9a8f;
+}
+
+.festive__bulb::after {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  width: 6px;
+  height: 9px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  background: var(--bulb);
+  box-shadow: 0 0 6px 1px var(--bulb);
+  animation: festive-twinkle 1.6s ease-in-out infinite alternate;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes festive-twinkle {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.35;
+    box-shadow: 0 0 1px 0 var(--bulb);
+  }
+}
+
+/* Baubles hang from the top edge in the free space next to the title: on the left of the
+   centred iOS title, to the right of the Material title. */
+.festive__bauble {
+  --size: 14px;
+  --thread: 8px;
+  --ball: #e53935;
+  position: absolute;
+  top: 0;
+  width: var(--size);
+  height: calc(var(--thread) + var(--size));
+  transform-origin: 50% 0;
+  animation: festive-swing 3s ease-in-out infinite alternate;
+}
+
+.festive__bauble::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 0.5px);
+  top: 0;
+  width: 1px;
+  height: var(--thread);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.festive__bauble::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.85) 0,
+    var(--ball) 35%,
+    color-mix(in srgb, var(--ball) 55%, #000) 100%
+  );
+}
+
+.festive__bauble--0 {
+  left: 46%;
+}
+
+.festive__bauble--1 {
+  --size: 11px;
+  --thread: 16px;
+  --ball: #f6b915;
+  left: 57%;
+  animation-duration: 3.6s;
+  animation-delay: -1.2s;
+}
+
+.festive__bauble--2 {
+  --size: 16px;
+  --thread: 4px;
+  --ball: #3d8bfd;
+  left: 68%;
+  animation-duration: 2.7s;
+  animation-delay: -2s;
+}
+
+.ios .festive__bauble--0 {
+  left: 6%;
+}
+
+.ios .festive__bauble--1 {
+  left: 16%;
+}
+
+.ios .festive__bauble--2 {
+  left: 26%;
+}
+
+@keyframes festive-swing {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festive__bulb::after,
+  .festive__bauble {
+    animation: none;
+  }
+}
+
+/* ---- More seasons (#66) ---- */
+
+/* The free space next to the title: right of the Material title, left of the centred iOS
+   title, clear of the MNEXT logo. */
+.festive__figures {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 44%;
+  right: 120px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ios .festive__figures {
+  left: 3%;
+  right: auto;
+  width: 30%;
+  gap: 4px;
+}
+
+/* Next to a long centred iOS title ("Instellingen") there is room for four figures. */
+.ios .festive__figures > .festive__fig:nth-child(n + 5) {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .festive__figures {
+    right: 24px;
+  }
+}
+
+.festive__fig {
+  --s: 22px;
+  --d: 0s;
+  display: block;
+  flex: none;
+  animation-delay: var(--d);
+}
+
+.festive__fig svg {
+  display: block;
+  width: var(--s);
+  height: auto;
+  overflow: visible;
+}
+
+.festive__fig--hang {
+  align-self: flex-start;
+  transform-origin: 50% 0;
+}
+
+.festive__fig--float {
+  align-self: flex-end;
+  margin-bottom: 3px;
+}
+
+/* A washing line along the top of the free space; figures hang from it. */
+.festive__figures--line::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: 2px;
+  height: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 0 0 50% 50%;
+}
+
+.festive__figures--line .festive__fig--hang {
+  margin-top: 5px;
+}
+
+/* Hare and dragon cross the whole title bar now and then. */
+.festive__traveller {
+  --s: 26px;
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: var(--s);
+  animation: festive-cross 11s linear infinite;
+}
+
+.festive__traveller svg {
+  display: block;
+  width: var(--s);
+  height: auto;
+}
+
+.festive__traveller-inner {
+  display: block;
+  animation: festive-wriggle 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes festive-cross {
+  from {
+    transform: translateX(calc(-1 * var(--s) - 10px));
+  }
+  60%,
+  to {
+    transform: translateX(calc(100vw + 10px));
+  }
+}
+
+@keyframes festive-wriggle {
+  to {
+    transform: translateY(-2px);
+  }
+}
+
+/* Bunting along the bottom edge. */
+.festive__bunting {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  gap: 4px;
+  height: 12px;
+  padding: 0 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.festive__flag {
+  flex: 0 0 16px;
+  height: 10px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: 50% 0;
+  animation: festive-flag 1.8s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+.festive__bunting--slow .festive__flag {
+  clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+  animation-duration: 5s;
+}
+
+@keyframes festive-flag {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+
+/* Edges drawn in CSS. */
+.festive__edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  background-repeat: repeat-x;
+}
+
+.festive__edge--vine {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12'%3E%3Cpath d='M0 6 Q10 0 20 6 T40 6' fill='none' stroke='%234e7a2a' stroke-width='1.6'/%3E%3Cpath d='M10 3 q4 -4 7 0 q-3 3 -7 0z' fill='%236a9a3a'/%3E%3Cpath d='M28 9 q4 4 7 0 q-3 -3 -7 0z' fill='%236a9a3a'/%3E%3C/svg%3E");
+}
+
+.festive__edge--water {
+  height: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8'%3E%3Cpath d='M0 4 Q6 0 12 4 T24 4 V8 H0z' fill='%234fc3f7' fill-opacity='.55'/%3E%3C/svg%3E");
+  animation: festive-ripple 3s linear infinite;
+}
+
+@keyframes festive-ripple {
+  to {
+    background-position-x: 24px;
+  }
+}
+
+/* Earth Hour: the title bar dims now and then. */
+.festive--earthhour::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  animation: festive-dim 8s ease-in-out infinite;
+}
+
+@keyframes festive-dim {
+  40%,
+  70% {
+    opacity: 0.45;
+  }
+}
+
+/* ---- Animations; `--d` staggers them ---- */
+
+.fx-sway {
+  animation: festive-swing 3s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+.fx-sway-low {
+  transform-origin: 50% 100%;
+  animation: festive-sway-low 2.6s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-sway-low {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+
+.fx-bob {
+  animation: festive-bob 2.2s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-bob {
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+.fx-hop {
+  animation: festive-hop 2.4s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-hop {
+  0%,
+  20%,
+  40%,
+  100% {
+    transform: translateY(0);
+  }
+  10% {
+    transform: translateY(-6px) rotate(-6deg);
+  }
+  30% {
+    transform: translateY(-3px) rotate(4deg);
+  }
+}
+
+.fx-hop-far {
+  display: block;
+  animation: festive-hop-far 0.7s ease-in-out infinite;
+}
+
+@keyframes festive-hop-far {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+.fx-peek {
+  animation: festive-peek 6s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-peek {
+  0%,
+  100% {
+    transform: translateY(14px);
+  }
+  20%,
+  75% {
+    transform: translateY(0);
+  }
+}
+
+.fx-wave-hand {
+  transform-origin: 20px 22px;
+  animation: festive-wave-hand 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes festive-wave-hand {
+  from {
+    transform: rotate(-20deg);
+  }
+  to {
+    transform: rotate(15deg);
+  }
+}
+
+.fx-feather {
+  transform-origin: 16px 8px;
+  animation: festive-sway-low 1.4s ease-in-out infinite alternate;
+}
+
+.fx-wobble {
+  transform-origin: 50% 100%;
+  animation: festive-wobble 2.4s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-wobble {
+  0%,
+  50%,
+  100% {
+    transform: rotate(0);
+  }
+  10% {
+    transform: rotate(-12deg);
+  }
+  20% {
+    transform: rotate(10deg);
+  }
+  30% {
+    transform: rotate(-6deg);
+  }
+  40% {
+    transform: rotate(3deg);
+  }
+}
+
+.fx-flicker,
+.fx-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-flicker 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes festive-flicker {
+  0% {
+    opacity: 1;
+    transform: scale(1, 1);
+  }
+  35% {
+    opacity: 0.75;
+    transform: scale(0.92, 1.06);
+  }
+  70% {
+    opacity: 0.95;
+    transform: scale(1.05, 0.94);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(0.97, 1.03);
+  }
+}
+
+.fx-glow {
+  animation: festive-glow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes festive-glow {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0.35;
+  }
+}
+
+.fx-twinkle {
+  animation: festive-twinkle-star 1.4s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-twinkle-star {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+.fx-beat {
+  animation: festive-beat 1.1s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-beat {
+  0%,
+  40%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.18);
+  }
+  25% {
+    transform: scale(1.05);
+  }
+}
+
+.fx-float-up {
+  animation: festive-float-up 3.6s ease-in infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(1);
+  }
+}
+
+.fx-spin {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-spin 12s linear infinite;
+}
+
+@keyframes festive-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fx-turn {
+  animation: festive-turn 6s linear infinite;
+}
+
+@keyframes festive-turn {
+  to {
+    transform: translateX(-24px);
+  }
+}
+
+.fx-grow {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-grow 4s ease-out infinite;
+}
+
+@keyframes festive-grow {
+  0% {
+    transform: scale(0.2);
+  }
+  60%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+.fx-burst {
+  animation: festive-burst 2.8s ease-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  15% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+.fx-flutter {
+  animation: festive-flutter 1.3s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-flutter {
+  from {
+    transform: rotate(-4deg) skewX(-4deg);
+  }
+  to {
+    transform: rotate(4deg) skewX(5deg);
+  }
+}
+
+.fx-clink-left,
+.fx-clink-right {
+  transform-origin: 50% 100%;
+  animation: festive-clink-left 3s ease-in-out infinite;
+}
+
+.fx-clink-right {
+  animation-name: festive-clink-right;
+}
+
+@keyframes festive-clink-left {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0);
+  }
+  75% {
+    transform: translateX(3px) rotate(14deg);
+  }
+}
+
+@keyframes festive-clink-right {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0);
+  }
+  75% {
+    transform: translateX(-3px) rotate(-14deg);
+  }
+}
+
+.fx-bubble {
+  animation: festive-bubble 1.5s linear infinite;
+}
+
+@keyframes festive-bubble {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+.fx-drop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-drop 5s ease-in-out infinite;
+}
+
+@keyframes festive-drop {
+  0% {
+    transform: scaleY(1);
+  }
+  70%,
+  100% {
+    transform: scaleY(0.3);
+  }
+}
+
+.fx-swim {
+  animation: festive-swim 4s ease-in-out infinite alternate;
+}
+
+@keyframes festive-swim {
+  from {
+    transform: translateX(-3px);
+  }
+  to {
+    transform: translateX(3px);
+  }
+}
+
+.fx-onoff {
+  animation: festive-onoff 8s steps(1) infinite;
+}
+
+@keyframes festive-onoff {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  41%,
+  70% {
+    opacity: 0.1;
+  }
+  71% {
+    opacity: 1;
+  }
+}
+
+.fx-splash {
+  animation: festive-splash 1.6s ease-out infinite;
+}
+
+@keyframes festive-splash {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(2px, -11px);
+  }
+  100% {
+    transform: translate(4px, -2px);
+    opacity: 0;
+  }
+}
+
+.fx-shine {
+  animation: festive-shine 3.5s ease-in-out infinite;
+}
+
+@keyframes festive-shine {
+  0%,
+  50% {
+    transform: skewX(-20deg) translateX(0);
+  }
+  100% {
+    transform: skewX(-20deg) translateX(48px);
+  }
+}
+
+.fx-rise {
+  animation: festive-rise 6s ease-out infinite;
+}
+
+@keyframes festive-rise {
+  0% {
+    transform: translateY(16px);
+    opacity: 0.4;
+  }
+  40%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ---- Information on tap ---- */
+
+.festive__info {
+  position: absolute;
+  inset: env(safe-area-inset-top, 0px) 0 0 0;
+  z-index: 12;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.festive__info:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -3px;
+}
+
+.festive-popover {
+  --width: min(320px, calc(100vw - 32px));
+}
+
+.festive-info {
+  padding: 12px 16px;
+}
+
+.festive-info p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festive [class*='fx-'],
+  .festive__traveller,
+  .festive__traveller-inner,
+  .festive__flag,
+  .festive__edge,
+  .festive--earthhour::before {
+    animation: none;
+  }
+  /* Without the walk across, the hare and dragon sit at the end of the free space. */
+  .festive__traveller {
+    left: auto;
+    right: 130px;
+  }
+}
+
+/* ---- Round three (#66): falling figures and more animations ---- */
+
+.festive__falling {
+  position: absolute;
+  inset: 0;
+}
+
+.festive__faller {
+  position: absolute;
+  top: -12px;
+  display: block;
+}
+
+.festive__faller svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fx-fall {
+  animation: festive-fall 7s linear infinite;
+}
+
+@keyframes festive-fall {
+  from {
+    transform: translate(0, 0) rotate(0);
+  }
+  to {
+    transform: translate(10px, 80px) rotate(180deg);
+  }
+}
+
+.fx-leaf-fall {
+  animation: festive-leaf-fall 8s ease-in-out infinite;
+}
+
+@keyframes festive-leaf-fall {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  25% {
+    transform: translate(12px, 20px) rotate(60deg);
+  }
+  50% {
+    transform: translate(-6px, 40px) rotate(-30deg);
+  }
+  100% {
+    transform: translate(8px, 80px) rotate(120deg);
+  }
+}
+
+.fx-float-sky {
+  top: 4px;
+  opacity: 0.55;
+  animation: festive-float-sky 20s linear infinite;
+}
+
+@keyframes festive-float-sky {
+  from {
+    transform: translate(-40px, 30px);
+  }
+  to {
+    transform: translate(60px, -10px);
+  }
+}
+
+.fx-shoot {
+  opacity: 0;
+  animation: festive-shoot 4s ease-in infinite;
+}
+
+@keyframes festive-shoot {
+  0%,
+  70% {
+    opacity: 0;
+    transform: translate(-30px, 0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(60px, 24px);
+  }
+}
+
+.fx-twinkle-static {
+  top: auto;
+  animation: festive-twinkle-star 2s ease-in-out infinite alternate;
+}
+
+.festive__faller.fx-twinkle-static:nth-child(odd) {
+  top: 8px;
+}
+
+.festive__faller.fx-twinkle-static:nth-child(even) {
+  top: 26px;
+}
+
+/* Night of the Night: the bar goes dark. */
+.festive--nightofthenight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0.4;
+}
+
+/* April Fools' Day: the logo stands on its head now and then. */
+ion-header:has(.festive--aprilfools) .toolbar-logo img {
+  animation: festive-fool 10s ease-in-out infinite;
+}
+
+@keyframes festive-fool {
+  0%,
+  80%,
+  100% {
+    transform: rotate(0);
+  }
+  85%,
+  95% {
+    transform: rotate(180deg);
+  }
+}
+
+.fx-buzz {
+  animation: festive-buzz 3s ease-in-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-buzz {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -5px) rotate(8deg);
+  }
+  50% {
+    transform: translate(14px, 2px);
+  }
+  75% {
+    transform: translate(5px, 5px) rotate(-8deg);
+  }
+}
+
+.fx-wiggle {
+  animation: festive-wiggle 1.2s ease-in-out infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-wiggle {
+  from {
+    transform: rotate(-8deg) scaleX(0.95);
+  }
+  to {
+    transform: rotate(8deg) scaleX(1.05);
+  }
+}
+
+.fx-bounce {
+  animation: festive-bounce 1s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-bounce {
+  from {
+    transform: translateY(-7px);
+  }
+  to {
+    transform: translateY(5px);
+  }
+}
+
+.fx-kite {
+  animation: festive-kite 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes festive-kite {
+  from {
+    transform: translate(-6px, 3px) rotate(-14deg);
+  }
+  to {
+    transform: translate(6px, -3px) rotate(12deg);
+  }
+}
+
+.fx-grow-in {
+  transform-origin: 50% 100%;
+  animation: festive-grow 4s ease-out infinite;
+  animation-delay: var(--d);
+}
+
+.fx-glide {
+  animation: festive-glide 5s ease-in-out infinite alternate;
+}
+
+@keyframes festive-glide {
+  from {
+    transform: translate(-10px, 4px);
+  }
+  to {
+    transform: translate(14px, -3px);
+  }
+}
+
+.fx-jump {
+  animation: festive-jump 3s ease-in-out infinite;
+}
+
+@keyframes festive-jump {
+  0%,
+  60%,
+  100% {
+    transform: translateY(6px) rotate(0);
+  }
+  75% {
+    transform: translateY(-14px) rotate(-30deg);
+  }
+  90% {
+    transform: translateY(4px) rotate(30deg);
+  }
+}
+
+.fx-pop {
+  animation: festive-pop 2.8s ease-out infinite;
+  animation-delay: var(--d);
+}
+
+@keyframes festive-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  15% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  25%,
+  80% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.fx-flutter-fly {
+  animation: festive-flutter-fly 6s ease-in-out infinite;
+}
+
+@keyframes festive-flutter-fly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(16px, -6px);
+  }
+  50% {
+    transform: translate(30px, 2px);
+  }
+  75% {
+    transform: translate(12px, 6px);
+  }
+}
+
+.fx-crawl {
+  animation: festive-crawl 8s linear infinite alternate;
+}
+
+@keyframes festive-crawl {
+  to {
+    transform: translateX(-24px);
+  }
+}
+
+.fx-pingpong {
+  animation: festive-pingpong 2s ease-in-out infinite alternate;
+}
+
+@keyframes festive-pingpong {
+  from {
+    transform: translate(-10px, 0);
+  }
+  50% {
+    transform: translate(0, -8px);
+  }
+  to {
+    transform: translate(10px, 0);
+  }
+}
+
+.fx-peek-sun {
+  animation: festive-peek-sun 8s ease-in-out infinite;
+}
+
+@keyframes festive-peek-sun {
+  0%,
+  100% {
+    transform: translateY(18px);
+  }
+  45%,
+  55% {
+    transform: translateY(6px);
+  }
+}
+
+/* Parts inside the SVG figures. */
+.fx-page {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: festive-page 3s ease-in-out infinite;
+}
+
+@keyframes festive-page {
+  0%,
+  40% {
+    transform: scaleX(1);
+  }
+  70%,
+  100% {
+    transform: scaleX(-1);
+  }
+}
+
+.fx-flag-wave {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: festive-flutter 1.2s ease-in-out infinite alternate;
+}
+
+.fx-fill {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-fill 4s ease-in-out infinite;
+}
+
+@keyframes festive-fill {
+  0% {
+    transform: scaleY(0.1);
+  }
+  80%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.fx-hand {
+  transform-origin: 12px 12px;
+  animation: festive-spin 4s linear infinite;
+}
+
+.fx-steam {
+  animation: festive-steam 2.4s ease-in-out infinite;
+}
+
+@keyframes festive-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.fx-flap,
+.fx-wings {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-flap 0.5s ease-in-out infinite alternate;
+}
+
+.fx-wings {
+  transform-origin: 50% 50%;
+  animation-duration: 0.3s;
+}
+
+@keyframes festive-flap {
+  to {
+    transform: scaleY(0.4);
+  }
+}
+
+.fx-peck {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-peck 3s ease-in-out infinite;
+}
+
+@keyframes festive-peck {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0);
+  }
+  80% {
+    transform: rotate(18deg);
+  }
+  90% {
+    transform: rotate(-6deg);
+  }
+}
+
+.fx-write {
+  stroke-dasharray: 60;
+  animation: festive-write 4s linear infinite;
+}
+
+@keyframes festive-write {
+  from {
+    stroke-dashoffset: 60;
+  }
+  70%,
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.fx-tail {
+  transform-box: fill-box;
+  transform-origin: 0 100%;
+  animation: festive-sway-low 0.5s ease-in-out infinite alternate;
+}
+
+.fx-tongue {
+  animation: festive-bob 0.4s ease-in-out infinite alternate;
+}
+
+.fx-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: festive-lid 4s ease-in-out infinite;
+}
+
+@keyframes festive-lid {
+  0%,
+  60%,
+  100% {
+    transform: scaleY(1);
+  }
+  75%,
+  90% {
+    transform: scaleY(-1);
+  }
+}
+
+.fx-open {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-grow 5s ease-out infinite;
+}
+
+.fx-scribble {
+  animation: festive-scribble 1s ease-in-out infinite alternate;
+}
+
+@keyframes festive-scribble {
+  from {
+    transform: translate(-2px, 1px) rotate(-6deg);
+  }
+  to {
+    transform: translate(2px, -1px) rotate(6deg);
+  }
+}
+
+.fx-poke {
+  animation: festive-poke 2s ease-in-out infinite;
+}
+
+@keyframes festive-poke {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(4px);
+  }
+}
+
+.fx-blink {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-blink 4s steps(1) infinite;
+}
+
+@keyframes festive-blink {
+  0%,
+  92% {
+    transform: scaleY(1);
+  }
+  93%,
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+
+.fx-jingle {
+  animation: festive-bob 0.3s ease-in-out infinite alternate;
+}
+
+.fx-wave-arm {
+  transform-box: fill-box;
+  transform-origin: 0 100%;
+  animation: festive-wave-hand 0.7s ease-in-out infinite alternate;
+}
+
+.fx-rain {
+  animation: festive-rain 1s linear infinite;
+}
+
+@keyframes festive-rain {
+  from {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+.fx-knit {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-sway-low 0.6s ease-in-out infinite alternate;
+}
+
+.fx-beam {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: festive-beam 3.3s ease-in-out infinite alternate;
+}
+
+@keyframes festive-beam {
+  from {
+    transform: rotate(-35deg);
+  }
+  to {
+    transform: rotate(35deg);
+  }
+}
+
+.fx-drip {
+  animation: festive-drip 1.8s ease-in infinite;
+}
+
+@keyframes festive-drip {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  90% {
+    transform: translateY(10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+.fx-ripple {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-ripple-ring 1.8s ease-out infinite;
+}
+
+@keyframes festive-ripple-ring {
+  0%,
+  85% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.fx-trace {
+  stroke-dasharray: 70;
+  animation: festive-trace 2s linear infinite;
+}
+
+@keyframes festive-trace {
+  from {
+    stroke-dashoffset: 70;
+  }
+  to {
+    stroke-dashoffset: -70;
+  }
+}
+
+.fx-flip {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-flip 2.4s ease-in-out infinite;
+}
+
+@keyframes festive-flip {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  70% {
+    transform: translateY(-7px) scaleY(-1);
+  }
+}
+
+.fx-cursor {
+  animation: festive-onoff 1s steps(1) infinite;
+}
+
+.fx-highfive-left,
+.fx-highfive-right {
+  animation: festive-highfive 2.4s ease-in-out infinite;
+}
+
+.fx-highfive-right {
+  animation-name: festive-highfive-right;
+}
+
+@keyframes festive-highfive {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  45%,
+  55% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes festive-highfive-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  45%,
+  55% {
+    transform: translateX(-3px);
+  }
+}
+
+.fx-door {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: festive-lid 5s ease-in-out infinite;
+}
+
+.fx-tilt {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: festive-sway-low 2s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festive__faller,
+  ion-header:has(.festive--aprilfools) .toolbar-logo img {
+    animation: none;
+  }
+}

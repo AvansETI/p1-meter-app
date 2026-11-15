@@ -1,0 +1,112 @@
+import type { CSSProperties, ReactNode } from 'react';
+
+/** Custom properties for the festive CSS (delay, size, colour). */
+const vars = (values: Record<string, string | number>) =>
+  Object.fromEntries(
+    Object.entries(values).map(([key, value]) => [
+      `--${key}`,
+      typeof value === 'number' ? `${value}${key === 's' ? 'px' : 's'}` : value,
+    ]),
+  ) as CSSProperties;
+
+/**
+ * One small figure in the free space next to the title. `fx` names the animation (see
+ * festive.css), `d` its delay in seconds; `hang` anchors it to the top edge.
+ */
+export function Fig({
+  fx,
+  d = 0,
+  s = 22,
+  hang = false,
+  className = '',
+  children,
+}: {
+  fx?: string;
+  d?: number;
+  s?: number;
+  hang?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  const classes = ['festive__fig', hang && 'festive__fig--hang', fx && `fx-${fx}`, className];
+  return (
+    <span className={classes.filter(Boolean).join(' ')} style={vars({ d, s })}>
+      {children}
+    </span>
+  );
+}
+
+/** The free space next to the title; `line` adds a washing line along its top. */
+export function Figures({ line = false, children }: { line?: boolean; children: ReactNode }) {
+  return (
+    <div className={line ? 'festive__figures festive__figures--line' : 'festive__figures'}>
+      {children}
+    </div>
+  );
+}
+
+/** A figure that travels across the whole title bar now and then (hare, dragon). */
+export function Traveller({ s = 26, children }: { s?: number; children: ReactNode }) {
+  return (
+    <span className="festive__traveller" style={vars({ s })}>
+      <span className="festive__traveller-inner">{children}</span>
+    </span>
+  );
+}
+
+const FLAGS = 96; // 20 px apart: enough for a 1920 px wide title bar
+
+/** Bunting along the bottom edge; flags take the colours (or backgrounds) in turn. */
+export function Bunting({ colours, slow = false }: { colours: string[]; slow?: boolean }) {
+  return (
+    <div className={slow ? 'festive__bunting festive__bunting--slow' : 'festive__bunting'}>
+      {Array.from({ length: FLAGS }, (_, i) => (
+        <span
+          key={i}
+          className="festive__flag"
+          style={{
+            ...vars({ d: -((i * 7) % 11) * 0.17 }),
+            background: colours[i % colours.length],
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** A plain edge along the bottom (vine, water): drawn and animated in CSS. */
+export function Edge({ kind }: { kind: 'vine' | 'water' }) {
+  return <div className={`festive__edge festive__edge--${kind}`} />;
+}
+
+/** Copies of a small figure falling (or flying) across the whole title bar. */
+export function Falling({
+  count = 12,
+  fx = 'fall',
+  s = 10,
+  children,
+}: {
+  count?: number;
+  fx?: string;
+  s?: number;
+  children: ReactNode;
+}) {
+  return (
+    <div className="festive__falling">
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className={`festive__faller fx-${fx}`}
+          style={{
+            left: `${((i * 37) % 100) + 1}%`,
+            width: `${s - (i % 3) * 2}px`,
+            animationDelay: `${-((i * 7) % 13) * 0.6}s`,
+            animationDuration: `${6 + (i % 5)}s`,
+          }}
+        >
+          {children}
+        </span>
+      ))}
+    </div>
+  );
+}
