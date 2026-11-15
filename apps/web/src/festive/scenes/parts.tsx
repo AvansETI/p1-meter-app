@@ -66,6 +66,39 @@ export function Walker({ s = 24, children }: { s?: number; children: ReactNode }
   );
 }
 
+/**
+ * Small figures thrown in an arc from a walker's hand (pepernoten, #75). Place inside a
+ * `Walker`: they turn round with it.
+ */
+export function Thrown({
+  count = 4,
+  s = 7,
+  children,
+}: {
+  count?: number;
+  s?: number;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className="festive__thrown fx-throw"
+          style={{
+            ...vars({ s }),
+            animationDelay: `${-i * 0.65}s`,
+            ['--tx' as string]: `${26 + ((i * 17) % 30)}px`,
+            ['--ty' as string]: `${-14 - ((i * 7) % 10)}px`,
+          }}
+        >
+          {children}
+        </span>
+      ))}
+    </>
+  );
+}
+
 const FLAGS = 96; // 20 px apart: enough for a 1920 px wide title bar
 
 /** Bunting along the bottom edge; flags take the colours (or backgrounds) in turn. */

@@ -4,7 +4,7 @@ import type { Season } from '../season';
 import * as L from './library';
 import { Clouds, Confetti, Drops, Hearts, Leaves, Petals, Stars } from './layers';
 import { Presents, WalkingPiet } from './autumn';
-import { Bunting, Edge, Falling, Fig, Figures, Traveller, Walker } from './parts';
+import { Bunting, Edge, Falling, Fig, Figures, Thrown, Traveller, Walker } from './parts';
 
 const ORANGE = ['#ff6d00', '#ff9100', '#ffab40'];
 const NL = ['#ae1c28', '#ffffff', '#21468b'];
@@ -169,9 +169,6 @@ export const MORE_SCENES: Partial<Record<Season, () => ReactNode>> = {
   ),
   sinttime: () => (
     <>
-      <Falling count={10} s={8}>
-        <L.Pepernoot />
-      </Falling>
       <Figures>
         <Fig s={22}>
           <L.Shoe />
@@ -180,6 +177,9 @@ export const MORE_SCENES: Partial<Record<Season, () => ReactNode>> = {
       </Figures>
       <Walker s={22}>
         <WalkingPiet />
+        <Thrown>
+          <L.Pepernoot />
+        </Thrown>
       </Walker>
     </>
   ),

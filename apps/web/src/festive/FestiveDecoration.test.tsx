@@ -73,6 +73,17 @@ describe('Decoration: every scene is well filled (#75)', () => {
     expect(layer.querySelector(WIDE_LAYERS)).not.toBeNull();
   });
 
+  it.each(['sinttime', 'sinterklaas'] as const)(
+    'lets the walking piet throw the pepernoten in %s',
+    (season) => {
+      const { container } = render(<Decoration season={season} />);
+      expect(
+        container.querySelectorAll('.festive__walker .festive__thrown').length,
+      ).toBeGreaterThan(0);
+      expect(container.querySelector('.festive__falling')).toBeNull();
+    },
+  );
+
   it('opens the description from anywhere on the title bar', async () => {
     const { container } = render(<Decoration season="movember" />);
     // One button over the whole bar, above the decoration, not tied to a figure.

@@ -46,19 +46,20 @@ The roetveegpiet keeps the existing face with soot smudges.
 
 1. shoe with a carrot;
 2. three presents;
-3. falling pepernoten.
+3. the walking piet throwing pepernoten (below).
 
 **Pakjesavond (`sinterklaas`, 1–5 December)**, in this order:
 
 1. mitre;
 2. crosier;
 3. presents;
-4. falling pepernoten.
+4. the walking piet throwing pepernoten (below).
 
 **The walking piet, in both periods:** it replaces the piet that peeks around the corner. It is a `Walker`:
 
 - it walks to the right across the whole title bar, turns round (mirrored) and walks back, about 14 s per round trip;
 - its legs move and it carries a sack over its shoulder;
+- now and then it throws a pepernoot forward in an arc, which falls out of the bar (`Thrown`); the pepernoten do not fall from the sky;
 - with reduced motion it stands still at the end of the free space, like the hare.
 
 `Walker` is a new part next to `Traveller`. `Traveller` only crosses in one direction.

@@ -296,6 +296,7 @@
 }
 
 .festive__walker-inner {
+  position: relative;
   display: block;
   animation: festive-walk-turn 16s step-end infinite;
 }
@@ -316,6 +317,44 @@
   }
   50% {
     transform: scaleX(-1);
+  }
+}
+
+/* Pepernoten thrown from the piet's hand: up in an arc, then down out of the bar. */
+.festive__thrown {
+  position: absolute;
+  left: 78%;
+  top: 68%;
+  width: var(--s);
+  opacity: 0;
+}
+
+.festive__thrown svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fx-throw {
+  animation: festive-throw 2.6s ease-in infinite;
+}
+
+@keyframes festive-throw {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  25% {
+    transform: translate(calc(var(--tx) * 0.45), var(--ty)) rotate(160deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(var(--tx), 30px) rotate(380deg);
+  }
+  61%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), 30px);
   }
 }
 

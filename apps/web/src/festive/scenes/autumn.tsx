@@ -1,6 +1,6 @@
 /** Halloween, Divali, Sint-Maarten, Loy Krathong, Sinterklaas and Chanoeka (#66). */
 import * as L from './library';
-import { Edge, Falling, Fig, Figures, Walker } from './parts';
+import { Edge, Falling, Fig, Figures, Thrown, Walker } from './parts';
 
 function Pumpkin() {
   return (
@@ -297,13 +297,10 @@ export function Presents() {
   );
 }
 
-/** Pakjesavond (1–5 December): mitre, crosier, presents, pepernoten and the walking piet. */
+/** Pakjesavond (1–5 December): mitre, crosier, presents and a piet throwing pepernoten. */
 export function Sinterklaas() {
   return (
     <>
-      <Falling count={10} s={8}>
-        <L.Pepernoot />
-      </Falling>
       <Figures>
         <Fig fx="bob" s={20}>
           <Mitre />
@@ -315,6 +312,9 @@ export function Sinterklaas() {
       </Figures>
       <Walker s={22}>
         <WalkingPiet />
+        <Thrown>
+          <L.Pepernoot />
+        </Thrown>
       </Walker>
     </>
   );
