@@ -345,7 +345,71 @@ filter it on `capabilities.gas`, and `/gas` redirects to `/live` without gas.
 - **Comparison bands:** the values sit under their own positions, and a legend explains the
   bands.
 
-## 11. Out of scope
+## 11. Year division and gas cost forecast (extension, 2026-11-15)
+
+### 11.1 Year division
+
+A new setting, Settings → Gas analysis → **Year division**:
+
+| Option         | Year runs                    | Label       |
+| -------------- | ---------------------------- | ----------- |
+| Calendar year  | 1 January – 31 December      | `2026`      |
+| Contract year  | from the contract start date | `2026-2027` |
+| Heating season | 1 July – 30 June             | `2026-2027` |
+
+- **Contract start:**
+  - By default it is the day and month of the newest gas tariff period under Tariffs
+    (`validFrom` of the own contract).
+  - It can be overridden with a date in the gas settings.
+  - Without tariffs and without an override it falls back to 1 January.
+- **API:** the analysis takes `years=calendar|contract|heating` and, optionally,
+  `contractStart=MM-DD`. For `contract` without `contractStart` the server reads the tariffs.
+- **What follows the division:**
+  - The Years table (actual, degree days, corrected, base).
+  - The tiles "Used in …", "Forecast …" and "Degree days …".
+  - The forecast: the measured part of the current year plus the line with normal weather up to
+    the end of that year.
+  - The shared functions (`yearSummaries`, `forecastYear`, `degreeDaysToDate`) get a start
+    (month, day) instead of assuming 1 January. Normals per calendar day already allow any
+    window.
+- **CBS:** CBS publishes calendar years only. The CBS column in the Years table is therefore
+  shown only for calendar years. The comparison card (last 12 months) does not change.
+
+### 11.2 Gas cost forecast
+
+- **Shown when:** the own contract has a gas tariff.
+- **Tile:** "Gas costs <year>" with the expected variable gas costs for the current year (in
+  the chosen division), and the costs so far as a note.
+- **So far:** the sum of `gasEur` per day from the existing cost engine. That is incl. energy
+  tax and VAT, fixed or dynamic as in the tariffs.
+- **Rest of the year:** the forecast m³ (§3.5) times the price per m³.
+  - Fixed tariff: `perM3`.
+  - Dynamic tariff: the mean effective price per m³ of the last 30 days, from the cost engine.
+- **Advance payment (optional):**
+  - A new setting, "Monthly advance for gas (€)".
+  - With it, the tile also shows the advance for the year and the expected difference
+    ("± € …, refund / additional payment").
+- **Not included:**
+  - Fixed costs (supply and grid). In the tariffs they cover electricity and gas together,
+    so they cannot be attributed to gas.
+  - The tax reduction.
+  - The tile says "variable gas costs".
+
+### 11.3 Testing
+
+- **Shared:** year boundaries for all three divisions (also a 29 February start), forecast and
+  degree days over a contract year, and labels.
+- **API:**
+  - The contract start from the tariffs and from an override.
+  - The fallback to 1 January.
+  - The cost forecast for fixed and dynamic gas tariffs, and without a gas tariff (no tile).
+- **Web:**
+  - The year division setting.
+  - The labels "2026-2027".
+  - The CBS column hidden outside calendar years.
+  - The advance payment and the difference.
+
+## 12. Out of scope
 
 - Electricity analysis.
 - Exports.
