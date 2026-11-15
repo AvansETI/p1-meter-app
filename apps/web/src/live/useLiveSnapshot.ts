@@ -1,6 +1,7 @@
 import { LiveSnapshotSchema, liveStatus, type LiveSnapshot, type LiveStatus } from '@p1/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
+import { reportServerVersion } from '../pwa/serverVersion';
 
 const RECONNECT_MS = 5_000;
 const SSE_RETRY_AFTER_FALLBACK_MS = 60_000;
@@ -74,6 +75,10 @@ export function useLiveSnapshot(enabled: boolean): LiveState {
         failures = 0;
         stopPolling();
         accept(parsed.data);
+      });
+      source.addEventListener('version', (event: MessageEvent<string>) => {
+        const version: unknown = JSON.parse(event.data);
+        if (typeof version === 'string') reportServerVersion(version);
       });
       source.addEventListener('error', () => {
         // CONNECTING means the browser retries by itself; CLOSED means it gave up.

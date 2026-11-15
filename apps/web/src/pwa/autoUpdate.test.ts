@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UPDATED_FROM_KEY, startUpdateChecks, useReloadWhenIdle } from './autoUpdate';
+import { reportServerVersion } from './serverVersion';
 
 function setHidden(hidden: boolean) {
   Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
@@ -36,6 +37,28 @@ describe('startUpdateChecks', () => {
     vi.advanceTimersByTime(60 * 60_000);
     expect(update).toHaveBeenCalledTimes(2);
     stop();
+  });
+
+  it('checks when the API reports another version, at most once per minute', () => {
+    const update = vi.fn(() => Promise.resolve());
+    const stop = startUpdateChecks({ update });
+    vi.advanceTimersByTime(2 * 60_000);
+
+    reportServerVersion('test');
+    reportServerVersion(null);
+    expect(update).not.toHaveBeenCalled();
+
+    reportServerVersion('9.9.9');
+    reportServerVersion('9.9.9');
+    expect(update).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(60_000);
+    reportServerVersion('9.9.9');
+    expect(update).toHaveBeenCalledTimes(2);
+
+    stop();
+    vi.advanceTimersByTime(60_000);
+    reportServerVersion('9.9.9');
+    expect(update).toHaveBeenCalledTimes(2);
   });
 
   it('does not check while hidden', () => {

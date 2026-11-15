@@ -4,6 +4,7 @@ import { FakeEventSource, installFakeEventSource } from '../test/eventsource';
 import { api } from '../api/client';
 import { capabilities, sessionResponse } from '../test/fixtures';
 import { mockApi } from '../test/render';
+import { onNewServerVersion } from '../pwa/serverVersion';
 import { useLiveSnapshot } from './useLiveSnapshot';
 
 beforeEach(async () => {
@@ -34,6 +35,18 @@ afterEach(() => {
 });
 
 describe('useLiveSnapshot', () => {
+  it('passes the server version from the stream on to the update check', async () => {
+    const listener = vi.fn();
+    const stop = onNewServerVersion(listener);
+    renderHook(() => useLiveSnapshot(true));
+    await vi.waitFor(() => expect(FakeEventSource.instances).toHaveLength(1));
+    act(() => FakeEventSource.instances[0]!.emit('version', 'test'));
+    expect(listener).not.toHaveBeenCalled();
+    act(() => FakeEventSource.instances[0]!.emit('version', '9.9.9'));
+    expect(listener).toHaveBeenCalledTimes(1);
+    stop();
+  });
+
   it('ages the last value: live → stale → offline without new events', async () => {
     const { result } = renderHook(() => useLiveSnapshot(true));
     await vi.waitFor(() => expect(FakeEventSource.instances).toHaveLength(1));

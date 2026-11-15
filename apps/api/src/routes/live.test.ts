@@ -102,6 +102,7 @@ describe('GET /api/v1/live/stream', () => {
       text += decoder.decode(value);
     }
     expect(text).toContain('retry: 5000');
+    expect(text).toMatch(/event: version\ndata: "\d+\.\d+\.\d+"\n/);
     const data = /event: live\ndata: (.+)\n/.exec(text)?.[1];
     expect(JSON.parse(data!)).toMatchObject({ netKw: 0.19, status: 'live' });
     controller.abort();

@@ -5,6 +5,8 @@ export const API_BASE = '/api/v1';
 
 /** Header carrying the session ID on authenticated requests. */
 export const SESSION_HEADER = 'x-session';
+/** Server version on every API response, so an open app notices a deployment (#64). */
+export const VERSION_HEADER = 'x-app-version';
 
 export const HealthResponseSchema = z.object({
   status: z.literal('ok'),

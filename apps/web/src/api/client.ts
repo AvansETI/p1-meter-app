@@ -17,6 +17,7 @@ import {
   GasSettingsResponseSchema,
   GasSettingsSavedSchema,
   SESSION_HEADER,
+  VERSION_HEADER,
   SessionResponseSchema,
   type ApiErrorCode,
   type Capabilities,
@@ -42,6 +43,7 @@ import {
   type GasSharedSettings,
 } from '@p1/shared';
 import { z } from 'zod';
+import { reportServerVersion } from '../pwa/serverVersion';
 
 /** Query string of the profile; empty fields are left out. */
 function profileQuery(profile: GasProfile): string {
@@ -65,6 +67,7 @@ async function call<T>(
   } catch {
     return { ok: false, error: 'upstream_unavailable' };
   }
+  reportServerVersion(res.headers.get(VERSION_HEADER));
   const body: unknown = res.status === 204 ? undefined : await res.json().catch(() => undefined);
   if (res.ok) {
     const parsed = schema.safeParse(body);

@@ -32,7 +32,13 @@ offers "Reload". Two gaps:
 it keeps the registration and calls `registration.update()`:
 
 - when the document becomes visible again (at most once per minute),
-- every 60 minutes while visible.
+- every 60 minutes while visible,
+- when the API reports another version than the app's own build (at most once per minute).
+  The API sends its version as `x-app-version` header on every response, and as a `version`
+  event at the start of every live stream (`EventSource` does not expose headers). A
+  deployment restarts the API, so the live stream reconnects and the app notices the new
+  version within seconds; other screens notice it with their next fetch (within a minute).
+  Added later.
 
 `sw.js` and `index.html` are already served with `Cache-Control: no-cache`, so `update()`
 always sees a new deployment.
