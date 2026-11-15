@@ -14,23 +14,23 @@ it needs live in Settings → Gas analysis.
 
 ## 2. Decisions
 
-| Topic                | Decision                                                                                                               |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Weather source       | KNMI open data (`daggegevens.knmi.nl/klimatologie/uurgegevens`), hourly `T` and `FH`, no key; ~1 day behind            |
-| Weather storage      | Own InfluxDB bucket `knmi-weather` (measurement `knmi_hourly`, tag `station`, fields `t`, `fh`), like the price bucket |
-| Location             | Local only: 2-digit postcode → nearest KNMI land station via a static table; or a station picked manually              |
-| What the server sees | Only the station number (and degree-day parameters); never the postcode                                                |
-| Day boundaries       | Calendar days in Europe/Amsterdam; daily weather = mean of the hourly values of that local day                         |
-| Degree days          | Base temperature 14–20 °C (default 18); method: plain, weighted (default) or effective                                 |
-| Normal year          | Mean annual degree days of the station over the 20 complete years before the current year                              |
-| Analysis period      | All available gas data of the household (from 2023-08 in practice)                                                     |
-| Computation          | Pure functions in `packages/shared/src/gas/` (testable); the API applies them, the web app only draws                  |
-| App comparison       | Nightly job; one fixed reference method for every household (De Bilt, weighted, 18 °C); only aggregates leave the API  |
-| Profile sharing      | Opt-in; stored under the salted HMAC of the signature (same salt as usage stats); deleted when sharing is switched off |
-| Minimum group size   | 5 households; smaller groups fall back to a broader group, never shown                                                 |
-| CBS                  | StatLine 85140NED via OData, latest year, cached in SQLite, checked monthly; profile classes identical to CBS          |
-| Tab visibility       | Only when the household has gas (`capabilities.gas`), like the gas chart                                               |
-| Attribution          | "Weather data: KNMI · Comparison: CBS StatLine (CC BY 4.0)" under the comparison and in About                          |
+| Topic                | Decision                                                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Weather source       | KNMI open data (`daggegevens.knmi.nl/klimatologie/uurgegevens`), hourly `T` and `FH`, no key; ~1 day behind                      |
+| Open-data storage    | One InfluxDB bucket `open-data` for KNMI weather and CBS figures (§6.1); every public source is fetched once, then only new data |
+| Location             | Local only: 2-digit postcode → nearest KNMI land station via a static table; or a station picked manually                        |
+| What the server sees | Only the station number (and degree-day parameters); never the postcode                                                          |
+| Day boundaries       | Calendar days in Europe/Amsterdam; daily weather = mean of the hourly values of that local day                                   |
+| Degree days          | Base temperature 14–20 °C (default 18); method: plain, weighted (default) or effective                                           |
+| Normal year          | Mean annual degree days of the station over the 20 complete years before the current year                                        |
+| Analysis period      | All available gas data of the household (from 2023-08 in practice)                                                               |
+| Computation          | Pure functions in `packages/shared/src/gas/` (testable); the API applies them, the web app only draws                            |
+| App comparison       | Nightly job; one fixed reference method for every household (De Bilt, weighted, 18 °C); only aggregates leave the API            |
+| Profile sharing      | Opt-in; stored under the salted HMAC of the signature (same salt as usage stats); deleted when sharing is switched off           |
+| Minimum group size   | 5 households; smaller groups fall back to a broader group, never shown                                                           |
+| CBS                  | StatLine 85140NED via OData, all years kept in `open-data`, checked monthly for a new year; profile classes identical to CBS     |
+| Tab visibility       | Only when the household has gas (`capabilities.gas`), like the gas chart                                                         |
+| Attribution          | "Weather data: KNMI · Comparison: CBS StatLine (CC BY 4.0)" under the comparison and in About                                    |
 
 ## 3. Degree days and analyses
 
@@ -131,12 +131,16 @@ with all households is shown.
 
 ### 4.4 CBS
 
-- **Source:** table 85140NED, the latest year (`Perioden`).
+- **Source:** table 85140NED, every available year (`Perioden`, 2019–2025 today).
 - **Rows fetched:** only gas-heated dwellings (`HoofdverwarmingEnZonnestroom` = CV/block total,
   with solar, without solar).
 - **Columns fetched:** average and P10–P90, per dwelling and per m².
-- **Storage:** `cbs_gas(year, type, area, period, residents, heating_solar, …)`, about 10k rows.
-  Refreshed when a newer year appears; checked monthly.
+- **Storage:** measurement `cbs_gas` in the `open-data` bucket (§6.1), about 10k points per
+  year. All years are fetched once (one OData request per year and page of 10,000 rows).
+  After that a monthly check reads only the small `Perioden` list, and a new year is fetched
+  when it appears.
+- **Year:** the comparison of the last 365 days uses the latest CBS year. The Years card also
+  shows, for each corrected calendar year, the CBS median of the same year when it exists.
 - **Matching:** the profile is passed as query parameters (it is not stored for this). An empty
   field becomes CBS "Total".
 - **Per m²:** uses the midpoint of the floor-area class. For "250+" it uses 300 m², and the
@@ -189,16 +193,19 @@ All endpoints need a session (like history) and are rate-limited.
   first request may therefore take several seconds; the page shows a skeleton meanwhile.
   Weather for De Bilt is fetched at startup.
 
-### 6.1 Weather bucket
+### 6.1 Open-data bucket
 
-Hourly weather is time-series data, so it goes to InfluxDB rather than SQLite, following the
-price bucket (#33).
+Data from public sources is cached in InfluxDB, following the price bucket (#33), so that KNMI
+and CBS are each asked for any piece of data only once.
 
-- **Bucket:** `knmi-weather`, created by the user.
-  - Measurement `knmi_hourly`, tag `station`, fields `t` (°C) and `fh` (m/s).
-  - The timestamp is the end of the KNMI hour (UT).
+- **Bucket:** `open-data`, created by the user, with unlimited retention.
+  - Measurement `knmi_hourly`: tag `station`, fields `t` (°C) and `fh` (m/s). The timestamp
+    is the end of the KNMI hour (UT).
+  - Measurement `cbs_gas`: tags `type`, `area`, `period`, `residents` and `heating` (CBS
+    codes), fields `mean`, `p10`…`p90`, `mean_m2` and `p10_m2`…`p90_m2`. The timestamp is
+    1 January of the CBS year.
 - **Configuration:**
-  - New keys `WEATHER_INFLUX_BUCKET` and `WEATHER_INFLUX_TOKEN`, a read/write token on that
+  - New keys `OPEN_DATA_INFLUX_BUCKET` and `OPEN_DATA_INFLUX_TOKEN`, a read/write token on that
     bucket only. Both are added to `.env.example` without values.
   - Without them (tests, local development without the bucket) an in-memory store is used.
 - **`WeatherJob`** (like `PriceJob`):
@@ -209,7 +216,13 @@ price bucket (#33).
   - Daily means, degree days and the 20-year normal are computed with Flux `aggregateWindow`
     (1d, Europe/Amsterdam).
   - They are cached in memory per station until the next weather day.
-- **Health** reports the status of the weather job, like the price job.
+- **`CbsJob`:** runs monthly. It fetches years that are missing from the bucket and keeps
+  the selected profile rows in memory for matching.
+- **Polite fetching:**
+  - All requests to KNMI and CBS run one at a time, with 2 seconds between them.
+  - A failure is retried at the next run, without a burst of retries.
+  - The User-Agent names the app and its URL.
+- **Health** reports the status of both jobs, like the price job.
 
 ## 7. Web app
 
