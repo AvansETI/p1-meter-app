@@ -776,8 +776,7 @@
     "setLocation": "Set location",
     "pending": "Weather data for station {{name}} is being fetched. The analysis completes by itself.",
     "unavailable": "The gas analysis is not available right now. Please try again later.",
-    "thisYear": "Used in {{year}}",
-    "forecast": "Forecast {{year}}",
+    "forecast": "Forecast annual use",
     "slope": "Heating line",
     "perDdUnit": "m³/degree day",
     "perDayUnit": "m³/day",
@@ -920,7 +919,6 @@
     "shareHelp": "Your home profile is stored on the server under an encrypted code, not under your EMON ID. You then see how your use compares with homes like yours; others never see your figures. Switching off removes the profile from the server.",
     "shareFailed": "Sharing failed. Please try again later.",
     "cbsPerM2Median": "Per m² of floor area: CBS median {{median}} m³.",
-    "degreeDaysYear": "Degree days {{year}}",
     "degreeDaysVsNormal": "normal {{normal}} ({{change}})",
     "perHourUnit": "m³/hour",
     "curveTitle": "Hourly use and outdoor temperature",
@@ -955,12 +953,13 @@
     "contractStartNone": "No gas tariff under Tariffs yet: empty means 1 January.",
     "expected": "Expected annual use (m³)",
     "expectedHelp": "On your contract or annual statement; your advance payment is based on it. Used for the settlement forecast.",
-    "settlement": "Settlement {{year}}",
+    "settlement": "Settlement",
     "settlementLess": "forecast {{forecast}} of {{expected}} m³ ({{change}}), less than expected",
     "settlementMore": "forecast {{forecast}} of {{expected}} m³ ({{change}}), more than expected",
-    "soFar": "So far",
     "soFarNote": "{{expected}} m³ expected at this weather ({{change}})",
     "settlementNote": "Forecast in m³ against your expected annual use; the settlement also depends on prices, fixed costs and the reduction of energy tax.",
-    "fillExpected": "Fill in your expected annual use for a settlement forecast"
+    "fillExpected": "Fill in your expected annual use for a settlement forecast",
+    "usedSoFar": "Used so far",
+    "degreeDaysSoFar": "Degree days so far"
   }
 }

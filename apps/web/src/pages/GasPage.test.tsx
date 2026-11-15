@@ -121,11 +121,13 @@ afterEach(() => vi.restoreAllMocks());
 describe('GasPage', () => {
   it('shows the summary, charts, years and comparison', async () => {
     const fetch = setup('gas');
-    expect(await screen.findByText('Prognose 2026')).toBeTruthy();
+    expect(await screen.findByText('Prognose jaarverbruik')).toBeTruthy();
+    expect(screen.getByText(/^1 jan\.? – 31 dec\.? 2026$/)).toBeTruthy();
+    expect(screen.getByText('Verbruikt tot nu')).toBeTruthy();
     expect(screen.getByText('950')).toBeTruthy();
     expect(screen.getByText('Afgelopen 12 mnd, gecorrigeerd')).toBeTruthy();
     expect(screen.getByText('−10% t.o.v. 12 mnd ervoor')).toBeTruthy();
-    expect(screen.getByText('Graaddagen 2026')).toBeTruthy();
+    expect(screen.getByText('Graaddagen tot nu')).toBeTruthy();
     expect(screen.getByText('normaal 1.520 (−8%)')).toBeTruthy();
     expect(await screen.findByTestId('per-dd-chart')).toBeTruthy();
     // Only the first lazy chart is checked: jsdom resolves the others late.
@@ -157,10 +159,12 @@ describe('GasPage', () => {
         },
       },
     );
-    expect(await screen.findByText('Eindafrekening 2026-2027')).toBeTruthy();
+    expect(await screen.findByText('Eindafrekening')).toBeTruthy();
+    expect(screen.getByText(/^1 apr\.? 2026 – 31 mrt\.? 2027$/)).toBeTruthy();
+    expect(screen.queryByText('Prognose jaarverbruik')).toBeNull();
     expect(screen.getByText('−50')).toBeTruthy();
     expect(screen.getByText(/prognose 950 van 1.000 m³ \(−5%\), minder dan verwacht/)).toBeTruthy();
-    expect(screen.getByText('Stand nu')).toBeTruthy();
+    expect(screen.getByText('320')).toBeTruthy();
     expect(screen.getByText('verwacht 360 m³ bij dit weer (−11%)')).toBeTruthy();
     // The CBS column is for calendar years only.
     expect(screen.queryByText('CBS mediaan')).toBeNull();
@@ -178,7 +182,7 @@ describe('GasPage', () => {
   it('asks for the nearest station and waits while its weather is fetched', async () => {
     const fetch = setup('gas', true, { ...DEFAULT_GAS_SETTINGS, postcode: '62' });
     expect(await screen.findByText(/station Maastricht worden opgehaald/)).toBeTruthy();
-    expect(screen.queryByText('Prognose 2026')).toBeNull();
+    expect(screen.queryByText('Prognose jaarverbruik')).toBeNull();
     expect(urls(fetch).some((u) => u.includes('/gas/analysis?station=380'))).toBe(true);
   });
 });

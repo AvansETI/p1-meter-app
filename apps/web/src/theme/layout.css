@@ -742,6 +742,10 @@ ion-menu.app-side-menu ion-item.selected {
 }
 
 /* Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.1) */
+.today-item__period {
+  font-size: 11px;
+  color: var(--app-text-muted);
+}
 .gas-sections {
   align-items: start;
 }

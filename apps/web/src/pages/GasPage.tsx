@@ -7,7 +7,15 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import type { GasAnalysis, GasComparison, GasPeriodKind } from '@p1/shared';
+import {
+  addDays,
+  formatPlainDate,
+  parsePlainDate,
+  type GasAnalysis,
+  type GasComparison,
+  type GasPeriodKind,
+} from '@p1/shared';
+import { today } from '../history/dates';
 import { lazy, Suspense, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import ToolbarLogo from '../components/ToolbarLogo';
@@ -36,6 +44,17 @@ const whole = (v: number) => Math.round(v).toLocaleString('nl-NL');
 const fixed = (v: number, digits: number) =>
   v.toLocaleString('nl-NL', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
+const dayBefore = (day: string) => formatPlainDate(addDays(parsePlainDate(day)!, -1));
+
+/** "1 jan – 14 nov 2026", or "1 apr 2026 – 31 mrt 2027" across years. */
+function range(first: string, last: string): string {
+  const sameYear = first.slice(0, 4) === last.slice(0, 4);
+  const short = dateFormat({ day: 'numeric', month: 'short' });
+  const long = dateFormat({ day: 'numeric', month: 'short', year: 'numeric' });
+  const at = (day: string) => new Date(`${day}T12:00:00`);
+  return `${(sameYear ? short : long).format(at(first))} – ${long.format(at(last))}`;
+}
+
 const chartFallback = <IonSkeletonText animated className="history-chart" />;
 
 function Tile({
@@ -43,15 +62,19 @@ function Tile({
   value,
   unit,
   note,
+  period,
 }: {
   label: string;
   value: string;
   unit: string;
   note?: string;
+  /** The dates the value covers, e.g. "1 apr 2026 – 31 mrt 2027". */
+  period?: string;
 }) {
   return (
     <div className="today-item">
       <span className="today-item__label">{label}</span>
+      {period && <span className="today-item__period">{period}</span>}
       <span className="today-item__value">
         {value}
         {unit && <small>{unit}</small>}
@@ -67,49 +90,58 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
   const change = rolling?.previous ? (rolling.corrected / rolling.previous - 1) * 100 : null;
   const percent = (value: number, of: number) =>
     `${value >= of ? '+' : '−'}${fixed(Math.abs((value / of - 1) * 100), 0)}%`;
+  // The current year in the chosen division (calendar, contract or heating year).
+  const startYear = forecast?.year ?? degreeDays?.year ?? new Date().getFullYear();
+  const year = {
+    first: `${startYear}-${analysis.yearStart}`,
+    last: dayBefore(`${startYear + 1}-${analysis.yearStart}`),
+  };
+  const yesterday = dayBefore(formatPlainDate(today()));
   return (
     <div className="today-grid">
-      {settlement && forecast && settlement.forecast !== null && (
-        <Tile
-          label={t('gas.settlement', { year: forecast.label })}
-          value={`${settlement.forecast >= settlement.expected ? '+' : '−'}${whole(
-            Math.abs(settlement.forecast - settlement.expected),
-          )}`}
-          unit="m³"
-          note={t(
-            settlement.forecast > settlement.expected ? 'gas.settlementMore' : 'gas.settlementLess',
-            {
-              forecast: whole(settlement.forecast),
-              expected: whole(settlement.expected),
-              change: percent(settlement.forecast, settlement.expected),
-            },
-          )}
-        />
-      )}
-      {settlement?.soFar && (
-        <Tile
-          label={t('gas.soFar')}
-          value={whole(settlement.soFar.actual)}
-          unit="m³"
-          note={t('gas.soFarNote', {
-            expected: whole(settlement.soFar.expected),
-            change: percent(settlement.soFar.actual, settlement.soFar.expected),
-          })}
-        />
-      )}
-      {forecast && (
-        <>
+      {forecast &&
+        (settlement && settlement.forecast !== null ? (
           <Tile
-            label={t('gas.thisYear', { year: forecast.label })}
-            value={whole(forecast.actual)}
+            label={t('gas.settlement')}
+            period={range(year.first, year.last)}
+            value={`${settlement.forecast >= settlement.expected ? '+' : '−'}${whole(
+              Math.abs(settlement.forecast - settlement.expected),
+            )}`}
             unit="m³"
+            note={t(
+              settlement.forecast > settlement.expected
+                ? 'gas.settlementMore'
+                : 'gas.settlementLess',
+              {
+                forecast: whole(settlement.forecast),
+                expected: whole(settlement.expected),
+                change: percent(settlement.forecast, settlement.expected),
+              },
+            )}
           />
+        ) : (
           <Tile
-            label={t('gas.forecast', { year: forecast.label })}
+            label={t('gas.forecast')}
+            period={range(year.first, year.last)}
             value={whole(forecast.total)}
             unit="m³"
           />
-        </>
+        ))}
+      {forecast && (
+        <Tile
+          label={t('gas.usedSoFar')}
+          period={range(year.first, yesterday)}
+          value={whole(settlement?.soFar?.actual ?? forecast.actual)}
+          unit="m³"
+          note={
+            settlement?.soFar
+              ? t('gas.soFarNote', {
+                  expected: whole(settlement.soFar.expected),
+                  change: percent(settlement.soFar.actual, settlement.soFar.expected),
+                })
+              : undefined
+          }
+        />
       )}
       {rolling && (
         <Tile
@@ -129,7 +161,8 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
       )}
       {degreeDays && (
         <Tile
-          label={t('gas.degreeDaysYear', { year: degreeDays.label })}
+          label={t('gas.degreeDaysSoFar')}
+          period={range(year.first, analysis.weatherUntil ?? yesterday)}
           value={whole(degreeDays.actual)}
           unit=""
           note={
