@@ -336,25 +336,47 @@
 }
 
 .fx-throw {
-  animation: festive-throw 2.6s ease-in infinite;
+  animation: festive-throw 4.6s linear infinite;
 }
 
+/* Thrown together (about 1.2 s in flight), a moment on the ground, then 3–4 s nothing. */
 @keyframes festive-throw {
   0% {
     opacity: 1;
-    transform: translate(0, 0) rotate(0);
+    transform: translate(calc(var(--tx) * 0), calc(var(--h) * 0 + 0px)) rotate(0deg);
+  }
+  5.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.2), calc(var(--h) * -0.64 + 1.8px)) rotate(108deg);
+  }
+  10.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.4), calc(var(--h) * -0.96 + 3.6px)) rotate(216deg);
+  }
+  12.5% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.5), calc(var(--h) * -1 + 4.5px)) rotate(270deg);
+  }
+  15.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.6), calc(var(--h) * -0.96 + 5.4px)) rotate(324deg);
+  }
+  20.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.8), calc(var(--h) * -0.64 + 7.2px)) rotate(432deg);
   }
   25% {
-    transform: translate(calc(var(--tx) * 0.45), var(--ty)) rotate(160deg);
-  }
-  60% {
     opacity: 1;
-    transform: translate(var(--tx), 30px) rotate(380deg);
+    transform: translate(calc(var(--tx) * 1), calc(var(--h) * 0 + 9px)) rotate(540deg);
   }
-  61%,
+  32% {
+    opacity: 1;
+    transform: translate(var(--tx), 9px) rotate(540deg);
+  }
+  38%,
   100% {
     opacity: 0;
-    transform: translate(var(--tx), 30px);
+    transform: translate(var(--tx), 9px) rotate(540deg);
   }
 }
 

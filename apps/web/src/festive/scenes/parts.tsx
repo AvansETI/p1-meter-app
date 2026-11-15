@@ -67,11 +67,12 @@ export function Walker({ s = 24, children }: { s?: number; children: ReactNode }
 }
 
 /**
- * Small figures thrown in an arc from a walker's hand (pepernoten, #75). Place inside a
+ * A handful of small figures thrown together from a walker's hand, each in its own arc, landing
+ * up to a quarter of the screen further on; then a pause (pepernoten, #75). Place inside a
  * `Walker`: they turn round with it.
  */
 export function Thrown({
-  count = 4,
+  count = 7,
   s = 7,
   children,
 }: {
@@ -87,9 +88,10 @@ export function Thrown({
           className="festive__thrown fx-throw"
           style={{
             ...vars({ s }),
-            animationDelay: `${-i * 0.65}s`,
-            ['--tx' as string]: `${26 + ((i * 17) % 30)}px`,
-            ['--ty' as string]: `${-14 - ((i * 7) % 10)}px`,
+            animationDelay: `${(i % 3) * 0.06}s`,
+            // Distance 8–25 % of the screen width and peak height 8–26 px, spread over the hand.
+            ['--tx' as string]: `${8 + ((i * 3) % count) * (17 / Math.max(1, count - 1))}vw`,
+            ['--h' as string]: `${8 + ((i * 5) % count) * (18 / Math.max(1, count - 1))}px`,
           }}
         >
           {children}

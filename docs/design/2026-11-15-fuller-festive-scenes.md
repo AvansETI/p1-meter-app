@@ -59,7 +59,7 @@ The roetveegpiet keeps the existing face with soot smudges.
 
 - it walks to the right across the whole title bar, turns round (mirrored) and walks back, about 14 s per round trip;
 - its legs move and it carries a sack over its shoulder;
-- now and then it throws a pepernoot forward in an arc, which falls out of the bar (`Thrown`); the pepernoten do not fall from the sky;
+- every 4–5 s it throws a handful of 7 pepernoten at once (`Thrown`), each in its own arc (8–26 px high), landing on the ground 8–25 % of the screen width further on, where they lie a moment and fade; then 3–4 s nothing. The pepernoten do not fall from the sky;
 - with reduced motion it stands still at the end of the free space, like the hare.
 
 `Walker` is a new part next to `Traveller`. `Traveller` only crosses in one direction.
