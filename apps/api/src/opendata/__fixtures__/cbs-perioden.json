@@ -1,0 +1,47 @@
+{
+  "odata.metadata": "https://opendata.cbs.nl/ODataApi/OData/85140NED/$metadata#Cbs.OData.WebAPI.Perioden",
+  "value": [
+    {
+      "Key": "2019JJ00",
+      "Title": "2019",
+      "Description": "",
+      "Status": "Definitief"
+    },
+    {
+      "Key": "2020JJ00",
+      "Title": "2020",
+      "Description": "",
+      "Status": "Definitief"
+    },
+    {
+      "Key": "2021JJ00",
+      "Title": "2021",
+      "Description": "",
+      "Status": "Definitief"
+    },
+    {
+      "Key": "2022JJ00",
+      "Title": "2022",
+      "Description": "",
+      "Status": "Definitief"
+    },
+    {
+      "Key": "2023JJ00",
+      "Title": "2023",
+      "Description": "",
+      "Status": "Definitief"
+    },
+    {
+      "Key": "2024JJ00",
+      "Title": "2024",
+      "Description": "Nader voorlopige cijfers.",
+      "Status": "NaderVoorlopig"
+    },
+    {
+      "Key": "2025JJ00",
+      "Title": "2025",
+      "Description": "Voorlopige cijfers.",
+      "Status": "Voorlopig"
+    }
+  ]
+}

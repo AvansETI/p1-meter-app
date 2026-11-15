@@ -82,7 +82,7 @@ function MeterInfo({ capabilities }: { capabilities: Capabilities }) {
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { settings, setTheme, setLanguage, setFestive } = useSettings();
+  const { settings, setTheme, setLanguage, setFestive, setGas } = useSettings();
   const { state, clear } = useSession();
   const [changing, setChanging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -137,6 +137,25 @@ export default function SettingsPage() {
             <IonLabel>{t('settings.tariffs')}</IonLabel>
           </IonItem>
         </IonList>
+
+        {state.status === 'ready' && state.capabilities.hasGas && (
+          <IonList inset>
+            <IonListHeader>{t('settings.gasAnalysis')}</IonListHeader>
+            <IonItem>
+              <IonToggle
+                checked={settings.gas.enabled}
+                onIonChange={(event) => setGas({ enabled: event.detail.checked })}
+              >
+                {t('settings.gasEnabled')}
+              </IonToggle>
+            </IonItem>
+            {settings.gas.enabled && (
+              <IonItem routerLink="/settings/gas" detail>
+                <IonLabel>{t('gas.settingsTitle')}</IonLabel>
+              </IonItem>
+            )}
+          </IonList>
+        )}
 
         <IonList inset>
           <IonListHeader>{t('settings.display')}</IonListHeader>

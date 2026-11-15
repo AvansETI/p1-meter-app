@@ -6,3 +6,4 @@ export * from './calendar';
 export * from './history';
 export * from './tariffs';
 export * from './costs';
+export * from './gas';

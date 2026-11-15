@@ -30,6 +30,12 @@ export function SettingsProvider({
       setTheme: (theme) => update({ theme }),
       setLanguage: (language) => update({ language }),
       setFestive: (festive) => update({ festive }),
+      setGas: (patch) =>
+        setSettings((current) => {
+          const next = { ...current, gas: { ...current.gas, ...patch } };
+          saveSettings(next);
+          return next;
+        }),
       dismissInstallHint: () => update({ installHintDismissedAt: new Date().toISOString() }),
       turnOffTariffHint: () => update({ tariffHintOff: true }),
     }),

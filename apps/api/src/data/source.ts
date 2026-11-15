@@ -28,6 +28,16 @@ export interface GasData {
   increaseTimes: number[];
 }
 
+/** Last gas counter reading of one local day (design gas analysis §3). */
+export interface GasDayEnd {
+  /** YYYY-MM-DD, Europe/Amsterdam. */
+  day: string;
+  /** Time (ms) of the reading and the end of its day (next local midnight). */
+  time: number;
+  dayEnd: number;
+  value: number;
+}
+
 /** Read access to household data; InfluxDB in production, a fake in tests. */
 export interface HouseholdDataSource {
   /** Capabilities of a household, or `null` when it has no data in the last 30 days. */
@@ -63,6 +73,10 @@ export interface HouseholdDataSource {
   firstPoint(signature: string): Promise<Date | null>;
   /** Gas counter per hour since `from`, and its increase times. */
   gasHourly(signature: string, from: Date): Promise<GasData>;
+  /** Last gas reading per local day in [from, to) (gas analysis, #68); `to` defaults to now. */
+  gasDayEnds(signature: string, from: Date, to?: Date): Promise<GasDayEnd[]>;
+  /** Households with gas data since `from`; internal use only, never sent to a client. */
+  gasSignatures(from: Date): Promise<string[]>;
   /** 5-minute mean power over the last 24 hours. */
   recentPower(signature: string): Promise<PowerWindow[]>;
   /** Number of distinct households (signatures) with data in the last `days` days. */

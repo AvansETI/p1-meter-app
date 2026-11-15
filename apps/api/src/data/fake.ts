@@ -4,6 +4,7 @@ import {
   type CounterDeltas,
   type CounterField,
   type GasData,
+  type GasDayEnd,
   type HouseholdDataSource,
   type PowerPoint,
   type PowerWindow,
@@ -16,6 +17,8 @@ export interface FakeHousehold {
   deltas?: CounterDeltas;
   recent?: PowerWindow[];
   gas?: GasData;
+  /** Last gas reading per local day, for the gas analysis. */
+  gasDays?: GasDayEnd[];
   /** Last counter values per quarter start (ms) for quarterCounters. */
   quarters?: Map<number, Partial<Record<CounterField, number>>>;
   /** Counter values per instant (ms) for countersAt. */
@@ -130,6 +133,22 @@ export class FakeDataSource implements HouseholdDataSource {
   gasHourly(signature: string): Promise<GasData> {
     return this.run(
       () => this.households[signature]?.gas ?? { lastPerHour: new Map(), increaseTimes: [] },
+    );
+  }
+
+  gasDayEnds(signature: string, from: Date, to?: Date): Promise<GasDayEnd[]> {
+    return this.run(() =>
+      (this.households[signature]?.gasDays ?? []).filter(
+        (d) => d.time >= from.getTime() && (!to || d.time < to.getTime()),
+      ),
+    );
+  }
+
+  gasSignatures(): Promise<string[]> {
+    return this.run(() =>
+      Object.entries(this.households)
+        .filter(([, h]) => h.capabilities.hasGas)
+        .map(([signature]) => signature),
     );
   }
 

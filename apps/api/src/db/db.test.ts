@@ -29,7 +29,14 @@ describe('migrations', () => {
     migrate(db);
     migrate(db);
     const versions = db.prepare('SELECT version FROM schema_version').all();
-    expect(versions).toEqual([{ version: 1 }, { version: 2 }, { version: 3 }, { version: 4 }]);
+    expect(versions).toEqual([
+      { version: 1 },
+      { version: 2 },
+      { version: 3 },
+      { version: 4 },
+      { version: 5 },
+      { version: 6 },
+    ]);
   });
 });
 

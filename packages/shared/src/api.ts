@@ -19,6 +19,13 @@ export const HealthResponseSchema = z.object({
       gas: z.enum(['pending', 'ok', 'backoff', 'retrying']),
     })
     .optional(),
+  /** Open-data job status (gas analysis, #68); absent in tests. */
+  openData: z
+    .object({
+      weather: z.enum(['pending', 'ok', 'backoff']),
+      cbs: z.enum(['pending', 'ok', 'backoff']),
+    })
+    .optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
