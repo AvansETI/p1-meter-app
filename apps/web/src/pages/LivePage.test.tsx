@@ -95,7 +95,7 @@ describe('LivePage', () => {
   it('shows import, export, net and gas for today', async () => {
     setup({ hasExport: true });
     expect(await screen.findByText('Netto')).toBeInTheDocument();
-    for (const label of ['Afname', 'Terug', 'Gas']) {
+    for (const label of ['Afname', 'Teruglevering', 'Gas']) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
     expect(screen.getByText(/^9,3/)).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('LivePage', () => {
   it('leaves out everything about export and gas when the household has none', async () => {
     setup({ hasExport: false, hasGas: false });
     expect(await screen.findByText('Afname')).toBeInTheDocument();
-    expect(screen.queryByText('Terug')).toBeNull();
+    expect(screen.queryByText('Teruglevering')).toBeNull();
     expect(screen.queryByText('Netto')).toBeNull();
     expect(screen.queryByText('Gas')).toBeNull();
   });

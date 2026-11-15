@@ -16,6 +16,7 @@ import SideMenu from './components/SideMenu';
 import { useGasWarmup } from './gas/queries';
 import { useGasSettingsSync } from './gas/sync';
 import { navItems } from './navigation';
+import AboutPage from './pages/AboutPage';
 import GasPage from './pages/GasPage';
 import GasSettingsPage from './pages/GasSettingsPage';
 import HistoryPage from './pages/HistoryPage';
@@ -57,6 +58,7 @@ function MainLayout() {
               }
             />
             <Route path="/settings/gas" element={<GasSettingsPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="*" element={<Navigate to="/live" replace />} />
           </IonRouterOutlet>
           <IonTabBar slot="bottom" className="app-tab-bar">

@@ -253,5 +253,12 @@ describe('navigation', () => {
   it('shows the Gas tab only for households with gas', () => {
     expect(navItems(true).map((i) => i.tab)).toEqual(['live', 'history', 'gas', 'settings']);
     expect(navItems(false).map((i) => i.tab)).toEqual(['live', 'history', 'settings']);
+    // About is its own item only in the desktop side menu (#82).
+    expect(navItems(false, true).map((i) => i.tab)).toEqual([
+      'live',
+      'history',
+      'settings',
+      'about',
+    ]);
   });
 });
