@@ -4,5 +4,6 @@ export * from './degreeDays';
 export * from './hourly';
 export * from './postcodes';
 export * from './profile';
+export * from './settings';
 export * from './stations';
 export * from './years';

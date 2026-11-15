@@ -3,10 +3,13 @@ import {
   GasComparisonQuerySchema,
   GasHourlyQuerySchema,
   GasProfileSchema,
+  GasSettingsBodySchema,
   SESSION_HEADER,
   type GasAnalysis,
   type GasComparison,
   type GasHourly,
+  type GasSettingsResponse,
+  type GasSettingsSaved,
 } from '@p1/shared';
 import type { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify';
 import type { CapabilityService } from '../data/capabilities';
@@ -20,7 +23,10 @@ export interface GasRouteOptions {
   gas: GasService;
 }
 
-/** Gas analysis, comparison and profile sharing (docs/design/2026-11-15-gas-analysis.md §6). */
+/**
+ * Gas analysis, comparison, profile sharing (docs/design/2026-11-15-gas-analysis.md §6) and
+ * shared settings (docs/design/2026-11-15-shared-gas-settings.md §5).
+ */
 export const gasRoutes: FastifyPluginCallback<GasRouteOptions> = (app, options, done) => {
   const deps = { sessions: options.sessions, capabilities: options.capabilities, log: app.log };
 
@@ -77,15 +83,31 @@ export const gasRoutes: FastifyPluginCallback<GasRouteOptions> = (app, options, 
     if (!body.success) return fail(reply, 400, 'invalid_format');
     const found = await household(request, reply);
     if (!found) return reply;
-    options.gas.shareProfile(found.signature, body.data);
+    options.gas.setSharedProfile(found.signature, body.data);
     return reply.code(204).send();
   });
 
   app.delete('/gas/profile', async (request, reply) => {
     const found = await household(request, reply);
     if (!found) return reply;
-    options.gas.unshareProfile(found.signature);
+    options.gas.setSharedProfile(found.signature, null);
     return reply.code(204).send();
+  });
+
+  /** Settings shared by every device of the household (shared settings design §5). */
+  app.get('/gas/settings', async (request, reply) => {
+    const found = await household(request, reply);
+    if (!found) return reply;
+    return options.gas.settings(found.signature) satisfies GasSettingsResponse;
+  });
+
+  app.put('/gas/settings', async (request, reply) => {
+    const body = GasSettingsBodySchema.safeParse(request.body);
+    if (!body.success) return fail(reply, 400, 'invalid_format');
+    const found = await household(request, reply);
+    if (!found) return reply;
+    const updatedAt = options.gas.saveSettings(found.signature, body.data.settings);
+    return { updatedAt } satisfies GasSettingsSaved;
   });
 
   done();
