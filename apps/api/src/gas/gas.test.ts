@@ -17,7 +17,7 @@ import { OpenDataJob } from '../opendata/job';
 import { MemoryOpenDataStore } from '../opendata/store';
 import { buildServer } from '../server';
 import { zonedToUtc } from '../time';
-import { dailyGas, readDayEnds } from './days';
+import { dailyGas, mergeDays, readDayEnds } from './days';
 import { distribution, GasService } from './service';
 import { WeatherService } from './weather';
 
@@ -59,6 +59,12 @@ async function weatherStore() {
     hours.push({ time: new Date(t), t: temperature(i), fh: 3 });
   }
   await store.writeWeather(260, hours);
+  const normal = [];
+  for (let t = Date.UTC(2006, 0, 1); t < Date.UTC(2026, 0, 1); t += 86_400_000) {
+    const i = Math.floor((t - midnight('2025-11-01')) / 86_400_000);
+    normal.push({ day: new Date(t).toISOString().slice(0, 10), t: temperature(i), fh: 3 });
+  }
+  await store.writeNormalDays(260, normal);
   return store;
 }
 
@@ -103,6 +109,17 @@ describe('readDayEnds', () => {
     expect(calls).toHaveLength(5);
     expect(result).toHaveLength(400);
     expect(result.map((e) => e.day)).toEqual(ends.map((e) => e.day));
+  });
+});
+
+describe('mergeDays', () => {
+  it('leaves out days without any gas (nobody home)', () => {
+    const gas = new Map([
+      ['2026-01-01', 3],
+      ['2026-01-02', 0],
+    ]);
+    const days = mergeDays(gas, new Map(), '2026-01-01', '2026-01-03');
+    expect(days.map((d) => d.m3)).toEqual([3, null, null]);
   });
 });
 
@@ -245,6 +262,7 @@ describe('gas routes', () => {
     expect(body.line!.slope).toBeCloseTo(0.3, 2);
     expect(body.periods.month.length).toBeGreaterThan(10);
     expect(body.forecast!.year).toBe(2026);
+    expect(body.normal.years).toBe(20);
     expect(body.years.map((y) => y.year)).toEqual([2025, 2026]);
 
     const off = await get(

@@ -105,7 +105,8 @@ last 365 days**, computed with one fixed reference method for all households (st
 De Bilt, weighted degree days, 18 °C, automatic baseline). This keeps all households
 comparable regardless of their own settings.
 
-It is computed only when the household has at least 300 days of data and at least 50 m³ of
+It is computed only when the household has at least 180 measured days holding at least 30% of a
+normal year's degree days, and at least 50 m³ of
 gas per year. Below 50 m³ the house is effectively heated without gas.
 
 ### 4.2 App households (nightly job)
@@ -326,6 +327,23 @@ filter it on `capabilities.gas`, and `/gas` redirects to `/live` without gas.
 - **On/off:**
   - Settings has a "Show gas analysis" toggle, on by default.
   - When off, the Gas tab, the gas settings page and the pre-loading are gone.
+
+- **Zero days:** a day with exactly 0 m³ is treated like a gap everywhere: it is almost always
+  a day nobody was home.
+- **Baseline per month:** the automatic baseline is determined for every month from the warm
+  days of the 12 months up to and including it.
+  - Each day uses the baseline of its month.
+  - The Summary shows the current month's value, in whole m³ per month.
+  - The Years table shows each year's mean.
+- **Normal year from daily data:**
+  - The 20-year normal comes from KNMI daily means: one request per station.
+  - Hourly weather is fetched only from 2023, the year the first household data arrived.
+  - A new station is ready in about 25 s.
+  - Stations whose stored weather is complete count as ready at start-up, before any top-up.
+- **Summary:** "last 12 months, corrected" (versus the 12 months before) replaces the last
+  complete calendar year, and a degree-days tile compares this year so far with the normal.
+- **Comparison bands:** the values sit under their own positions, and a legend explains the
+  bands.
 
 ## 11. Out of scope
 

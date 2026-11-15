@@ -27,8 +27,8 @@ const analysis = (pending = false): GasAnalysis => ({
   line: { slope: 0.28, intercept: 0.4, r2: 0.91, n: 180 },
   periods: { week: [], month: [period], year: [{ ...period, key: '2026' }] },
   years: [
-    { year: 2024, days: 366, m3: 1100, dd: 2600, corrected: 1050, complete: true },
-    { year: 2025, days: 365, m3: 980, dd: 2500, corrected: 945, complete: true },
+    { year: 2024, days: 366, m3: 1100, dd: 2600, corrected: 1050, complete: true, baseline: 0.5 },
+    { year: 2025, days: 365, m3: 980, dd: 2500, corrected: 945, complete: true, baseline: 0.4 },
   ],
   forecast: { year: 2026, actual: 700, estimated: 250, total: 950 },
   normal: { annual: 2700, years: 20 },
@@ -103,7 +103,8 @@ describe('GasPage', () => {
     // Only the first lazy chart is checked: jsdom resolves the others late.
     expect(screen.getByText('Verbruik over de dag')).toBeTruthy();
     expect(await screen.findByText(/minder dan 70% van deze 40 huishoudens/)).toBeTruthy();
-    expect(screen.getByText('CBS 2025: Tussenwoning')).toBeTruthy();
+    expect(screen.getByText('CBS-cijfers 2025')).toBeTruthy();
+    expect(screen.getByText('Tussenwoning')).toBeTruthy();
     expect(screen.getByText(/één keer per uur/)).toBeTruthy();
     // Without a location De Bilt is used and the page offers to set one.
     expect(screen.getByText(/Weerstation De Bilt/)).toBeTruthy();

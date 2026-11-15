@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addDays, formatPlainDate } from '../calendar';
 import {
   autoBaseline,
+  autoBaselineByMonth,
   degreeDaysToDate,
   chooseBaseline,
   forecastYear,
@@ -64,6 +65,24 @@ describe('analysis', () => {
   it('finds the baseline from days without heating demand', () => {
     expect(autoBaseline(days, 18)).toBeCloseTo(1);
     expect(autoBaseline(days.slice(0, 30), 18)).toBeNull();
+  });
+
+  it('determines the baseline per month over the 12 months before', () => {
+    const twoYears = syntheticDays('2024-01-01', 731, seasonal).map((d) =>
+      // Hot water moved to electricity in 2025: half a cubic metre less per day.
+      d.day >= '2025' ? { ...d, m3: d.m3! - 0.5 } : d,
+    );
+    const byMonth = autoBaselineByMonth(twoYears, 18);
+    expect(byMonth.get('2024-12')).toBeCloseTo(1);
+    // Mid-2025 the window holds both summers' warm days; by December only 2025's.
+    expect(byMonth.get('2025-12')).toBeCloseTo(0.5);
+    const rated2 = rateDays(twoYears, 18, 'plain');
+    const of = (day: string) => byMonth.get(day.slice(0, 7)) ?? 1;
+    const months = periods(rated2, of, 'month');
+    expect(months.find((m) => m.key === '2024-12')!.perDd).toBeCloseTo(0.3);
+    expect(months.find((m) => m.key === '2025-12')!.perDd).toBeCloseTo(0.3);
+    const years = yearSummaries(rated2, of, 2500);
+    expect(years[0]!.baseline).toBeCloseTo(1, 1);
   });
 
   it('ignores days without any gas (nobody home) for the baseline', () => {
@@ -169,7 +188,9 @@ describe('analysis', () => {
       days.reduce((s, d) => s + d.m3!, 0),
       0,
     );
-    expect(referenceAnnual(days.slice(0, 200), dd)).toBeNull();
+    expect(referenceAnnual(days.slice(0, 150), dd)).toBeNull();
+    // Enough days, but only summer: too few degree days.
+    expect(referenceAnnual(days.slice(120, 300), dd)).toBeNull();
     const noGas = days.map((d) => ({ ...d, m3: 0.05 }));
     expect(referenceAnnual(noGas, dd)).toBeNull();
   });

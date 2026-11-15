@@ -88,6 +88,14 @@ describe('MemoryOpenDataStore', () => {
 function fakeFetchers() {
   const calls: string[] = [];
   const fetchers: OpenDataFetchers = {
+    knmiDaily(station, firstYear, lastYear) {
+      calls.push(`daily ${station} ${firstYear}-${lastYear}`);
+      const days = [];
+      for (let t = Date.UTC(firstYear, 0, 1); t < Date.UTC(lastYear + 1, 0, 1); t += 86_400_000) {
+        days.push({ day: new Date(t).toISOString().slice(0, 10), t: 5, fh: 3 });
+      }
+      return Promise.resolve(days);
+    },
     knmi(station, from, to) {
       calls.push(`knmi ${station} ${from.toISOString().slice(0, 10)}`);
       const hours: WeatherHour[] = [];
@@ -142,9 +150,11 @@ describe('OpenDataJob', () => {
     expect(job.ready(REFERENCE_STATION)).toBe(false);
     await job.tick();
     const knmi = calls.filter((c) => c.startsWith('knmi'));
-    expect(knmi).toHaveLength(21);
+    // The current year and the years since 2023 hourly, the normal year in one daily request.
+    expect(knmi).toHaveLength(4);
+    expect(calls).toContain('daily 260 2006-2025');
     expect(knmi[0]).toBe('knmi 260 2026-01-01');
-    expect(knmi.at(-1)).toBe('knmi 260 2006-01-01');
+    expect(knmi.at(-1)).toBe('knmi 260 2023-01-01');
     expect(job.ready(REFERENCE_STATION)).toBe(true);
     // CBS: the year list plus 3 heating classes per year.
     expect(calls.filter((c) => c.startsWith('cbs'))).toHaveLength(7);
@@ -215,7 +225,8 @@ describe('OpenDataJob', () => {
     calls.length = 0;
     job.useStation(380);
     await job.tick();
-    expect(calls.filter((c) => c.startsWith('knmi 380'))).toHaveLength(21);
+    expect(calls.filter((c) => c.startsWith('knmi 380'))).toHaveLength(4);
+    expect(calls).toContain('daily 380 2006-2025');
     expect(job.stations()).toEqual([260, 380]);
     expect(updated).toContain(380);
   });
@@ -236,12 +247,12 @@ describe('OpenDataJob', () => {
       now: () => new Date(time),
     });
     await job.tick();
-    expect(failures).toBe(21);
+    expect(failures).toBe(4);
     expect(job.status().weather).toBe('backoff');
     await job.tick();
-    expect(failures).toBe(21);
+    expect(failures).toBe(4);
     time += 4 * HOUR_MS;
     await job.tick();
-    expect(failures).toBe(42);
+    expect(failures).toBe(8);
   });
 });

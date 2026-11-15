@@ -10,17 +10,29 @@ import {
   parseCbsRows,
   type CbsRow,
 } from './cbs';
-import { KNMI_HOURLY_URL, knmiHourlyBody, parseKnmiHourly, type WeatherHour } from './knmi';
-import type { OpenDataStore } from './store';
+import {
+  KNMI_DAILY_URL,
+  KNMI_HOURLY_URL,
+  knmiDailyBody,
+  knmiHourlyBody,
+  parseKnmiDaily,
+  parseKnmiHourly,
+  type WeatherHour,
+} from './knmi';
+import type { DailyWeather, OpenDataStore } from './store';
 
 const HOUR_MS = 3_600_000;
 const DAY_MS = 24 * HOUR_MS;
-/** Years of weather kept for the normal, plus the current year (design §2). */
+/** Years of daily weather behind the normal year (design §2). */
 export const NORMAL_YEARS = 20;
+/** Hourly weather from the year the first household data arrived (August 2023). */
+export const HOURLY_FROM_YEAR = 2023;
+/** A normal period with fewer stored days is fetched (again). */
+const FULL_NORMAL_DAYS = NORMAL_YEARS * 365 - 30;
 /** A past year with fewer stored hours is fetched (again); tolerates small KNMI gaps. */
 const FULL_YEAR_HOURS = 8000;
 /** The current year is topped up when the newest hour is older than this … */
-const STALE_AFTER_MS = 36 * HOUR_MS;
+const STALE_AFTER_MS = 48 * HOUR_MS;
 /** … but at most this often per station (KNMI publishes about a day behind). */
 const RECENT_EVERY_MS = 3 * HOUR_MS;
 /** Hours the current year may lack (publication delay plus a little); more means gaps. */
@@ -31,6 +43,7 @@ const USER_AGENT = 'p1-meter-app (+https://p1-meter.sendlab.nl)';
 
 export interface OpenDataFetchers {
   knmi(station: number, from: Date, to: Date): Promise<WeatherHour[]>;
+  knmiDaily(station: number, firstYear: number, lastYear: number): Promise<DailyWeather[]>;
   cbsYears(): Promise<number[]>;
   cbsRows(year: number, heating: string): Promise<CbsRow[]>;
 }
@@ -53,6 +66,13 @@ export function httpOpenDataFetchers(): OpenDataFetchers {
           body: knmiHourlyBody(station, from, to),
         }),
       ),
+    knmiDaily: async (station, firstYear, lastYear) =>
+      parseKnmiDaily(
+        await request(KNMI_DAILY_URL, {
+          method: 'POST',
+          body: knmiDailyBody(station, firstYear, lastYear),
+        }),
+      ),
     cbsYears: async () => parseCbsPeriods(await request(cbsPeriodsUrl())),
     cbsRows: async (year, heating) => parseCbsRows(await request(cbsRowsUrl(year, heating))),
   };
@@ -64,8 +84,8 @@ const floorHour = (date: Date) => new Date(Math.floor(date.getTime() / HOUR_MS) 
 const yearStart = (year: number) => new Date(Date.UTC(year, 0, 1));
 
 /**
- * Keeps the `open-data` bucket filled (design §6.1): 20 years of hourly weather per station in
- * use plus the current year, and every CBS year. Requests run one at a time with a pause in
+ * Keeps the `open-data` bucket filled (design §6.1): per station in use 20 years of daily
+ * means for the normal year (one request) and hourly weather since 2023, and every CBS year. Requests run one at a time with a pause in
  * between; a failure waits for the next run instead of retrying at once.
  */
 export class OpenDataJob {
@@ -149,11 +169,12 @@ export class OpenDataJob {
           this.again = false;
           await this.weather();
           await this.cbs();
+          // Load the CBS rows now rather than on the first comparison (tens of thousands of
+          // rows); inside the loop, so a station requested meanwhile is not left waiting.
+          await this.cbsRows().catch((error: unknown) =>
+            this.log.warn({ err: error }, 'loading CBS rows failed'),
+          );
         } while (this.again);
-        // Load the CBS rows now rather than on the first comparison (tens of thousands of rows).
-        await this.cbsRows().catch((error: unknown) =>
-          this.log.warn({ err: error }, 'loading CBS rows failed'),
-        );
       } finally {
         this.running = undefined;
       }
@@ -187,7 +208,11 @@ export class OpenDataJob {
     let ok = true;
     const now = this.now();
     const currentYear = now.getUTCFullYear();
-    for (const station of this.stations()) {
+    // Stations still being filled first: someone is waiting for them.
+    const stations = this.stations().sort(
+      (a, b) => Number(this.complete.has(a)) - Number(this.complete.has(b)),
+    );
+    for (const station of stations) {
       let stationOk = true;
       let fetchedAny = false;
       try {
@@ -203,10 +228,15 @@ export class OpenDataJob {
           last && last >= yearStart(currentYear) && !gaps ? last : yearStart(currentYear);
         // Stored data is complete: usable right away, even before topping up (e.g. after a
         // restart), so the analysis does not wait for KNMI.
-        const pastComplete = Array.from(
-          { length: NORMAL_YEARS },
-          (_, i) => counts.get(currentYear - 1 - i) ?? 0,
-        ).every((n) => n >= FULL_YEAR_HOURS);
+        const normalStored = (
+          await this.store.normalDays(station, currentYear - NORMAL_YEARS, currentYear - 1)
+        ).length;
+        const pastComplete =
+          normalStored >= FULL_NORMAL_DAYS &&
+          Array.from(
+            { length: currentYear - HOURLY_FROM_YEAR },
+            (_, i) => counts.get(HOURLY_FROM_YEAR + i) ?? 0,
+          ).every((n) => n >= FULL_YEAR_HOURS);
         if (pastComplete && !gaps) this.complete.add(station);
         const stale = now.getTime() - from.getTime() > STALE_AFTER_MS;
         const due = now.getTime() - (this.lastRecent.get(station) ?? 0) >= RECENT_EVERY_MS;
@@ -219,7 +249,19 @@ export class OpenDataJob {
           if (fetched) fetchedAny = true;
           else stationOk = false;
         }
-        for (let year = currentYear - 1; year >= currentYear - NORMAL_YEARS; year--) {
+        if (normalStored < FULL_NORMAL_DAYS) {
+          const fetched = await this.attempt(`knmi:${station}:normal`, async () => {
+            const days = await this.fetchers.knmiDaily(
+              station,
+              currentYear - NORMAL_YEARS,
+              currentYear - 1,
+            );
+            await this.store.writeNormalDays(station, days);
+          });
+          if (fetched) fetchedAny = true;
+          else stationOk = false;
+        }
+        for (let year = currentYear - 1; year >= HOURLY_FROM_YEAR; year--) {
           if ((counts.get(year) ?? 0) >= FULL_YEAR_HOURS) continue;
           const fetched = await this.attempt(`knmi:${station}:${year}`, async () => {
             const hours = await this.fetchers.knmi(station, yearStart(year), yearStart(year + 1));

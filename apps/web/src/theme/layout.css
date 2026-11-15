@@ -883,11 +883,75 @@ ion-menu.app-side-menu ion-item.selected {
   box-shadow: 0 0 0 1px var(--app-data-gas);
 }
 .gas-band__scale {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 16px;
+  margin: 0 28px;
   font-size: 11px;
   color: var(--app-text-muted);
   font-variant-numeric: tabular-nums;
+}
+.gas-band__scale span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.gas-band__track {
+  margin-left: 28px;
+  margin-right: 28px;
+}
+.gas-band-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--app-text-muted);
+}
+.gas-band-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gas-band-legend__outer,
+.gas-band-legend__inner {
+  width: 18px;
+  height: 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--app-data-gas) 30%, transparent);
+}
+.gas-band-legend__inner {
+  background: color-mix(in srgb, var(--app-data-gas) 60%, transparent);
+}
+.gas-band-legend__median {
+  width: 2px;
+  height: 14px;
+  background: var(--ion-text-color);
+}
+.gas-band-legend__own {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--app-data-gas);
+}
+.gas-profile {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px 16px;
+  margin: 4px 0 12px;
+  font-size: 13px;
+}
+.gas-profile div {
+  display: grid;
+}
+.gas-profile dt {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+}
+.gas-profile dd {
+  margin: 0;
 }
 .gas-attribution {
   font-size: 11px;

@@ -16,6 +16,7 @@ import FestiveDecoration from '../festive/FestiveDecoration';
 import Comparison from '../gas/Comparison';
 import { useGasAnalysis, useGasComparison, useGasHourly } from '../gas/queries';
 import { stationOf } from '../gas/station';
+import { DAYS_PER_MONTH } from '../gas/units';
 import { useSession } from '../session/context';
 import { useSettings } from '../settings/context';
 
@@ -119,8 +120,8 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
       )}
       <Tile
         label={t('gas.baseline')}
-        value={fixed(baseline.value, 2)}
-        unit={t('gas.perDayUnit')}
+        value={whole(baseline.value * DAYS_PER_MONTH)}
+        unit={t('gas.perMonthUnit')}
         note={t(`gas.baselineSource.${baseline.source}`)}
       />
     </div>
@@ -138,6 +139,7 @@ function Years({ analysis, comparison }: { analysis: GasAnalysis; comparison?: G
           <th>{t('gas.actual')}</th>
           <th>{t('gas.degreeDaysShort')}</th>
           <th>{t('gas.corrected')}</th>
+          <th>{t('gas.baselineColumn')}</th>
           {cbs.size > 0 && <th>{t('gas.cbsMedian')}</th>}
         </tr>
       </thead>
@@ -151,6 +153,7 @@ function Years({ analysis, comparison }: { analysis: GasAnalysis; comparison?: G
             <td>{whole(y.m3)}</td>
             <td>{whole(y.dd)}</td>
             <td>{y.corrected === null ? '—' : whole(y.corrected)}</td>
+            <td>{whole(y.baseline * DAYS_PER_MONTH)}</td>
             {cbs.size > 0 && <td>{cbs.has(y.year) ? whole(cbs.get(y.year)!) : '—'}</td>}
           </tr>
         ))}

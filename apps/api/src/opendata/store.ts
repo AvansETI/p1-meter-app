@@ -27,6 +27,10 @@ export interface OpenDataStore {
   dailyWeather(station: number, from: Date, to: Date): Promise<DailyWeather[]>;
   /** Hour start (ms) → temperature for the hours starting in [from, to). */
   hourlyTemperature(station: number, from: Date, to: Date): Promise<Map<number, number>>;
+  /** Daily means for the normal year (KNMI daily data, one point per day). */
+  writeNormalDays(station: number, days: DailyWeather[]): Promise<void>;
+  /** Stored normal days with `firstYear` ≤ year ≤ `lastYear`. */
+  normalDays(station: number, firstYear: number, lastYear: number): Promise<DailyWeather[]>;
   writeCbs(rows: CbsRow[]): Promise<void>;
   cbsYears(): Promise<number[]>;
   cbsRows(): Promise<CbsRow[]>;
@@ -37,8 +41,10 @@ const HOUR_MS = 3_600_000;
 /** A day needs this many hourly temperatures to count. */
 const MIN_HOURS_PER_DAY = 20;
 const WEATHER = 'knmi_hourly';
+const NORMAL = 'knmi_daily';
 const CBS = 'cbs_gas';
-const WRITE_CHUNK = 750;
+/** Points per write; a year of hours is two writes. */
+const WRITE_CHUNK = 5000;
 const FIGURES = ['mean', 'p10', 'p20', 'p30', 'p40', 'p50', 'p60', 'p70', 'p80', 'p90'] as const;
 
 const cbsTime = (year: number) => new Date(Date.UTC(year, 0, 1));
@@ -159,6 +165,33 @@ data
     return result;
   }
 
+  async writeNormalDays(station: number, days: DailyWeather[]): Promise<void> {
+    const points = days.map((d) =>
+      new Point(NORMAL)
+        .tag('station', String(station))
+        .floatField('t', d.t)
+        .floatField('fh', d.fh)
+        .timestamp(new Date(`${d.day}T00:00:00Z`)),
+    );
+    for (let i = 0; i < points.length; i += WRITE_CHUNK) {
+      this.writeApi.writePoints(points.slice(i, i + WRITE_CHUNK));
+      await this.writeApi.flush();
+    }
+  }
+
+  async normalDays(station: number, firstYear: number, lastYear: number): Promise<DailyWeather[]> {
+    const rows = await this.query(`from(bucket: ${JSON.stringify(this.options.bucket)})
+  |> range(start: ${firstYear}-01-01T00:00:00Z, stop: ${lastYear + 1}-01-01T00:00:00Z)
+  |> filter(fn: (r) => r._measurement == "${NORMAL}" and r.station == "${station}")
+  |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+  |> keep(columns: ["_time", "t", "fh"])`);
+    return rows.flatMap((row) =>
+      typeof row._time === 'string' && typeof row.t === 'number'
+        ? [{ day: row._time.slice(0, 10), t: row.t, fh: typeof row.fh === 'number' ? row.fh : 0 }]
+        : [],
+    );
+  }
+
   async writeCbs(rows: CbsRow[]): Promise<void> {
     const points = rows.map((row) => {
       const point = new Point(CBS)
@@ -223,6 +256,7 @@ data
 export class MemoryOpenDataStore implements OpenDataStore {
   readonly weather = new Map<number, Map<number, { t: number | null; fh: number | null }>>();
   cbs: CbsRow[] = [];
+  readonly normal = new Map<number, Map<string, DailyWeather>>();
 
   private hours(station: number) {
     let hours = this.weather.get(station);
@@ -294,6 +328,25 @@ export class MemoryOpenDataStore implements OpenDataStore {
       }
       return result;
     });
+  }
+
+  writeNormalDays(station: number, days: DailyWeather[]): Promise<void> {
+    return this.run(() => {
+      const stored = this.normal.get(station) ?? new Map<string, DailyWeather>();
+      for (const d of days) stored.set(d.day, d);
+      this.normal.set(station, stored);
+    });
+  }
+
+  normalDays(station: number, firstYear: number, lastYear: number): Promise<DailyWeather[]> {
+    return this.run(() =>
+      [...(this.normal.get(station)?.values() ?? [])]
+        .filter((d) => {
+          const year = Number(d.day.slice(0, 4));
+          return year >= firstYear && year <= lastYear;
+        })
+        .sort((a, b) => (a.day < b.day ? -1 : 1)),
+    );
   }
 
   writeCbs(rows: CbsRow[]): Promise<void> {

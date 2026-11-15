@@ -28,7 +28,7 @@ export function dailyGas(ends: GasDayEnd[]): Map<string, number> {
   return result;
 }
 
-/** Every day in [first, last] with its gas and weather (null when unknown). */
+/** Every day in [first, last] with its gas and weather (null when unknown or zero). */
 export function mergeDays(
   gas: Map<string, number>,
   weather: Map<string, DailyWeather>,
@@ -38,7 +38,9 @@ export function mergeDays(
   const days: GasDay[] = [];
   for (let day = first; day <= last; day = nextDay(day)) {
     const w = weather.get(day);
-    days.push({ day, m3: gas.get(day) ?? null, t: w?.t ?? null, fh: w?.fh ?? null });
+    // A day without any gas is almost always a day nobody was home: left out like a gap.
+    const m3 = gas.get(day) || null;
+    days.push({ day, m3, t: w?.t ?? null, fh: w?.fh ?? null });
   }
   return days;
 }

@@ -51,12 +51,66 @@ export function Band({
         <span className="gas-band__median" style={{ left: pos(values.p50) }} />
         {own !== null && <span className="gas-band__own" style={{ left: pos(own) }} />}
       </div>
+      {/* Each value under its own position: the median is rarely in the middle. */}
       <div className="gas-band__scale">
-        <span>{format(values.p10)}</span>
-        <span>{format(values.p50)}</span>
-        <span>{format(values.p90)}</span>
+        <span style={{ left: pos(values.p10) }}>{format(values.p10)}</span>
+        <span style={{ left: pos(values.p50) }}>{format(values.p50)}</span>
+        <span style={{ left: pos(values.p90) }}>{format(values.p90)}</span>
       </div>
     </div>
+  );
+}
+
+/** What the parts of a band mean. */
+function BandLegend() {
+  const { t } = useTranslation();
+  return (
+    <ul className="gas-band-legend">
+      <li>
+        <span className="gas-band-legend__outer" aria-hidden="true" />
+        {t('gas.legendOuter')}
+      </li>
+      <li>
+        <span className="gas-band-legend__inner" aria-hidden="true" />
+        {t('gas.legendInner')}
+      </li>
+      <li>
+        <span className="gas-band-legend__median" aria-hidden="true" />
+        {t('gas.legendMedian')}
+      </li>
+      <li>
+        <span className="gas-band-legend__own" aria-hidden="true" />
+        {t('gas.legendOwn')}
+      </li>
+    </ul>
+  );
+}
+
+/** The (possibly broadened) home profile CBS figures are for, one field per line. */
+function ProfileList({ profile }: { profile: GasProfile }) {
+  const { t } = useTranslation();
+  const rows = (
+    [
+      ['type', profile.type && t(`gas.type.${profile.type}`)],
+      ['area', profile.area && t(`gas.area.${profile.area}`)],
+      ['period', profile.period && t(`gas.period.${profile.period}`)],
+      ['residents', profile.residents && t(`gas.residents.${profile.residents}`)],
+      [
+        'solar',
+        profile.solar !== undefined && t(profile.solar ? 'gas.solarYesShort' : 'gas.solarNoShort'),
+      ],
+    ] as const
+  ).filter(([, value]) => value);
+  if (rows.length === 0) return <p className="gas-compare__lead">{t('gas.allDwellings')}</p>;
+  return (
+    <dl className="gas-profile">
+      {rows.map(([field, value]) => (
+        <div key={field}>
+          <dt>{t(`gas.profile.${field}`)}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -129,12 +183,8 @@ export default function Comparison({
       {comparison.shared && !group && <p className="history-hint">{t('gas.groupTooSmall')}</p>}
       {cbs && (
         <div className="gas-compare">
-          <h3>
-            {t('gas.compareCbs', {
-              year: cbs.year,
-              group: profileSummary(cbs.profile, t) || t('gas.allDwellings'),
-            })}
-          </h3>
+          <h3>{t('gas.compareCbs', { year: cbs.year })}</h3>
+          <ProfileList profile={cbs.profile} />
           <p className="gas-compare__lead">
             {t('gas.cbsMean', {
               mean: whole(cbs.perDwelling.mean),
@@ -166,6 +216,7 @@ export default function Comparison({
           <p className="history-hint">{t('gas.cbsNote')}</p>
         </div>
       )}
+      <BandLegend />
       <p className="history-hint gas-attribution">{t('gas.attribution')}</p>
     </div>
   );

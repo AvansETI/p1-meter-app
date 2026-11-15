@@ -33,6 +33,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGasAnalysis, useShareProfile } from '../gas/queries';
+import { DAYS_PER_MONTH } from '../gas/units';
 import { stationOf } from '../gas/station';
 import { useSession } from '../session/context';
 import { useSettings } from '../settings/context';
@@ -58,7 +59,10 @@ export default function GasSettingsPage() {
   const analysis = useGasAnalysis(settings.emonId, gas, ready);
   const share = useShareProfile();
   const [postcode, setPostcode] = useState(gas.postcode ?? '');
-  const [baseline, setBaseline] = useState(gas.baseline === undefined ? '' : decimal(gas.baseline));
+  // Shown per month in whole m³; stored per day like the API expects.
+  const [baseline, setBaseline] = useState(
+    gas.baseline === undefined ? '' : String(Math.round(gas.baseline * DAYS_PER_MONTH)),
+  );
 
   const updateProfile = (patch: Partial<GasProfile>) => {
     const profile = Object.fromEntries(
@@ -223,17 +227,19 @@ export default function GasSettingsPage() {
                 value={baseline}
                 placeholder={
                   analysis.data?.baseline.auto != null
-                    ? t('gas.baselineAuto', { value: decimal(analysis.data.baseline.auto) })
+                    ? t('gas.baselineAuto', {
+                        value: Math.round(analysis.data.baseline.auto * DAYS_PER_MONTH),
+                      })
                     : t('gas.baselineAutoUnknown')
                 }
                 helperText={t('gas.baselineHelp')}
                 onIonInput={(e) => {
                   const text = String(e.detail.value ?? '');
                   setBaseline(text);
-                  const value = Number(text.replace(',', '.'));
+                  const perMonth = Number(text.replace(',', '.'));
                   if (text.trim() === '') setGas({ baseline: undefined });
-                  else if (Number.isFinite(value) && value >= 0 && value <= 20) {
-                    setGas({ baseline: value });
+                  else if (Number.isFinite(perMonth) && perMonth >= 0 && perMonth <= 600) {
+                    setGas({ baseline: perMonth / DAYS_PER_MONTH });
                   }
                 }}
               />

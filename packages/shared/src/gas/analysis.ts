@@ -74,10 +74,34 @@ const MIN_USE_SHARE = 0.2;
  * the last year has too few warm days; null when there are still too few.
  */
 export function autoBaseline(days: GasDay[], base: number): number | null {
-  const warm = (list: GasDay[]) =>
-    list.filter((d) => d.m3 !== null && d.t !== null && d.t >= base).map((d) => d.m3!);
-  let values = warm(recent(days));
-  if (values.length < MIN_BASELINE_DAYS) values = warm(days);
+  return warmMedian(recent(days), base) ?? warmMedian(days, base);
+}
+
+/**
+ * The automatic baseline per month (`YYYY-MM`), from the warm days of the 12 months up to and
+ * including that month: it follows changing habits (cooking, showers, a new boiler) without
+ * jumping from one year to the next. Months with too few warm days in their window are
+ * missing.
+ */
+export function autoBaselineByMonth(days: GasDay[], base: number): Map<string, number> {
+  const months = [...new Set(days.map((d) => d.day.slice(0, 7)))].sort();
+  const result = new Map<string, number>();
+  for (const month of months) {
+    const [year, m] = month.split('-').map(Number) as [number, number];
+    const first = formatPlainDate({
+      year: m === 12 ? year : year - 1,
+      month: (m % 12) + 1,
+      day: 1,
+    });
+    const window = days.filter((d) => d.day >= first && d.day.slice(0, 7) <= month);
+    const value = warmMedian(window, base);
+    if (value !== null) result.set(month, value);
+  }
+  return result;
+}
+
+function warmMedian(days: GasDay[], base: number): number | null {
+  const values = days.filter((d) => d.m3 !== null && d.t !== null && d.t >= base).map((d) => d.m3!);
   if (values.length < MIN_BASELINE_DAYS) return null;
   const used = values.filter((m3) => m3 > 0);
   if (used.length < values.length * MIN_USE_SHARE) return 0;
@@ -149,9 +173,17 @@ function periodKey(date: PlainDate, kind: GasPeriodKind): string {
   return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
+/** One baseline (m³/day) for all time, or one per day (`YYYY-MM-DD`). */
+export type Baseline = number | ((day: string) => number);
+
+const baselineOn = (baseline: Baseline, day: string) =>
+  typeof baseline === 'number' ? baseline : baseline(day);
+
 /** Heating gas per degree day per week, month or year (§3.4). */
-export function periods(days: RatedDay[], baseline: number, kind: GasPeriodKind): GasPeriod[] {
+export function periods(days: RatedDay[], baseline: Baseline, kind: GasPeriodKind): GasPeriod[] {
   const result = new Map<string, GasPeriod>();
+  /** Baseline gas per period: the sum of each day's baseline. */
+  const baseGas = new Map<string, number>();
   for (const d of days) {
     if (d.m3 === null || d.dd === null) continue;
     const date = plain(d.day);
@@ -171,10 +203,11 @@ export function periods(days: RatedDay[], baseline: number, kind: GasPeriodKind)
     period.days++;
     period.m3 += d.m3;
     period.dd += d.dd;
+    baseGas.set(key, (baseGas.get(key) ?? 0) + baselineOn(baseline, d.day));
   }
   return [...result.values()].map((p) => ({
     ...p,
-    perDd: p.dd >= MIN_PERIOD_DEGREE_DAYS ? Math.max(0, p.m3 - baseline * p.days) / p.dd : null,
+    perDd: p.dd >= MIN_PERIOD_DEGREE_DAYS ? Math.max(0, p.m3 - baseGas.get(p.key)!) / p.dd : null,
   }));
 }
 
@@ -200,22 +233,32 @@ export interface GasYear {
   dd: number;
   corrected: number | null;
   complete: boolean;
+  /** Mean baseline over the measured days of this year, m³/day. */
+  baseline: number;
 }
 
 const daysInYear = (year: number) =>
   (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
 
 /** Actual and weather-corrected consumption per calendar year (§3.5). */
-export function yearSummaries(days: RatedDay[], baseline: number, normalDd: number): GasYear[] {
+export function yearSummaries(days: RatedDay[], baseline: Baseline, normalDd: number): GasYear[] {
+  const baseSum = new Map<string, number>();
+  for (const d of days) {
+    if (d.m3 === null || d.dd === null) continue;
+    const year = d.day.slice(0, 4);
+    baseSum.set(year, (baseSum.get(year) ?? 0) + baselineOn(baseline, d.day));
+  }
   return periods(days, baseline, 'year').map((p) => {
     const year = Number(p.key);
+    const base = baseSum.get(p.key)! / p.days;
     return {
       year,
       days: p.days,
       m3: p.m3,
       dd: p.dd,
-      corrected: normalised(p, baseline, normalDd, daysInYear(year)),
+      corrected: normalised(p, base, normalDd, daysInYear(year)),
       complete: p.days >= COMPLETE_YEAR_DAYS,
+      baseline: base,
     };
   });
 }
@@ -311,8 +354,12 @@ export function forecastYear(
 /** The fixed method behind every comparison (§4.1): weighted degree days, 18 °C. */
 export const REFERENCE_BASE = 18;
 export const REFERENCE_METHOD: DegreeDayMethod = 'weighted';
-/** Comparisons need this many measured days in the last year … */
-export const REFERENCE_MIN_DAYS = 300;
+/**
+ * Comparisons need this many measured days in the last year, and those days must hold at least
+ * this share of a normal year's degree days (enough of a heating season) …
+ */
+export const REFERENCE_MIN_DAYS = 180;
+export const REFERENCE_MIN_DD_SHARE = 0.3;
 /** … and at least this much gas per year; below it the house is not heated with gas. */
 export const REFERENCE_MIN_M3 = 50;
 
@@ -325,6 +372,8 @@ export function referenceAnnual(days: GasDay[], normalAnnual: number): number | 
   const rated = rateDays(last, REFERENCE_BASE, REFERENCE_METHOD);
   const known = rated.filter((d) => d.m3 !== null && d.dd !== null);
   if (known.length < REFERENCE_MIN_DAYS) return null;
+  const dd = known.reduce((s, d) => s + d.dd!, 0);
+  if (dd < normalAnnual * REFERENCE_MIN_DD_SHARE) return null;
   const baseline = chooseBaseline({
     cooking: true,
     auto: autoBaseline(last, REFERENCE_BASE),
@@ -334,7 +383,7 @@ export function referenceAnnual(days: GasDay[], normalAnnual: number): number | 
     {
       days: known.length,
       m3: known.reduce((s, d) => s + d.m3!, 0),
-      dd: known.reduce((s, d) => s + d.dd!, 0),
+      dd,
     },
     baseline,
     normalAnnual,

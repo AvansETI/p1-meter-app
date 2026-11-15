@@ -19,8 +19,8 @@ const WINDOW_DAYS = 367;
  * Nightly reference values for the comparison (design §4.1–4.2): the weather-corrected
  * consumption of the last 365 days of every household with gas, stored under its hash. Uses
  * the household's own station when its postcode region is known. Households are read one
- * after another with a pause, to keep the load on InfluxDB low; their daily readings are kept,
- * so after the first run only the newest days are read.
+ * after another with a pause, to keep the load on InfluxDB low; for households that use the
+ * app the stored daily readings are topped up, for the others only the last year is read.
  */
 export class ReferenceJob {
   private timer: NodeJS.Timeout | undefined;
@@ -88,7 +88,7 @@ export class ReferenceJob {
           const own = this.gas.stationOf(signature);
           const station = own !== undefined && this.openData.ready(own) ? own : REFERENCE_STATION;
           const [gas, weather, normals] = await Promise.all([
-            this.gas.gasDays(signature),
+            this.gas.recentGasDays(signature, from),
             this.weather.daily(station),
             this.weather.normals(station, REFERENCE_BASE, REFERENCE_METHOD),
           ]);

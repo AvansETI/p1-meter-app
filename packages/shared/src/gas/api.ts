@@ -103,6 +103,8 @@ export const GasAnalysisSchema = z.object({
       dd: z.number(),
       corrected: z.number().nullable(),
       complete: z.boolean(),
+      /** Baseline used for this year, m³/day (determined per year when automatic). */
+      baseline: z.number(),
     }),
   ),
   forecast: z

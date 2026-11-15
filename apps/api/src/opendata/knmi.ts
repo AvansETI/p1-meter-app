@@ -1,6 +1,9 @@
 /** KNMI hourly station data (docs/design/2026-11-15-gas-analysis.md §6.1). */
 
+import type { DailyWeather } from './store';
+
 export const KNMI_HOURLY_URL = 'https://www.daggegevens.knmi.nl/klimatologie/uurgegevens';
+export const KNMI_DAILY_URL = 'https://www.daggegevens.knmi.nl/klimatologie/daggegevens';
 
 export interface WeatherHour {
   /** End of the KNMI hour (UTC). */
@@ -43,4 +46,28 @@ export function parseKnmiHourly(json: unknown): WeatherHour[] {
     hours.push({ time, t: tenth(row.T), fh: tenth(row.FH) });
   }
   return hours;
+}
+
+/** Form body for daily means of whole years: 20 years are one request of about 7,300 rows. */
+export function knmiDailyBody(station: number, firstYear: number, lastYear: number) {
+  return new URLSearchParams({
+    stns: String(station),
+    vars: 'TG:FG',
+    start: `${firstYear}0101`,
+    end: `${lastYear}1231`,
+    fmt: 'json',
+  });
+}
+
+/**
+ * Daily means (UT days) in tenths; only for the normal year, where the hour difference with
+ * local days does not matter.
+ */
+export function parseKnmiDaily(json: unknown): DailyWeather[] {
+  if (!Array.isArray(json)) throw new Error('unexpected KNMI response');
+  return (json as Array<Record<string, unknown>>).flatMap((row) => {
+    const t = tenth(row.TG);
+    if (typeof row.date !== 'string' || t === null) return [];
+    return [{ day: row.date.slice(0, 10), t, fh: tenth(row.FG) ?? 0 }];
+  });
 }

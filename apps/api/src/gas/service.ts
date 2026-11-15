@@ -1,6 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import {
   autoBaseline,
+  autoBaselineByMonth,
   chooseBaseline,
   degreeDaysToDate,
   cbsKey,
@@ -112,6 +113,19 @@ export class GasService {
     return dailyGas(ends);
   }
 
+  /**
+   * Gas per day since `from` for the nightly comparison: from the stored history when this
+   * household uses the app, else only that window, read without storing it.
+   */
+  async recentGasDays(signature: string, from: Date): Promise<Map<string, number>> {
+    const hash = this.hash(signature);
+    const stored =
+      this.endsCache.has(hash) ||
+      this.db.prepare('SELECT 1 FROM gas_day_ends WHERE hash = ? LIMIT 1').get(hash);
+    if (stored) return this.gasDays(signature);
+    return dailyGas(await readDayEnds(this.source, signature, from, this.now()));
+  }
+
   private storedEnds(hash: string): GasDayEnd[] {
     const rows = this.db
       .prepare('SELECT day, time, day_end, value FROM gas_day_ends WHERE hash = ? ORDER BY day')
@@ -181,16 +195,25 @@ export class GasService {
       auto,
       line,
     });
+    // An automatic baseline follows the months (over the 12 months before); a manual one, or
+    // none, holds for all time.
+    const byMonth = autoBaselineByMonth(days, query.base);
+    const automatic = baseline.source === 'auto' || baseline.source === 'line';
+    const baselineIn = (month: string) =>
+      automatic ? (byMonth.get(month) ?? baseline.value) : baseline.value;
+    const baselineOf = (day: string) => baselineIn(day.slice(0, 7));
+    const currentBaseline = baselineIn(yesterday.slice(0, 7));
     const roundPeriod = (p: ReturnType<typeof periods>[number]) => ({
       ...p,
       m3: r(p.m3, 2),
       dd: r(p.dd, 1),
       perDd: p.perDd === null ? null : r(p.perDd, 4),
     });
-    const forecast = forecastYear(rated, today, baseline.value, line, normals);
+    const forecast = forecastYear(rated, today, currentBaseline, line, normals);
     const degreeDays = degreeDaysToDate(rated, today, normals);
-    const rolling = rollingCorrected(rated, baseline.value, normals.annual);
-    const before = rollingCorrected(rated, baseline.value, normals.annual, RECENT_DAYS);
+    const rolling = rollingCorrected(rated, currentBaseline, normals.annual);
+    const yearBefore = `${Number(yesterday.slice(0, 4)) - 1}${yesterday.slice(4, 7)}`;
+    const before = rollingCorrected(rated, baselineIn(yearBefore), normals.annual, RECENT_DAYS);
     return {
       station: query.station,
       pending: !this.job.ready(query.station),
@@ -202,7 +225,7 @@ export class GasService {
         dd: d.dd === null ? null : r(d.dd, 2),
       })),
       baseline: {
-        value: r(baseline.value, 3),
+        value: r(currentBaseline, 3),
         auto: auto === null ? null : r(auto, 3),
         source: baseline.source,
       },
@@ -213,12 +236,13 @@ export class GasService {
         n: line.n,
       },
       periods: {
-        week: periods(rated, baseline.value, 'week').map(roundPeriod),
-        month: periods(rated, baseline.value, 'month').map(roundPeriod),
-        year: periods(rated, baseline.value, 'year').map(roundPeriod),
+        week: periods(rated, baselineOf, 'week').map(roundPeriod),
+        month: periods(rated, baselineOf, 'month').map(roundPeriod),
+        year: periods(rated, baselineOf, 'year').map(roundPeriod),
       },
-      years: yearSummaries(rated, baseline.value, normals.annual).map((y) => ({
+      years: yearSummaries(rated, baselineOf, normals.annual).map((y) => ({
         ...y,
+        baseline: r(y.baseline, 3),
         m3: r(y.m3, 1),
         dd: r(y.dd, 1),
         corrected: y.corrected === null ? null : r(y.corrected, 0),
