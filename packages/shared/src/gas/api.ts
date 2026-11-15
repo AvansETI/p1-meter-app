@@ -68,10 +68,14 @@ export const GasComparisonQuerySchema = z.object({
   heating: z.enum(HEATINGS).optional(),
 });
 
+/** Days estimated from the meter over a gap in the readings (the kit sent nothing). */
+const filled = z.number().default(0);
+
 const GasPeriodSchema = z.object({
   start: z.string(),
   key: z.string(),
   days: z.number(),
+  filled,
   m3: z.number(),
   dd: z.number(),
   perDd: z.number().nullable(),
@@ -90,6 +94,8 @@ export const GasAnalysisSchema = z.object({
       m3: z.number().nullable(),
       t: z.number().nullable(),
       dd: z.number().nullable(),
+      /** The kit sent nothing that day: a share of the meter's use over the gap. */
+      filled: z.boolean().optional(),
     }),
   ),
   baseline: z.object({
@@ -112,6 +118,7 @@ export const GasAnalysisSchema = z.object({
       year: z.number(),
       label: z.string(),
       days: z.number(),
+      filled,
       m3: z.number(),
       dd: z.number(),
       corrected: z.number().nullable(),
@@ -127,6 +134,7 @@ export const GasAnalysisSchema = z.object({
       year: z.number(),
       label: z.string(),
       actual: z.number(),
+      filled,
       estimated: z.number(),
       total: z.number(),
     })
@@ -137,7 +145,9 @@ export const GasAnalysisSchema = z.object({
       expected: z.number(),
       /** Forecast for the whole year; null without a heating line. */
       forecast: z.number().nullable(),
-      soFar: z.object({ actual: z.number(), expected: z.number(), days: z.number() }).nullable(),
+      soFar: z
+        .object({ actual: z.number(), expected: z.number(), days: z.number(), filled })
+        .nullable(),
     })
     .nullable(),
   normal: z.object({ annual: z.number(), years: z.number() }),

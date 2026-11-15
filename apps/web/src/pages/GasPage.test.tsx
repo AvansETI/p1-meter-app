@@ -17,7 +17,15 @@ vi.mock('../gas/GasCharts', () => ({
   DayProfileChart: () => <div data-testid="profile-chart" />,
 }));
 
-const period = { start: '2026-01-01', key: '2026-01', days: 31, m3: 120, dd: 400, perDd: 0.28 };
+const period = {
+  start: '2026-01-01',
+  key: '2026-01',
+  days: 31,
+  filled: 0,
+  m3: 120,
+  dd: 400,
+  perDd: 0.28,
+};
 const analysis = (pending = false, extra: Partial<GasAnalysis> = {}): GasAnalysis => ({
   station: 260,
   pending,
@@ -31,6 +39,7 @@ const analysis = (pending = false, extra: Partial<GasAnalysis> = {}): GasAnalysi
       year: 2024,
       label: '2024',
       days: 366,
+      filled: 0,
       m3: 1100,
       dd: 2600,
       corrected: 1050,
@@ -42,6 +51,7 @@ const analysis = (pending = false, extra: Partial<GasAnalysis> = {}): GasAnalysi
       year: 2025,
       label: '2025',
       days: 365,
+      filled: 0,
       m3: 980,
       dd: 2500,
       corrected: 945,
@@ -51,7 +61,7 @@ const analysis = (pending = false, extra: Partial<GasAnalysis> = {}): GasAnalysi
     },
   ],
   yearStart: '01-01',
-  forecast: { year: 2026, label: '2026', actual: 700, estimated: 250, total: 950 },
+  forecast: { year: 2026, label: '2026', actual: 700, filled: 0, estimated: 250, total: 950 },
   settlement: null,
   normal: { annual: 2700, years: 20 },
   degreeDays: { year: 2026, label: '2026', actual: 1397, normal: 1520 },
@@ -151,11 +161,18 @@ describe('GasPage', () => {
       { ...DEFAULT_GAS_SETTINGS, years: 'contract', expected: 1000 },
       {
         yearStart: '04-01',
-        forecast: { year: 2026, label: '2026-2027', actual: 700, estimated: 250, total: 950 },
+        forecast: {
+          year: 2026,
+          label: '2026-2027',
+          actual: 700,
+          filled: 0,
+          estimated: 250,
+          total: 950,
+        },
         settlement: {
           expected: 1000,
           forecast: 950,
-          soFar: { actual: 320, expected: 360, days: 200 },
+          soFar: { actual: 320, expected: 360, days: 200, filled: 56 },
         },
       },
     );
@@ -166,6 +183,8 @@ describe('GasPage', () => {
     expect(screen.getByText(/prognose 950 van 1.000 m³ \(−5%\), minder dan verwacht/)).toBeTruthy();
     expect(screen.getByText('320')).toBeTruthy();
     expect(screen.getByText('verwacht 360 m³ bij dit weer (−11%)')).toBeTruthy();
+    // Days the kit sent nothing are estimated from the meter, and say so.
+    expect(screen.getByText('waarvan 56 dagen geschat (meetkit offline)')).toBeTruthy();
     // The CBS column is for calendar years only.
     expect(screen.queryByText('CBS mediaan')).toBeNull();
     expect(

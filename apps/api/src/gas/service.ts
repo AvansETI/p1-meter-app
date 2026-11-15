@@ -21,6 +21,8 @@ import {
   periods,
   quantile,
   rateDays,
+  fillGaps,
+  normalDegreeDays,
   REFERENCE_BASE,
   REFERENCE_METHOD,
   REFERENCE_STATION,
@@ -52,7 +54,7 @@ import type { OpenDataJob } from '../opendata/job';
 import type { OpenDataStore } from '../opendata/store';
 import { zonedHour } from '../time';
 import { dayKey } from '../usage/tracker';
-import { dailyGas, mergeDays, readDayEnds } from './days';
+import { dailyGas, gasGaps, mergeDays, readDayEnds } from './days';
 import type { WeatherService } from './weather';
 
 type AnalysisQuery = z.output<typeof GasAnalysisQuerySchema>;
@@ -107,10 +109,15 @@ export class GasService {
    * read again: after the first time (or a restart) this takes well under a second.
    */
   async gasDays(signature: string): Promise<Map<string, number>> {
+    return dailyGas(await this.gasEnds(signature));
+  }
+
+  /** The last reading of every local day over all data of the household (see `gasDays`). */
+  async gasEnds(signature: string): Promise<GasDayEnd[]> {
     const now = this.now().getTime();
     const hash = this.hash(signature);
     const cached = this.endsCache.get(hash);
-    if (cached && now - cached.at < GAS_CACHE_MS) return dailyGas(cached.ends);
+    if (cached && now - cached.at < GAS_CACHE_MS) return cached.ends;
     const stored = cached?.ends ?? this.storedEnds(hash);
     let fresh: GasDayEnd[];
     let from: number;
@@ -126,7 +133,7 @@ export class GasService {
     this.storeEnds(hash, fresh);
     const ends = [...stored.filter((e) => e.dayEnd <= from), ...fresh];
     this.endsCache.set(hash, { ends, at: now });
-    return dailyGas(ends);
+    return ends;
   }
 
   /**
@@ -198,12 +205,13 @@ export class GasService {
   async analysis(signature: string, query: AnalysisQuery): Promise<GasAnalysis> {
     this.job.useStation(query.station);
     this.setPostcode(signature, query.postcode);
-    const [gas, weather, normals] = await Promise.all([
-      this.gasDays(signature),
+    const [ends, weather, normals] = await Promise.all([
+      this.gasEnds(signature),
       this.weather.daily(query.station),
       this.weather.normals(query.station, query.base, query.method),
     ]);
     const today = dayKey(this.now());
+    const gas = dailyGas(ends);
     const gasDays = [...gas.keys()].sort();
     const weatherDays = [...weather.keys()].sort();
     const weatherUntil = weatherDays.at(-1) ?? null;
@@ -229,6 +237,15 @@ export class GasService {
       automatic ? (byMonth.get(month) ?? baseline.value) : baseline.value;
     const baselineOf = (day: string) => baselineIn(day.slice(0, 7));
     const currentBaseline = baselineIn(yesterday.slice(0, 7));
+    // Days the kit sent nothing get their share of the meter's use over the gap, so totals
+    // match the meter; the heating line and baseline above use measured days only.
+    const filled = fillGaps(
+      rated,
+      gasGaps(ends, today),
+      (d) =>
+        baselineOf(d.day) +
+        Math.max(0, line?.slope ?? 0) * (d.dd ?? normalDegreeDays(normals, d.day)),
+    );
     const roundPeriod = (p: ReturnType<typeof periods>[number]) => ({
       ...p,
       m3: r(p.m3, 2),
@@ -236,24 +253,25 @@ export class GasService {
       perDd: p.perDd === null ? null : r(p.perDd, 4),
     });
     const start = this.yearStart(signature, query);
-    const forecast = forecastYear(rated, today, currentBaseline, line, normals, start);
-    const degreeDays = degreeDaysToDate(rated, today, normals, start);
+    const forecast = forecastYear(filled, today, currentBaseline, line, normals, start);
+    const degreeDays = degreeDaysToDate(filled, today, normals, start);
     const soFar =
       query.expected === undefined
         ? null
-        : expectedSoFar(rated, today, currentBaseline, query.expected, normals.annual, start);
-    const rolling = rollingCorrected(rated, currentBaseline, normals.annual);
+        : expectedSoFar(filled, today, currentBaseline, query.expected, normals.annual, start);
+    const rolling = rollingCorrected(filled, currentBaseline, normals.annual);
     const yearBefore = `${Number(yesterday.slice(0, 4)) - 1}${yesterday.slice(4, 7)}`;
-    const before = rollingCorrected(rated, baselineIn(yearBefore), normals.annual, RECENT_DAYS);
+    const before = rollingCorrected(filled, baselineIn(yearBefore), normals.annual, RECENT_DAYS);
     return {
       station: query.station,
       pending: !this.job.ready(query.station),
       weatherUntil,
-      days: rated.map((d) => ({
+      days: filled.map((d) => ({
         day: d.day,
         m3: d.m3,
         t: d.t === null ? null : r(d.t, 1),
         dd: d.dd === null ? null : r(d.dd, 2),
+        ...(d.filled && { filled: true }),
       })),
       baseline: {
         value: r(currentBaseline, 3),
@@ -267,12 +285,12 @@ export class GasService {
         n: line.n,
       },
       periods: {
-        week: periods(rated, baselineOf, 'week').map(roundPeriod),
-        month: periods(rated, baselineOf, 'month').map(roundPeriod),
-        year: periods(rated, baselineOf, 'year', start).map(roundPeriod),
+        week: periods(filled, baselineOf, 'week').map(roundPeriod),
+        month: periods(filled, baselineOf, 'month').map(roundPeriod),
+        year: periods(filled, baselineOf, 'year', start).map(roundPeriod),
       },
       yearStart: formatYearStart(start),
-      years: yearSummaries(rated, baselineOf, normals.annual, start).map((y) => ({
+      years: yearSummaries(filled, baselineOf, normals.annual, start).map((y) => ({
         ...y,
         baseline: r(y.baseline, 3),
         ddYear: r(y.ddYear, 1),
@@ -284,6 +302,7 @@ export class GasService {
         year: forecast.year,
         label: forecast.label,
         actual: r(forecast.actual, 0),
+        filled: forecast.filled,
         estimated: r(forecast.estimated, 0),
         total: r(forecast.total, 0),
       },
@@ -297,6 +316,7 @@ export class GasService {
                 actual: r(soFar.actual, 0),
                 expected: r(soFar.expected, 0),
                 days: soFar.days,
+                filled: soFar.filled,
               },
             },
       normal: { annual: r(normals.annual, 0), years: normals.years },

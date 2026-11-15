@@ -60,6 +60,7 @@ export function PerDegreeDayChart({
         trend: t('gas.trend'),
         format: m3PerDd,
         title: (i) => titles[i] ?? '',
+        estimated: (count) => t('gas.estimatedDays', { count }),
       }),
     // labels and titles follow periods, kind and the language
     // eslint-disable-next-line react-hooks/exhaustive-deps

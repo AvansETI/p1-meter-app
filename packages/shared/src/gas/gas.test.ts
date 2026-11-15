@@ -3,6 +3,7 @@ import { addDays, formatPlainDate } from '../calendar';
 import {
   autoBaseline,
   expectedSoFar,
+  fillGaps,
   autoBaselineByMonth,
   degreeDaysToDate,
   chooseBaseline,
@@ -202,6 +203,49 @@ describe('analysis', () => {
     expect(referenceAnnual(days.slice(120, 300), dd)).toBeNull();
     const noGas = days.map((d) => ({ ...d, m3: 0.05 }));
     expect(referenceAnnual(noGas, dd)).toBeNull();
+  });
+});
+
+describe('gaps in the readings', () => {
+  const rated = rateDays(
+    syntheticDays('2026-01-01', 10, (i) => 18 - i),
+    18,
+    'plain',
+  );
+  const gapped = rated.map((d, i) => (i >= 3 && i <= 6 ? { ...d, m3: null } : d));
+
+  it("spreads the meter's use over the gap by expected use", () => {
+    const filled = fillGaps(
+      gapped,
+      [{ from: '2026-01-04', to: '2026-01-07', m3: 12 }],
+      (d) => 1 + 0.3 * d.dd!,
+    );
+    const gap = filled.slice(3, 7);
+    expect(gap.every((d) => d.filled)).toBe(true);
+    expect(gap.reduce((s, d) => s + d.m3!, 0)).toBeCloseTo(12, 2);
+    // Colder days get more.
+    expect(gap[3]!.m3!).toBeGreaterThan(gap[0]!.m3!);
+    expect(filled[2]).toEqual(gapped[2]);
+    // Totals say how many of their days are estimated.
+    expect(periods(filled, 1, 'month')[0]).toMatchObject({ days: 10, filled: 4 });
+    expect(yearSummaries(filled, 1, 3000)[0]).toMatchObject({ days: 10, filled: 4 });
+  });
+
+  it('spreads evenly without expected use, and skips a gap past the days', () => {
+    const even = fillGaps(gapped, [{ from: '2026-01-04', to: '2026-01-07', m3: 8 }], () => 0);
+    expect(even.slice(3, 7).map((d) => d.m3)).toEqual([2, 2, 2, 2]);
+    expect(fillGaps(gapped, [{ from: '2026-01-09', to: '2026-01-12', m3: 8 }], () => 1)).toEqual(
+      gapped,
+    );
+  });
+
+  it('keeps filled days out of the heating line and the baseline', () => {
+    const days = syntheticDays('2026-01-01', 120, seasonal);
+    const line = heatingLine(rateDays(days, 18, 'plain'))!;
+    const noisy = rateDays(days, 18, 'plain').map((d, i) =>
+      i % 3 === 0 ? { ...d, m3: 50, filled: true } : d,
+    );
+    expect(heatingLine(noisy)!.slope).toBeCloseTo(line.slope, 6);
   });
 });
 

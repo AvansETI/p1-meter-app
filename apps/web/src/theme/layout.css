@@ -774,6 +774,16 @@ ion-menu.app-side-menu ion-item.selected {
   font-size: 11px;
   color: var(--app-text-muted);
 }
+/* Part of the value estimated over gaps in the readings (#68 fix). */
+.today-item__estimate {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--app-text-muted);
+}
+.gas-years__estimate {
+  font-style: italic;
+  color: var(--app-text-muted);
+}
 .gas-sections {
   align-items: start;
 }
