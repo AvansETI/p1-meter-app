@@ -392,8 +392,10 @@ A new setting, Settings → Gas analysis → **Year division**:
 - **Not included:**
   - Fixed costs (supply and grid). In the tariffs they cover electricity and gas together,
     so they cannot be attributed to gas.
-  - The tax reduction.
-  - The tile says "variable gas costs".
+  - The reduction of energy tax (heffingskorting). It is a fixed amount per connection per
+    year, not related to gas use.
+- **Footnote:** under the cost figures the page states "Variable gas costs incl. energy tax
+  and VAT; excl. fixed supply and grid costs and excl. the reduction of energy tax."
 
 ### 11.3 Testing
 
