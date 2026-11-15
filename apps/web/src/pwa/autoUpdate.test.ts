@@ -17,6 +17,7 @@ afterEach(() => {
   setHidden(false);
   document.body.innerHTML = '';
   sessionStorage.clear();
+  delete document.documentElement.dataset.splash;
 });
 
 describe('startUpdateChecks', () => {
@@ -84,6 +85,7 @@ describe('useReloadWhenIdle', () => {
     renderHook(() => useReloadWhenIdle(true, update, '0.9.0'));
     expect(update).toHaveBeenCalledWith(true);
     expect(sessionStorage.getItem(UPDATED_FROM_KEY)).toBe('0.9.0');
+    expect(document.documentElement.dataset.splash).toBe('updating');
   });
 
   it('waits while a modal is open and reloads once it is closed', () => {

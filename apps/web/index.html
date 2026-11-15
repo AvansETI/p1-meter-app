@@ -99,6 +99,45 @@
           transform: scaleX(0);
         }
       }
+      /*
+       * Updating to a new version (#64; data-splash set by src/pwa/autoUpdate.ts before the
+       * reload and by theme-init.js after it): "Bijwerken…" under a running bar, and after the
+       * reload the splash continues without replaying the intro, so it does not start twice.
+       */
+      .splash__status {
+        margin: 8px 0 0;
+        font-size: 14px;
+        visibility: hidden;
+      }
+      [data-splash='updating'] .splash__status {
+        visibility: visible;
+      }
+      .splash__status [lang='en'],
+      [data-splash-lang='en'] .splash__status [lang='nl'] {
+        display: none;
+      }
+      [data-splash-lang='en'] .splash__status [lang='en'] {
+        display: inline;
+      }
+      [data-splash='updating'] .splash__progress::after {
+        right: auto;
+        width: 40%;
+        animation: splash-busy 1200ms ease-in-out infinite;
+      }
+      [data-splash='updating'] .splash__ink,
+      [data-splash='updating'] .splash__slash-long,
+      [data-splash='updating'] .splash__slash-short,
+      [data-splash='updating'] .splash__text {
+        animation: none;
+      }
+      @keyframes splash-busy {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(250%);
+        }
+      }
       /* Partner logos always in their own colours; on a light plate in the dark theme. */
       .splash__co {
         display: flex;
@@ -170,7 +209,8 @@
         .splash__slash-long,
         .splash__slash-short,
         .splash__text,
-        .splash__progress::after {
+        .splash__progress::after,
+        [data-splash='updating'] .splash__progress::after {
           animation: none;
         }
       }
@@ -208,6 +248,9 @@
           <p class="splash__author">Arno Broeders</p>
         </div>
         <div class="splash__progress" role="progressbar" aria-label="Laden"></div>
+        <p class="splash__status">
+          <span lang="nl">Bijwerken…</span><span lang="en">Updating…</span>
+        </p>
       </div>
       <div class="splash__co">
         <img class="splash__partner" src="/brand/avans-logo.svg" alt="" />

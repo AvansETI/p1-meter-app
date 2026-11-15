@@ -70,6 +70,19 @@ an `IonToast` shows `pwa.updated` ("Bijgewerkt naar versie {{version}}" / "Updat
 {{version}}") for 3 seconds, and the key is removed. Without storage the reload still works,
 only the message is skipped.
 
+### 5.1 Splash screen during an update (added later)
+
+An update found at start-up used to show the splash twice: the first splash, the reload, and
+a second splash with the intro and the 3.5 s loading bar starting over. Now:
+
+- Before the reload `useReloadWhenIdle` sets `data-splash="updating"` on `<html>`: a splash
+  that is still showing says "Bijwerken…" / "Updating…" under a running (indeterminate) bar.
+- `theme-init.js` sets the same attribute before first paint when `p1meter.updatedFrom` is
+  in `sessionStorage`, so after the reload the splash continues with the same text and bar,
+  without the logo intro, and `hideSplash` adds no minimum time.
+- `theme-init.js` also sets `data-splash-lang` (the chosen language, or the device's first
+  language as in `resolveLanguage`), because the splash is shown before i18n loads.
+
 ## 6. Testing
 
 - `busy.test.ts`: open overlays and focused inputs count as busy; nothing else does.

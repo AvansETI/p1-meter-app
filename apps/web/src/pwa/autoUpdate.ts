@@ -56,6 +56,8 @@ export function useReloadWhenIdle(
       } catch {
         // Without storage the update still happens, only the message is skipped.
       }
+      // A splash that is still showing says "Bijwerken…" and continues after the reload.
+      document.documentElement.dataset.splash = 'updating';
       void updateServiceWorker(true);
     };
     tryReload();
