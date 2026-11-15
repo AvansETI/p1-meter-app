@@ -33,7 +33,8 @@ import {
 } from '@p1/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGasAnalysis, useShareProfile } from '../gas/queries';
+import { useGasAnalysis } from '../gas/queries';
+import { useGasSaveFailed } from '../gas/sync';
 import { useTariffs } from '../tariffs/queries';
 import { dateFormat } from '../i18n/dates';
 import { DAYS_PER_MONTH } from '../gas/units';
@@ -57,6 +58,34 @@ const monthDay = (value: string) =>
 const decimal = (v: number) => v.toLocaleString('nl-NL', { maximumFractionDigits: 2 });
 
 /** Settings → Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2). */
+/** Expected annual use in m³, or undefined when the text is empty or out of range. */
+function parseExpected(text: string): number | undefined {
+  const value = Number(text.replace(/\D/g, ''));
+  return text.trim() !== '' && value >= 1 && value <= 20000 ? value : undefined;
+}
+
+/** Baseline typed in m³ per month, stored per day; undefined when empty or out of range. */
+function parseBaseline(text: string): number | undefined {
+  const perMonth = Number(text.replace(',', '.'));
+  return text.trim() !== '' && Number.isFinite(perMonth) && perMonth >= 0 && perMonth <= 600
+    ? perMonth / DAYS_PER_MONTH
+    : undefined;
+}
+
+/**
+ * Text of an input for a setting. A value taken over from another device replaces the text,
+ * but not while it is being typed here: the text then still means the same value.
+ */
+function useSyncedText<T>(value: T, parse: (text: string) => T, format: (value: T) => string) {
+  const [text, setText] = useState(() => format(value));
+  const [seen, setSeen] = useState(value);
+  if (seen !== value) {
+    setSeen(value);
+    if (parse(text) !== value) setText(format(value));
+  }
+  return [text, setText] as const;
+}
+
 export default function GasSettingsPage() {
   const { t } = useTranslation();
   const { settings, setGas } = useSettings();
@@ -65,15 +94,21 @@ export default function GasSettingsPage() {
   const { station, located } = stationOf(gas);
   const ready = state.status === 'ready' && state.capabilities.hasGas;
   const analysis = useGasAnalysis(settings.emonId, gas, ready);
-  const share = useShareProfile();
-  const [postcode, setPostcode] = useState(gas.postcode ?? '');
-  const [expected, setExpected] = useState(gas.expected === undefined ? '' : String(gas.expected));
+  const saveFailed = useGasSaveFailed();
+  const [postcode, setPostcode] = useSyncedText(
+    gas.postcode,
+    (text) => postcodeRegion(text) ?? undefined,
+    (value) => value ?? '',
+  );
+  const [expected, setExpected] = useSyncedText(gas.expected, parseExpected, (value) =>
+    value === undefined ? '' : String(value),
+  );
   const tariffs = useTariffs(settings.emonId, ready && gas.years === 'contract');
   // The default contract start: the newest own tariff period with gas.
   const tariffStart = tariffs.data?.profiles.own.periods.filter((p) => p.gas).at(-1)?.validFrom;
   // Shown per month in whole m³; stored per day like the API expects.
-  const [baseline, setBaseline] = useState(
-    gas.baseline === undefined ? '' : String(Math.round(gas.baseline * DAYS_PER_MONTH)),
+  const [baseline, setBaseline] = useSyncedText(gas.baseline, parseBaseline, (value) =>
+    value === undefined ? '' : String(Math.round(value * DAYS_PER_MONTH)),
   );
 
   const updateProfile = (patch: Partial<GasProfile>) => {
@@ -81,7 +116,6 @@ export default function GasSettingsPage() {
       Object.entries({ ...gas.profile, ...patch }).filter(([, v]) => v !== undefined),
     ) as GasProfile;
     setGas({ profile });
-    if (gas.share) share.mutate(profile);
   };
 
   const select = <T extends string>(
@@ -120,6 +154,11 @@ export default function GasSettingsPage() {
         </IonToolbar>
       </IonHeader>
       <IonContent>
+        {saveFailed && (
+          <p className="gas-settings__error" role="status">
+            {t('gas.saveFailed')}
+          </p>
+        )}
         <IonList inset>
           <IonListHeader>{t('gas.location')}</IonListHeader>
           <IonItem>
@@ -278,9 +317,8 @@ export default function GasSettingsPage() {
               onIonInput={(e) => {
                 const text = String(e.detail.value ?? '');
                 setExpected(text);
-                const value = Number(text.replace(/\D/g, ''));
-                if (text.trim() === '') setGas({ expected: undefined });
-                else if (value >= 1 && value <= 20000) setGas({ expected: value });
+                const value = parseExpected(text);
+                if (text.trim() === '' || value !== undefined) setGas({ expected: value });
               }}
             />
           </IonItem>
@@ -319,11 +357,8 @@ export default function GasSettingsPage() {
                 onIonInput={(e) => {
                   const text = String(e.detail.value ?? '');
                   setBaseline(text);
-                  const perMonth = Number(text.replace(',', '.'));
-                  if (text.trim() === '') setGas({ baseline: undefined });
-                  else if (Number.isFinite(perMonth) && perMonth >= 0 && perMonth <= 600) {
-                    setGas({ baseline: perMonth / DAYS_PER_MONTH });
-                  }
+                  const value = parseBaseline(text);
+                  if (text.trim() === '' || value !== undefined) setGas({ baseline: value });
                 }}
               />
             </IonItem>
@@ -362,21 +397,13 @@ export default function GasSettingsPage() {
         <IonList inset>
           <IonListHeader>{t('gas.shareTitle')}</IonListHeader>
           <IonItem>
-            <IonToggle
-              checked={gas.share}
-              onIonChange={(e) => {
-                const on = e.detail.checked;
-                setGas({ share: on });
-                share.mutate(on ? gas.profile : null);
-              }}
-            >
+            <IonToggle checked={gas.share} onIonChange={(e) => setGas({ share: e.detail.checked })}>
               <IonLabel className="ion-text-wrap">{t('gas.share')}</IonLabel>
             </IonToggle>
           </IonItem>
           <IonItem lines="none">
             <IonLabel className="ion-text-wrap">
               <p>{t('gas.shareHelp')}</p>
-              {share.isError && <p className="settings__error">{t('gas.shareFailed')}</p>}
             </IonLabel>
           </IonItem>
         </IonList>

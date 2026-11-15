@@ -14,6 +14,8 @@ import {
   GasAnalysisSchema,
   GasComparisonSchema,
   GasHourlySchema,
+  GasSettingsResponseSchema,
+  GasSettingsSavedSchema,
   SESSION_HEADER,
   SessionResponseSchema,
   type ApiErrorCode,
@@ -35,6 +37,9 @@ import {
   type GasComparison,
   type GasHourly,
   type GasProfile,
+  type GasSettingsResponse,
+  type GasSettingsSaved,
+  type GasSharedSettings,
 } from '@p1/shared';
 import { z } from 'zod';
 
@@ -180,21 +185,21 @@ export class ApiClient {
     return this.authorized(`/gas/comparison?${profileQuery(profile)}`, {}, GasComparisonSchema);
   }
 
-  /** Shares the dwelling profile for the group comparison (opt-in). */
-  shareGasProfile(profile: GasProfile): Promise<ApiResult<undefined>> {
+  /** Gas analysis settings shared by every device of the household. */
+  getGasSettings(): Promise<ApiResult<GasSettingsResponse>> {
+    return this.authorized('/gas/settings', {}, GasSettingsResponseSchema);
+  }
+
+  saveGasSettings(settings: GasSharedSettings): Promise<ApiResult<GasSettingsSaved>> {
     return this.authorized(
-      '/gas/profile',
+      '/gas/settings',
       {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(profile),
+        body: JSON.stringify({ settings }),
       },
-      z.undefined(),
+      GasSettingsSavedSchema,
     );
-  }
-
-  unshareGasProfile(): Promise<ApiResult<undefined>> {
-    return this.authorized('/gas/profile', { method: 'DELETE' }, z.undefined());
   }
 
   getRecent(): Promise<ApiResult<RecentSeries>> {

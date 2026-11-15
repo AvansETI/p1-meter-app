@@ -6,6 +6,7 @@ import {
   YearDivisionSchema,
   MAX_BASE_TEMPERATURE,
   MIN_BASE_TEMPERATURE,
+  type GasSharedSettings,
 } from '@p1/shared';
 import { z } from 'zod';
 
@@ -19,7 +20,10 @@ export type Theme = z.infer<typeof ThemeSchema>;
 export const LanguageSchema = z.enum(['system', 'nl', 'en']);
 export type Language = z.infer<typeof LanguageSchema>;
 
-/** Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2). */
+/**
+ * Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2): read leniently, field by field.
+ * The server keeps the shared part strictly (`GasSharedSettingsSchema`).
+ */
 const GasSettingsSchema = z.object({
   /** Show the Gas tab and load its data at start-up. */
   enabled: z.boolean().catch(true),
@@ -53,6 +57,13 @@ const GasSettingsSchema = z.object({
 });
 export type GasSettings = z.infer<typeof GasSettingsSchema>;
 
+/** The part every device of the household shares; `enabled` stays per device. */
+export function sharedGas(gas: GasSettings): GasSharedSettings {
+  const { enabled, ...shared } = gas;
+  void enabled;
+  return shared;
+}
+
 export const DEFAULT_GAS_SETTINGS: GasSettings = {
   enabled: true,
   base: DEFAULT_BASE_TEMPERATURE,
@@ -75,6 +86,10 @@ const SettingsSchema = z.object({
   /** Holiday decoration in the title bar (docs/design/2026-11-14-festive-decoration.md). */
   festive: z.boolean().catch(true),
   gas: GasSettingsSchema.catch(DEFAULT_GAS_SETTINGS),
+  /** Emon id the gas settings were last synced with (docs/design/2026-11-15-shared-gas-settings.md §6). */
+  gasSyncedFor: z.string().optional().catch(undefined),
+  /** A gas settings change has not reached the server yet. */
+  gasDirty: z.boolean().optional().catch(undefined),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 

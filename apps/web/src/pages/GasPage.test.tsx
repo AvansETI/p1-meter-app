@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../api/client';
 import { navItems } from '../navigation';
-import { DEFAULT_GAS_SETTINGS } from '../settings/storage';
+import { DEFAULT_GAS_SETTINGS, sharedGas } from '../settings/storage';
 import { SIGNATURE, sessionResponse } from '../test/fixtures';
 import { mockApi, renderWithProviders } from '../test/render';
 import GasPage from './GasPage';
@@ -205,14 +205,28 @@ describe('GasSettingsPage', () => {
   });
 });
 
-describe('profile sharing', () => {
-  it('sends the profile with PUT and withdraws it with DELETE', async () => {
-    const fetch = mockApi({ '/api/v1/gas/profile': { status: 204 } });
-    expect((await api.shareGasProfile({ type: 'detached', solar: true })).ok).toBe(true);
-    expect((await api.unshareGasProfile()).ok).toBe(true);
-    const [put, del] = fetch.mock.calls;
-    expect(put?.[1]).toMatchObject({ method: 'PUT', body: '{"type":"detached","solar":true}' });
-    expect(del?.[1]).toMatchObject({ method: 'DELETE' });
+describe('shared settings', () => {
+  it('reads and saves the settings shared by every device', async () => {
+    const fetch = mockApi({
+      '/api/v1/gas/settings': { status: 200, body: { settings: null, updatedAt: null } },
+    });
+    expect(await api.getGasSettings()).toEqual({
+      ok: true,
+      data: { settings: null, updatedAt: null },
+    });
+    await api.saveGasSettings(sharedGas(DEFAULT_GAS_SETTINGS));
+    const put = fetch.mock.calls[1];
+    expect(put?.[1]).toMatchObject({ method: 'PUT' });
+    expect(JSON.parse(put?.[1]?.body as string)).toEqual({
+      settings: {
+        base: 18,
+        method: 'weighted',
+        cooking: true,
+        years: 'calendar',
+        profile: {},
+        share: false,
+      },
+    });
   });
 });
 
