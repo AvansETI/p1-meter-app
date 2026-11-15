@@ -1,3 +1,12 @@
+import {
+  DEFAULT_BASE_TEMPERATURE,
+  DegreeDayMethodSchema,
+  GasProfileSchema,
+  MonthDaySchema,
+  YearDivisionSchema,
+  MAX_BASE_TEMPERATURE,
+  MIN_BASE_TEMPERATURE,
+} from '@p1/shared';
 import { z } from 'zod';
 
 /** localStorage key; public/theme-init.js reads the theme from it before first paint. */
@@ -10,6 +19,50 @@ export type Theme = z.infer<typeof ThemeSchema>;
 export const LanguageSchema = z.enum(['system', 'nl', 'en']);
 export type Language = z.infer<typeof LanguageSchema>;
 
+/** Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2). */
+const GasSettingsSchema = z.object({
+  /** Show the Gas tab and load its data at start-up. */
+  enabled: z.boolean().catch(true),
+  /** 2-digit postcode region, to pick the nearest KNMI station. */
+  postcode: z
+    .string()
+    .regex(/^[1-9]\d$/)
+    .optional()
+    .catch(undefined),
+  /** Station picked by hand; wins over the postcode. */
+  station: z.number().int().optional().catch(undefined),
+  base: z
+    .number()
+    .min(MIN_BASE_TEMPERATURE)
+    .max(MAX_BASE_TEMPERATURE)
+    .catch(DEFAULT_BASE_TEMPERATURE),
+  method: DegreeDayMethodSchema.catch('weighted'),
+  /** Cooking and/or hot water on gas: a baseline is subtracted from the heating gas. */
+  cooking: z.boolean().catch(true),
+  /** Manual baseline in m³/day; absent means automatic. */
+  baseline: z.number().min(0).max(20).optional().catch(undefined),
+  /** Year division: calendar years, contract years or heating seasons (§11.1). */
+  years: YearDivisionSchema.catch('calendar'),
+  /** Contract start "MM-DD"; absent means the date from the tariffs. */
+  contractStart: MonthDaySchema.optional().catch(undefined),
+  /** Expected annual use in m³ from the contract, for the settlement forecast (§11.2). */
+  expected: z.number().min(1).max(20000).optional().catch(undefined),
+  profile: GasProfileSchema.catch({}),
+  /** Share the profile to compare with similar households. */
+  share: z.boolean().catch(false),
+});
+export type GasSettings = z.infer<typeof GasSettingsSchema>;
+
+export const DEFAULT_GAS_SETTINGS: GasSettings = {
+  enabled: true,
+  base: DEFAULT_BASE_TEMPERATURE,
+  method: 'weighted',
+  cooking: true,
+  years: 'calendar',
+  profile: {},
+  share: false,
+};
+
 const SettingsSchema = z.object({
   version: z.literal(1),
   emonId: z.string().optional(),
@@ -21,6 +74,7 @@ const SettingsSchema = z.object({
   tariffHintOff: z.boolean().optional(),
   /** Holiday decoration in the title bar (docs/design/2026-11-14-festive-decoration.md). */
   festive: z.boolean().catch(true),
+  gas: GasSettingsSchema.catch(DEFAULT_GAS_SETTINGS),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
@@ -29,6 +83,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   language: 'system',
   festive: true,
+  gas: DEFAULT_GAS_SETTINGS,
 };
 
 /** Reads settings; falls back to defaults when storage is unavailable or the data is invalid. */

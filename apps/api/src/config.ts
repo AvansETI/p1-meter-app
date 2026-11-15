@@ -56,6 +56,10 @@ const schema = z
     PRICES_INFLUX_TOKEN: optional(z.string().optional()),
     ENTSOE_TOKEN: optional(z.string().optional()),
 
+    // Cache of public data (KNMI weather, CBS) for the gas analysis (#68); in memory without.
+    OPEN_DATA_INFLUX_BUCKET: optional(z.string().optional()),
+    OPEN_DATA_INFLUX_TOKEN: optional(z.string().optional()),
+
     SESSION_TTL_HOURS: positiveInt(24),
     RATE_LIMIT_PER_MINUTE: positiveInt(120),
     SESSION_LIMIT_PER_MINUTE: positiveInt(10),

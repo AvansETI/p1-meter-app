@@ -12,7 +12,8 @@ const PING_INTERVAL_MS = 30_000;
 export const healthRoutes: FastifyPluginCallback<{
   source: HouseholdDataSource;
   prices?: () => NonNullable<HealthResponse['prices']>;
-}> = (app, { source, prices }, done) => {
+  openData?: () => NonNullable<HealthResponse['openData']>;
+}> = (app, { source, prices, openData }, done) => {
   let influx: NonNullable<HealthResponse['influx']> = 'unknown';
   let lastPingAt = 0;
   let pinging = false;
@@ -38,6 +39,7 @@ export const healthRoutes: FastifyPluginCallback<{
       uptimeSec: Math.round(process.uptime()),
       influx,
       ...(prices && { prices: prices() }),
+      ...(openData && { openData: openData() }),
     };
   });
   done();

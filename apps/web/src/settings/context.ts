@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Language, Settings, Theme } from './storage';
+import type { GasSettings, Language, Settings, Theme } from './storage';
 
 export interface SettingsValue {
   settings: Settings;
@@ -7,6 +7,8 @@ export interface SettingsValue {
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   setFestive: (festive: boolean) => void;
+  /** Merges a change into the gas analysis settings. */
+  setGas: (patch: Partial<GasSettings>) => void;
   dismissInstallHint: () => void;
   turnOffTariffHint: () => void;
 }

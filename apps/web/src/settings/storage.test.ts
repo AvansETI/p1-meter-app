@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, SETTINGS_KEY, loadSettings, saveSettings } from './storage';
+import {
+  DEFAULT_GAS_SETTINGS,
+  DEFAULT_SETTINGS,
+  SETTINGS_KEY,
+  loadSettings,
+  saveSettings,
+} from './storage';
 
 function memoryStorage(initial: Record<string, string> = {}): Storage {
   const data = new Map(Object.entries(initial));
@@ -24,6 +30,7 @@ describe('settings storage', () => {
       theme: 'dark' as const,
       language: 'en' as const,
       festive: false,
+      gas: { ...DEFAULT_GAS_SETTINGS, postcode: '35', profile: { type: 'terraced' as const } },
     };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
@@ -41,6 +48,25 @@ describe('settings storage', () => {
       theme: 'system',
       language: 'system',
       festive: true,
+      gas: DEFAULT_GAS_SETTINGS,
+    });
+  });
+
+  it('repairs invalid gas settings field by field', () => {
+    const raw = JSON.stringify({
+      version: 1,
+      theme: 'dark',
+      gas: {
+        postcode: '0x',
+        base: 30,
+        method: 'weighted',
+        profile: { type: 'castle' },
+        share: true,
+      },
+    });
+    expect(loadSettings(memoryStorage({ [SETTINGS_KEY]: raw })).gas).toEqual({
+      ...DEFAULT_GAS_SETTINGS,
+      share: true,
     });
   });
 

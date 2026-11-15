@@ -11,6 +11,9 @@ import {
   StatsResponseSchema,
   TodayTotalsSchema,
   ErrorResponseSchema,
+  GasAnalysisSchema,
+  GasComparisonSchema,
+  GasHourlySchema,
   SESSION_HEADER,
   SessionResponseSchema,
   type ApiErrorCode,
@@ -27,8 +30,22 @@ import {
   type TodayTotals,
   type SessionResponse,
   type StatsResponse,
+  type GasAnalysis,
+  type GasAnalysisQuery,
+  type GasComparison,
+  type GasHourly,
+  type GasProfile,
 } from '@p1/shared';
-import type { z } from 'zod';
+import { z } from 'zod';
+
+/** Query string of the profile; empty fields are left out. */
+function profileQuery(profile: GasProfile): string {
+  return new URLSearchParams(
+    Object.entries(profile).flatMap(([key, value]) =>
+      value === undefined ? [] : [[key, String(value)]],
+    ),
+  ).toString();
+}
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiErrorCode };
 
@@ -144,6 +161,40 @@ export class ApiClient {
 
   getGas(): Promise<ApiResult<GasSeries>> {
     return this.authorized('/live/gas', {}, GasSeriesSchema);
+  }
+
+  getGasAnalysis(query: GasAnalysisQuery): Promise<ApiResult<GasAnalysis>> {
+    const params = new URLSearchParams(
+      Object.entries(query).flatMap(([key, value]) =>
+        value === undefined ? [] : [[key, String(value)]],
+      ),
+    ).toString();
+    return this.authorized(`/gas/analysis?${params}`, {}, GasAnalysisSchema);
+  }
+
+  getGasHourly(station: number): Promise<ApiResult<GasHourly>> {
+    return this.authorized(`/gas/hourly?station=${station}`, {}, GasHourlySchema);
+  }
+
+  getGasComparison(profile: GasProfile): Promise<ApiResult<GasComparison>> {
+    return this.authorized(`/gas/comparison?${profileQuery(profile)}`, {}, GasComparisonSchema);
+  }
+
+  /** Shares the dwelling profile for the group comparison (opt-in). */
+  shareGasProfile(profile: GasProfile): Promise<ApiResult<undefined>> {
+    return this.authorized(
+      '/gas/profile',
+      {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(profile),
+      },
+      z.undefined(),
+    );
+  }
+
+  unshareGasProfile(): Promise<ApiResult<undefined>> {
+    return this.authorized('/gas/profile', { method: 'DELETE' }, z.undefined());
   }
 
   getRecent(): Promise<ApiResult<RecentSeries>> {
