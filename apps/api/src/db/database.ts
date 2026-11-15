@@ -68,6 +68,12 @@ const MIGRATIONS: string[] = [
      postcode   TEXT NOT NULL,
      updated_at TEXT NOT NULL
    );`,
+  // Gas analysis settings shared by every device of a household (#70).
+  `CREATE TABLE gas_settings (
+     hash       TEXT PRIMARY KEY,
+     settings   TEXT NOT NULL,
+     updated_at TEXT NOT NULL
+   );`,
 ];
 
 /** Opens (and migrates) the app database in `dir` (docs/design/2026-11-09-costs.md §5). */

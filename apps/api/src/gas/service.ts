@@ -38,6 +38,9 @@ import {
   type GasHourly,
   type GasHourSample,
   type GasProfile,
+  GasSharedSettingsSchema,
+  type GasSettingsResponse,
+  type GasSharedSettings,
 } from '@p1/shared';
 import { LRUCache } from 'lru-cache';
 import type { z } from 'zod';
@@ -150,14 +153,9 @@ export class GasService {
     const upsert = this.db.prepare(
       'INSERT OR REPLACE INTO gas_day_ends (hash, day, time, day_end, value) VALUES (?, ?, ?, ?, ?)',
     );
-    this.db.exec('BEGIN');
-    try {
+    this.transaction(() => {
       for (const e of ends) upsert.run(hash, e.day, e.time, e.dayEnd, e.value);
-      this.db.exec('COMMIT');
-    } catch (error) {
-      this.db.exec('ROLLBACK');
-      throw error;
-    }
+    });
   }
 
   /** Remembers (or forgets) the household's postcode region for its own station. */
@@ -466,6 +464,52 @@ export class GasService {
     return null;
   }
 
+  /** The household's shared settings, or null when no device has saved them yet. */
+  settings(signature: string): GasSettingsResponse {
+    const row = this.db
+      .prepare('SELECT settings, updated_at FROM gas_settings WHERE hash = ?')
+      .get(this.hash(signature)) as { settings: string; updated_at: string } | undefined;
+    const parsed = row && GasSharedSettingsSchema.safeParse(JSON.parse(row.settings));
+    return row && parsed?.success
+      ? { settings: parsed.data, updatedAt: row.updated_at }
+      : { settings: null, updatedAt: null };
+  }
+
+  /**
+   * Stores the settings (last write wins) with the postcode and the shared profile in one
+   * transaction, so the three never drift apart (shared settings design §3).
+   */
+  saveSettings(signature: string, settings: GasSharedSettings): string {
+    const hash = this.hash(signature);
+    const at = this.now().toISOString();
+    this.transaction(() => {
+      this.db
+        .prepare(
+          'INSERT OR REPLACE INTO gas_settings (hash, settings, updated_at) VALUES (?, ?, ?)',
+        )
+        .run(hash, JSON.stringify(settings), at);
+      this.setPostcode(signature, settings.postcode);
+      if (settings.share) this.shareProfile(signature, settings.profile);
+      else this.unshareProfile(signature);
+    });
+    return at;
+  }
+
+  /** Legacy profile endpoints (removed after 0.13): keep the stored settings in step. */
+  setSharedProfile(signature: string, profile: GasProfile | null): void {
+    this.transaction(() => {
+      if (profile) this.shareProfile(signature, profile);
+      else this.unshareProfile(signature);
+      const current = this.settings(signature).settings;
+      if (current) {
+        const next = profile ? { ...current, profile, share: true } : { ...current, share: false };
+        this.db
+          .prepare('UPDATE gas_settings SET settings = ?, updated_at = ? WHERE hash = ?')
+          .run(JSON.stringify(next), this.now().toISOString(), this.hash(signature));
+      }
+    });
+  }
+
   shareProfile(signature: string, profile: GasProfile): void {
     this.db
       .prepare('INSERT OR REPLACE INTO gas_profiles (hash, profile, updated_at) VALUES (?, ?, ?)')
@@ -474,5 +518,16 @@ export class GasService {
 
   unshareProfile(signature: string): void {
     this.db.prepare('DELETE FROM gas_profiles WHERE hash = ?').run(this.hash(signature));
+  }
+
+  private transaction(work: () => void): void {
+    this.db.exec('BEGIN');
+    try {
+      work();
+      this.db.exec('COMMIT');
+    } catch (error) {
+      this.db.exec('ROLLBACK');
+      throw error;
+    }
   }
 }

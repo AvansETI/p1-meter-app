@@ -917,7 +917,7 @@
     "shareTitle": "Compare with similar homes",
     "share": "Share home profile anonymously",
     "shareHelp": "Your home profile is stored on the server under an encrypted code, not under your EMON ID. You then see how your use compares with homes like yours; others never see your figures. Switching off removes the profile from the server.",
-    "shareFailed": "Sharing failed. Please try again later.",
+    "saveFailed": "Not saved on the server; this will be tried again later.",
     "cbsPerM2Median": "Per m² of floor area: CBS median {{median}} m³.",
     "degreeDaysVsNormal": "normal {{normal}} ({{change}})",
     "perHourUnit": "m³/hour",

@@ -1,5 +1,5 @@
 import type { GasProfile } from '@p1/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { unwrap } from '../api/unwrap';
 import type { GasSettings } from '../settings/storage';
@@ -57,15 +57,6 @@ export function useGasComparison(
 }
 
 /** Shares (profile) or withdraws (null) the dwelling profile, then refreshes the comparison. */
-export function useShareProfile() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: (profile: GasProfile | null) =>
-      unwrap(profile ? api.shareGasProfile(profile) : api.unshareGasProfile()),
-    onSettled: () => client.invalidateQueries({ queryKey: ['gas-comparison'] }),
-  });
-}
-
 /**
  * Starts loading the gas analysis as soon as the session is known, while the splash screen
  * still shows: the first analysis of a household can take a while on the server.

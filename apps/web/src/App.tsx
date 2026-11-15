@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate, Route } from 'react-router-dom';
 import SideMenu from './components/SideMenu';
 import { useGasWarmup } from './gas/queries';
+import { useGasSettingsSync } from './gas/sync';
 import { navItems } from './navigation';
 import GasPage from './pages/GasPage';
 import GasSettingsPage from './pages/GasSettingsPage';
@@ -37,6 +38,7 @@ function MainLayout() {
   const hasGas = state.status === 'ready' && state.capabilities.hasGas;
   const showGas = hasGas && settings.gas.enabled;
   useGasWarmup(settings.emonId, settings.gas, hasGas);
+  useGasSettingsSync(settings.emonId, hasGas);
   return (
     <IonSplitPane contentId="main" when="lg">
       <SideMenu hasGas={showGas} />
