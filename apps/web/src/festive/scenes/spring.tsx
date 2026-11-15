@@ -2,7 +2,8 @@
  * Chinese New Year, Warme Truiendag, Valentine's Day, carnival, Suikerfeest/Offerfeest, Holi,
  * Nowruz, Earth Hour, Easter, Songkran and Earth Day (#66).
  */
-import { Fig, Figures, Traveller } from './parts';
+import * as L from './library';
+import { Bunting, Falling, Fig, Figures, Traveller } from './parts';
 
 function RedLantern() {
   return (
@@ -61,6 +62,9 @@ export function LunarNewYear() {
         <Fig fx="sway" hang d={-0.4} s={16}>
           <RedLantern />
         </Fig>
+        <Fig fx="sway" d={-1.6} s={14} hang>
+          <RedLantern />
+        </Fig>
       </Figures>
       <Traveller s={58}>
         <Dragon />
@@ -95,14 +99,28 @@ function Thermometer() {
 
 export function WarmSweater() {
   return (
-    <Figures line>
-      <Fig fx="flutter" hang s={24}>
-        <Sweater />
-      </Fig>
-      <Fig s={10}>
-        <Thermometer />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={10} s={8}>
+        <L.Snowflake />
+      </Falling>
+      <Figures line>
+        <Fig fx="flutter" hang s={24}>
+          <Sweater />
+        </Fig>
+        <Fig s={10}>
+          <Thermometer />
+        </Fig>
+        <Fig s={14}>
+          <L.Cup c="#8d6e63" />
+        </Fig>
+        <Fig fx="beat" s={12}>
+          <L.Heart c="#ff7043" />
+        </Fig>
+        <Fig fx="flutter" d={-0.8} s={20} hang>
+          <Sweater />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -119,20 +137,25 @@ function Heart({ colour = '#e91e63' }: { colour?: string }) {
 
 export function Valentine() {
   return (
-    <Figures>
-      <Fig fx="beat" s={20}>
-        <Heart />
-      </Fig>
-      <Fig fx="float-up" s={12} d={0}>
-        <Heart colour="#f06292" />
-      </Fig>
-      <Fig fx="float-up" s={10} d={-1.3}>
-        <Heart colour="#ff8a80" />
-      </Fig>
-      <Fig fx="float-up" s={14} d={-2.4}>
-        <Heart />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={7} s={8}>
+        <L.Heart c="#f48fb1" />
+      </Falling>
+      <Figures>
+        <Fig fx="beat" s={20}>
+          <Heart />
+        </Fig>
+        <Fig fx="float-up" s={12} d={0}>
+          <Heart colour="#f06292" />
+        </Fig>
+        <Fig fx="float-up" s={10} d={-1.3}>
+          <Heart colour="#ff8a80" />
+        </Fig>
+        <Fig fx="float-up" s={14} d={-2.4}>
+          <Heart />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -175,20 +198,23 @@ function BeerGlass() {
 
 export function Carnival() {
   return (
-    <Figures line>
-      <Fig fx="flutter" hang s={24}>
-        <Boerenkiel />
-      </Fig>
-      <Fig fx="flutter" hang d={-0.9} s={22}>
-        <Boerenkiel />
-      </Fig>
-      <Fig fx="clink-left" s={11}>
-        <BeerGlass />
-      </Fig>
-      <Fig fx="clink-right" s={11}>
-        <BeerGlass />
-      </Fig>
-    </Figures>
+    <>
+      <Bunting colours={['#e53935', '#fafafa', '#43a047', '#ffca28']} />
+      <Figures line>
+        <Fig fx="flutter" hang s={24}>
+          <Boerenkiel />
+        </Fig>
+        <Fig fx="flutter" hang d={-0.9} s={22}>
+          <Boerenkiel />
+        </Fig>
+        <Fig fx="clink-left" s={11}>
+          <BeerGlass />
+        </Fig>
+        <Fig fx="clink-right" s={11}>
+          <BeerGlass />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -228,23 +254,28 @@ function Fanous() {
 /** Suikerfeest and Offerfeest. */
 export function Eid() {
   return (
-    <Figures>
-      <Fig s={20}>
-        <Crescent />
-      </Fig>
-      <Fig fx="twinkle" s={9}>
-        <Star />
-      </Fig>
-      <Fig fx="twinkle" d={-0.7} s={7}>
-        <Star />
-      </Fig>
-      <Fig fx="sway" hang d={-0.3} s={14}>
-        <Fanous />
-      </Fig>
-      <Fig fx="sway" hang d={-1.4} s={12}>
-        <Fanous />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={9} fx="twinkle-static" s={6}>
+        <L.Star />
+      </Falling>
+      <Figures>
+        <Fig s={20}>
+          <Crescent />
+        </Fig>
+        <Fig fx="twinkle" s={9}>
+          <Star />
+        </Fig>
+        <Fig fx="twinkle" d={-0.7} s={7}>
+          <Star />
+        </Fig>
+        <Fig fx="sway" hang d={-0.3} s={14}>
+          <Fanous />
+        </Fig>
+        <Fig fx="sway" hang d={-1.4} s={12}>
+          <Fanous />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -267,13 +298,18 @@ function Puff({ colour }: { colour: string }) {
 
 export function Holi() {
   return (
-    <Figures>
-      {['#ff4081', '#ffeb3b', '#00e676', '#40c4ff', '#d500f9'].map((colour, i) => (
-        <Fig key={colour} fx="burst" d={-i * 0.55} s={20}>
-          <Puff colour={colour} />
-        </Fig>
-      ))}
-    </Figures>
+    <>
+      <Falling count={12} s={9}>
+        <L.Confetti />
+      </Falling>
+      <Figures>
+        {['#ff4081', '#ffeb3b', '#00e676', '#40c4ff', '#d500f9'].map((colour, i) => (
+          <Fig key={colour} fx="burst" d={-i * 0.55} s={20}>
+            <Puff colour={colour} />
+          </Fig>
+        ))}
+      </Figures>
+    </>
   );
 }
 
@@ -318,14 +354,25 @@ function FishBowl() {
 
 export function Nowruz() {
   return (
-    <Figures>
-      <Fig s={22}>
-        <Sabzeh />
-      </Fig>
-      <Fig s={22}>
-        <FishBowl />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={7} fx="leaf-fall" s={9}>
+        <L.Flower c="#f8bbd0" />
+      </Falling>
+      <Figures>
+        <Fig s={22}>
+          <Sabzeh />
+        </Fig>
+        <Fig s={22}>
+          <FishBowl />
+        </Fig>
+        <Fig fx="grow-in" s={13}>
+          <L.Flower c="#f48fb1" />
+        </Fig>
+        <Fig fx="bob" s={14}>
+          <L.Apple />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -353,11 +400,25 @@ function Bulb() {
 
 export function EarthHour() {
   return (
-    <Figures>
-      <Fig s={16}>
-        <Bulb />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={9} fx="twinkle-static" s={6}>
+        <L.Star />
+      </Falling>
+      <Figures>
+        <Fig s={16}>
+          <Bulb />
+        </Fig>
+        <Fig s={16}>
+          <L.Moon />
+        </Fig>
+        <Fig s={7}>
+          <L.Candle />
+        </Fig>
+        <Fig fx="twinkle" s={8}>
+          <L.Star />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -399,6 +460,9 @@ function Hare() {
 export function Easter() {
   return (
     <>
+      <Falling count={6} fx="leaf-fall" s={9}>
+        <L.Flower c="#fff59d" heart="#ffb300" />
+      </Falling>
       <Figures>
         <Fig fx="wobble" s={14}>
           <Egg colour="#ec407a" pattern="stripes" />
@@ -450,14 +514,25 @@ function WaterBowl() {
 
 export function Songkran() {
   return (
-    <Figures>
-      <Fig s={26}>
-        <WaterBowl />
-      </Fig>
-      <Fig s={22}>
-        <WaterBowl />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={8} s={6}>
+        <L.Drop />
+      </Falling>
+      <Figures>
+        <Fig s={26}>
+          <WaterBowl />
+        </Fig>
+        <Fig s={22}>
+          <WaterBowl />
+        </Fig>
+        <Fig s={13}>
+          <L.Flower c="#f06292" />
+        </Fig>
+        <Fig fx="jump" s={14}>
+          <L.Fish c="#ffb74d" />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -501,16 +576,24 @@ function Leaf() {
 
 export function EarthDay() {
   return (
-    <Figures>
-      <Fig s={14}>
-        <Leaf />
-      </Fig>
-      <Fig s={22}>
-        <Globe />
-      </Fig>
-      <Fig s={14} d={-1}>
-        <Leaf />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={8} fx="leaf-fall" s={10}>
+        <L.Leaf />
+      </Falling>
+      <Figures>
+        <Fig s={14}>
+          <Leaf />
+        </Fig>
+        <Fig s={22}>
+          <Globe />
+        </Fig>
+        <Fig s={14} d={-1}>
+          <Leaf />
+        </Fig>
+        <Fig s={16}>
+          <L.Sapling />
+        </Fig>
+      </Figures>
+    </>
   );
 }

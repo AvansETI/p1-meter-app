@@ -54,6 +54,53 @@ export function Traveller({ s = 26, children }: { s?: number; children: ReactNod
   );
 }
 
+/**
+ * A figure that walks across the whole title bar, turns round and walks back (the
+ * roetveegpiet, #75). Unlike `Traveller` it stays on the bar and faces its direction.
+ */
+export function Walker({ s = 24, children }: { s?: number; children: ReactNode }) {
+  return (
+    <span className="festive__walker" style={vars({ s })}>
+      <span className="festive__walker-inner">{children}</span>
+    </span>
+  );
+}
+
+/**
+ * A handful of small figures thrown together from a walker's hand, each in its own arc, landing
+ * up to a quarter of the screen further on; then a pause (pepernoten, #75). Place inside a
+ * `Walker`: they turn round with it.
+ */
+export function Thrown({
+  count = 7,
+  s = 7,
+  children,
+}: {
+  count?: number;
+  s?: number;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      {Array.from({ length: count }, (_, i) => (
+        <span
+          key={i}
+          className="festive__thrown fx-throw"
+          style={{
+            ...vars({ s }),
+            animationDelay: `${(i % 3) * 0.06}s`,
+            // Distance 8–25 % of the screen width and peak height 8–26 px, spread over the hand.
+            ['--tx' as string]: `${8 + ((i * 3) % count) * (17 / Math.max(1, count - 1))}vw`,
+            ['--h' as string]: `${8 + ((i * 5) % count) * (18 / Math.max(1, count - 1))}px`,
+          }}
+        >
+          {children}
+        </span>
+      ))}
+    </>
+  );
+}
+
 const FLAGS = 96; // 20 px apart: enough for a 1920 px wide title bar
 
 /** Bunting along the bottom edge; flags take the colours (or backgrounds) in turn. */

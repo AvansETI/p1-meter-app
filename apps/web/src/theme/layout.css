@@ -215,6 +215,27 @@ ion-menu.app-side-menu ion-item.selected {
   border-radius: 50%;
   background: var(--app-brand-green);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--app-brand-green) 22%, transparent);
+  /* A slow heartbeat while live (double beat, then rest); stale and offline stand still. */
+  animation: live-heartbeat 1.8s ease-out infinite;
+}
+@keyframes live-heartbeat {
+  0%,
+  45%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-brand-green) 25%, transparent);
+  }
+  10% {
+    transform: scale(1.35);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--app-brand-green) 30%, transparent);
+  }
+  20% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--app-brand-green) 0%, transparent);
+  }
 }
 .live-status--stale {
   color: var(--ion-color-warning);
@@ -223,6 +244,7 @@ ion-menu.app-side-menu ion-item.selected {
 .live-status--offline .live-status__dot {
   background: var(--app-text-muted);
   box-shadow: none;
+  animation: none;
 }
 
 .net-tile {
@@ -719,6 +741,7 @@ ion-menu.app-side-menu ion-item.selected {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .live-status__dot,
   .hourglass__glass,
   .hourglass__sand,
   .hourglass__stream {

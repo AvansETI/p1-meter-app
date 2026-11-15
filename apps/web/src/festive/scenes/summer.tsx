@@ -1,5 +1,6 @@
 /** King's Day, Liberation Day, the longest day, Keti Koti and Pride (#66). */
-import { Bunting, Fig, Figures } from './parts';
+import * as L from './library';
+import { Bunting, Falling, Fig, Figures } from './parts';
 
 function Crown() {
   return (
@@ -40,6 +41,15 @@ export function KingsDay() {
         <Fig fx="bob" s={26}>
           <Crown />
         </Fig>
+        <Fig fx="float-up" s={10}>
+          <L.Balloon c="#ff6d00" />
+        </Fig>
+        <Fig s={16}>
+          <L.Flag c="#ae1c28" c2="#ffffff" c3="#21468b" />
+        </Fig>
+        <Fig fx="float-up" d={-0.9} s={10}>
+          <L.Balloon c="#ff9100" />
+        </Fig>
       </Figures>
     </>
   );
@@ -68,6 +78,15 @@ export function Liberation() {
       <Figures>
         <Fig s={14}>
           <Flame />
+        </Fig>
+        <Fig fx="glide" s={22}>
+          <L.Dove />
+        </Fig>
+        <Fig s={16}>
+          <L.Flag c="#ae1c28" c2="#ffffff" c3="#21468b" />
+        </Fig>
+        <Fig fx="sway-low" s={9}>
+          <L.Tulip c="#e53935" />
         </Fig>
       </Figures>
     </>
@@ -119,29 +138,56 @@ function SolarPanel() {
 
 export function Solstice() {
   return (
-    <Figures>
-      <Fig fx="rise" s={26}>
-        <Sun />
-      </Fig>
-      <Fig s={26}>
-        <SolarPanel />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={3} fx="float-sky" s={20}>
+        <L.Cloud />
+      </Falling>
+      <Figures>
+        <Fig fx="rise" s={26}>
+          <Sun />
+        </Fig>
+        <Fig s={26}>
+          <SolarPanel />
+        </Fig>
+        <Fig fx="bob" s={11}>
+          <L.IceCream />
+        </Fig>
+        <Fig fx="flutter-fly" s={14}>
+          <L.Butterfly />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
 /** Keti Koti: koto and angisa prints as a quiet, slowly moving cloth. */
 export function KetiKoti() {
   return (
-    <Bunting
-      slow
-      colours={[
-        'repeating-linear-gradient(45deg,#c62828 0 3px,#fdd835 3px 6px)',
-        'repeating-linear-gradient(90deg,#2e7d32 0 4px,#fafafa 4px 6px,#1565c0 6px 9px)',
-        'repeating-linear-gradient(-45deg,#6a1b9a 0 3px,#ff8f00 3px 6px)',
-        'repeating-linear-gradient(0deg,#00838f 0 3px,#fafafa 3px 5px,#c62828 5px 8px)',
-      ]}
-    />
+    <>
+      <Bunting
+        slow
+        colours={[
+          'repeating-linear-gradient(45deg,#c62828 0 3px,#fdd835 3px 6px)',
+          'repeating-linear-gradient(90deg,#2e7d32 0 4px,#fafafa 4px 6px,#1565c0 6px 9px)',
+          'repeating-linear-gradient(-45deg,#6a1b9a 0 3px,#ff8f00 3px 6px)',
+          'repeating-linear-gradient(0deg,#00838f 0 3px,#fafafa 3px 5px,#c62828 5px 8px)',
+        ]}
+      />
+      <Figures>
+        <Fig fx="beat" s={14}>
+          <L.Heart c="#c62828" />
+        </Fig>
+        <Fig fx="glide" s={22}>
+          <L.Dove />
+        </Fig>
+        <Fig fx="beat" d={-0.5} s={12}>
+          <L.Heart c="#fdd835" />
+        </Fig>
+        <Fig s={13}>
+          <L.Flower c="#ff8f00" />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -166,6 +212,15 @@ export function Pride() {
               fill="url(#festive-rainbow)"
             />
           </svg>
+        </Fig>
+        <Fig fx="beat" d={-0.4} s={12}>
+          <L.Heart c="#ff8c00" />
+        </Fig>
+        <Fig fx="beat" d={-0.8} s={12}>
+          <L.Heart c="#24408e" />
+        </Fig>
+        <Fig fx="float-up" s={10}>
+          <L.Balloon c="#732982" />
         </Fig>
       </Figures>
     </>
