@@ -155,3 +155,127 @@ This applies to Christmas and New Year as well.
 
 - Holidays not listed here; decorations outside the title bar; sound.
 - Regional dates (e.g. carnival in a different week in some places).
+
+## 8. Filling the year (rounds three to six)
+
+At the user's request the calendar was filled so that nearly every day has its own
+decoration. After these additions about 30–40 days a year show only the time of year, and
+no gap is longer than six days. All decorations work as in §3–§4 (figures from
+`festive/scenes/library.tsx`, scenes in `festive/scenes/more.tsx`, a name and text on tap).
+
+### 8.1 Levels
+
+Every day has at least one season. Only the most specific level is shown; within a level,
+overlapping seasons alternate hourly (§2.2).
+
+| Level | Kind               | Seasons                                                                                                                           |
+| ----- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Holidays and days  | everything not listed below                                                                                                       |
+| 1     | Month-long periods | Ramadan, Advent, Sinterklaastijd, EK/WK football, Bollentijd, Dry January, Movember, school holidays (krokus, mei, zomer, herfst) |
+| 2     | Time of year       | winter (21 Dec – 19 Mar), spring (20 Mar – 20 Jun), summer (21 Jun – 22 Sep), autumn (23 Sep – 20 Dec)                            |
+
+### 8.2 Added seasons and their dates
+
+| Season (id)                                          | Days                                                                                |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Dry January / IkPas (`dryjanuary`)                   | 1–31 January (level 1)                                                              |
+| Driekoningen (`epiphany`)                            | 6 January                                                                           |
+| Nationale Tulpendag (`tulipday`)                     | third Saturday of January                                                           |
+| Day of Clean Energy (`cleanenergyday`)               | 26 January (UN)                                                                     |
+| Gedichtendag (`poetryday`)                           | last Thursday of January                                                            |
+| Tuinvogeltelling (`birdcount`)                       | Friday–Sunday of the last weekend of January                                        |
+| Lichtmis / Wetlands Day (`candlemas`, `wetlandsday`) | 2 February                                                                          |
+| Krokusvakantie (`springbreak`)                       | table (Rijksoverheid, all regions together; level 1)                                |
+| Energy Efficiency Day (`efficiencyday`)              | 5 March                                                                             |
+| Women's Day (`womensday`)                            | 8 March                                                                             |
+| Boekenweek (`booksweek`)                             | second Wednesday of March + 11 days (CPNB 2026 pattern)                             |
+| Pi Day (`piday`)                                     | 14 March                                                                            |
+| Opschoondag (`cleanupday`)                           | Saturday between 16 and 22 March                                                    |
+| Boomfeestdag (`treeday`)                             | third Wednesday of March                                                            |
+| Bollentijd (`bulbtime`)                              | 20 March – 10 May (level 1)                                                         |
+| World Water Day (`waterday`)                         | 22 March                                                                            |
+| Clocks change (`clockchange`)                        | last Sunday of March and of October                                                 |
+| 1 april (`aprilfools`)                               | 1 April; the MNEXT logo stands on its head now and then                             |
+| Pesach (`passover`)                                  | table (first evening … day 8)                                                       |
+| World Health Day (`healthday`)                       | 7 April                                                                             |
+| World Art Day (`artday`)                             | 15 April                                                                            |
+| World Book Day (`bookday`)                           | 23 April                                                                            |
+| Koningsspelen (`kingsgames`)                         | last Friday before Koningsdag (some schools move it)                                |
+| Meivakantie (`maybreak`)                             | table (level 1)                                                                     |
+| Sun Day (`sunday`)                                   | 3 May                                                                               |
+| Europe Day (`europeday`)                             | 9 May                                                                               |
+| Mother's Day (`mothersday`)                          | second Sunday of May                                                                |
+| Molendag (`millday`)                                 | second Saturday of May                                                              |
+| Nurses Day (`nursesday`)                             | 12 May                                                                              |
+| IDAHOT (`idahot`)                                    | 17 May                                                                              |
+| Museum Day (`museumday`)                             | 18 May                                                                              |
+| Bee Day (`beeday`)                                   | 20 May                                                                              |
+| Biodiversity Day (`biodiversityday`)                 | 22 May                                                                              |
+| Towel Day (`towelday`)                               | 25 May                                                                              |
+| Ascension (`ascension`)                              | E + 39                                                                              |
+| Pentecost (`pentecost`)                              | E + 49 … E + 50                                                                     |
+| Vesak (`vesak`)                                      | table (Theravada/Thai dates)                                                        |
+| Children's Day (`childrensday`)                      | 1 June                                                                              |
+| Bicycle Day (`bikeday`)                              | 3 June                                                                              |
+| Environment Day (`environmentday`)                   | 5 June                                                                              |
+| Oceans Day (`oceansday`)                             | 8 June                                                                              |
+| Vlaggetjesdag (`flagday`)                            | second Saturday of June                                                             |
+| Global Wind Day (`windday`)                          | 15 June                                                                             |
+| Picnic Day (`picnicday`)                             | 18 June                                                                             |
+| Refugee Day (`refugeeday`)                           | 20 June                                                                             |
+| Father's Day (`fathersday`)                          | third Sunday of June                                                                |
+| EK/WK football (`football`)                          | table: 2026 men's World Cup, 2027 women's World Cup, 2028 men's Euro (level 1)      |
+| Zomervakantie (`summerbreak`)                        | table (level 1)                                                                     |
+| Emoji Day (`emojiday`)                               | 17 July                                                                             |
+| Nijmeegse Vierdaagse (`fourdays`)                    | third Tuesday of July + 3 days                                                      |
+| Friendship Day (`friendshipday`)                     | 30 July                                                                             |
+| Perseids (`perseids`)                                | 12–13 August                                                                        |
+| Start of the school year (`schoolstart`)             | first Monday of September                                                           |
+| World EV Day (`evday`)                               | 9 September                                                                         |
+| Open Monumentendag (`monumentday`)                   | second Saturday of September + Sunday                                               |
+| Day of the Programmer (`programmersday`)             | 256th day of the year                                                               |
+| Rosj Hasjana (`roshhashanah`)                        | table (first evening … second day)                                                  |
+| Prinsjesdag (`prinsjesdag`)                          | third Tuesday of September                                                          |
+| Vredesweek (`peaceweek`)                             | Saturday on or after 15 September + 8 days (PAX 2026: 19–27 Sep)                    |
+| Mid-Autumn Festival (`midautumn`)                    | table                                                                               |
+| Burendag (`neighboursday`)                           | fourth Saturday of September                                                        |
+| Languages Day (`languagesday`)                       | 26 September                                                                        |
+| Tourism Day (`tourismday`)                           | 27 September                                                                        |
+| Heart Day (`heartday`)                               | 29 September                                                                        |
+| Older Persons Day (`eldersday`)                      | 1 October                                                                           |
+| Kinderboekenweek (`childrensbookweek`)               | first Wednesday of October + 11 days                                                |
+| Dierendag (`animalday`)                              | 4 October                                                                           |
+| Teachers' Day (`teachersday`)                        | 5 October                                                                           |
+| Hydrogen Day (`hydrogenday`)                         | 8 October                                                                           |
+| Dag van de Duurzaamheid (`sustainabilityday`)        | 10 October                                                                          |
+| Herfstvakantie (`autumnbreak`)                       | table (level 1)                                                                     |
+| World Food Day (`foodday`)                           | 16 October                                                                          |
+| Nacht van de Nacht (`nightofthenight`)               | last Saturday of October; the bar goes dark                                         |
+| Movember (`movember`)                                | 1–30 November (level 1)                                                             |
+| Natuurwerkdag (`natureday`)                          | first Saturday of November                                                          |
+| GLOW Eindhoven (`glow`)                              | Saturday on or after 7 November + 7 days                                            |
+| Dag van de Mantelzorg (`carersday`)                  | 10 November                                                                         |
+| Elfde van de elfde (`elevenelven`)                   | 11 November (alternates with Sint-Maarten)                                          |
+| Intocht Sinterklaas (`arrival`)                      | Saturday between 12 and 18 November (fits 2021–2025)                                |
+| Sinterklaastijd (`sinttime`)                         | day after the arrival … 5 December (level 1)                                        |
+| Advent (`advent`)                                    | fourth Sunday before Christmas … 21 December (level 1); one more candle each Sunday |
+| Vrijwilligersdag (`volunteersday`)                   | 7 December                                                                          |
+| Paarse Vrijdag (`purplefriday`)                      | second Friday of December                                                           |
+| Kortste dag (`shortestday`)                          | 21 December                                                                         |
+
+Not added: Nationale Pannenkoekdag (no fixed rule: 8 March 2024, 4 April 2025). The
+women's Euro 2029 and the 2030 World Cup are added to the football table once their dates
+are published.
+
+### 8.3 Table data
+
+| Year | Ramadan         | Pesach         | Vesak          | Rosj Hasjana | Midherfst |
+| ---- | --------------- | -------------- | -------------- | ------------ | --------- |
+| 2026 | 18 Feb – 19 Mar | 1–9 Apr        | 31 May – 1 Jun | 11–13 Sep    | 25 Sep    |
+| 2027 | 8 Feb – 8 Mar   | 21–29 Apr      | 20 May         | 1–3 Oct      | 15 Sep    |
+| 2028 | 27 Jan – 25 Feb | 10–18 Apr      | 8 May          | 20–22 Sep    | 3 Oct     |
+| 2029 | 15 Jan – 13 Feb | 30 Mar – 7 Apr | 27 May         | 9–11 Sep     | 22 Sep    |
+| 2030 | 5 Jan – 3 Feb   | 17–25 Apr      | 16–17 May      | 27–29 Sep    | 12 Sep    |
+
+School holidays: from the first region's start to the last region's end, per
+Rijksoverheid (2026–2027 to 2029–2030).
