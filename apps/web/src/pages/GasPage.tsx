@@ -63,19 +63,49 @@ function Tile({
 
 function Summary({ analysis }: { analysis: GasAnalysis }) {
   const { t } = useTranslation();
-  const { forecast, line, baseline, rolling, degreeDays } = analysis;
+  const { forecast, line, baseline, rolling, degreeDays, settlement } = analysis;
   const change = rolling?.previous ? (rolling.corrected / rolling.previous - 1) * 100 : null;
+  const percent = (value: number, of: number) =>
+    `${value >= of ? '+' : '−'}${fixed(Math.abs((value / of - 1) * 100), 0)}%`;
   return (
     <div className="today-grid">
+      {settlement && forecast && settlement.forecast !== null && (
+        <Tile
+          label={t('gas.settlement', { year: forecast.label })}
+          value={`${settlement.forecast >= settlement.expected ? '+' : '−'}${whole(
+            Math.abs(settlement.forecast - settlement.expected),
+          )}`}
+          unit="m³"
+          note={t(
+            settlement.forecast > settlement.expected ? 'gas.settlementMore' : 'gas.settlementLess',
+            {
+              forecast: whole(settlement.forecast),
+              expected: whole(settlement.expected),
+              change: percent(settlement.forecast, settlement.expected),
+            },
+          )}
+        />
+      )}
+      {settlement?.soFar && (
+        <Tile
+          label={t('gas.soFar')}
+          value={whole(settlement.soFar.actual)}
+          unit="m³"
+          note={t('gas.soFarNote', {
+            expected: whole(settlement.soFar.expected),
+            change: percent(settlement.soFar.actual, settlement.soFar.expected),
+          })}
+        />
+      )}
       {forecast && (
         <>
           <Tile
-            label={t('gas.thisYear', { year: forecast.year })}
+            label={t('gas.thisYear', { year: forecast.label })}
             value={whole(forecast.actual)}
             unit="m³"
           />
           <Tile
-            label={t('gas.forecast', { year: forecast.year })}
+            label={t('gas.forecast', { year: forecast.label })}
             value={whole(forecast.total)}
             unit="m³"
           />
@@ -99,7 +129,7 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
       )}
       {degreeDays && (
         <Tile
-          label={t('gas.degreeDaysYear', { year: degreeDays.year })}
+          label={t('gas.degreeDaysYear', { year: degreeDays.label })}
           value={whole(degreeDays.actual)}
           unit=""
           note={
@@ -130,7 +160,10 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
 
 function Years({ analysis, comparison }: { analysis: GasAnalysis; comparison?: GasComparison }) {
   const { t } = useTranslation();
-  const cbs = new Map(comparison?.cbs?.medians.map((m) => [m.year, m.p50]));
+  // CBS publishes calendar years only (design §11.1).
+  const cbs = new Map(
+    analysis.yearStart === '01-01' ? comparison?.cbs?.medians.map((m) => [m.year, m.p50]) : [],
+  );
   return (
     <table className="gas-years">
       <thead>
@@ -147,7 +180,7 @@ function Years({ analysis, comparison }: { analysis: GasAnalysis; comparison?: G
         {analysis.years.map((y) => (
           <tr key={y.year}>
             <td>
-              {y.year}
+              {y.label}
               {!y.complete && <small> {t('gas.incompleteYear', { days: y.days })}</small>}
             </td>
             <td>{whole(y.m3)}</td>
@@ -218,6 +251,22 @@ export default function GasPage() {
             <IonSkeletonText animated className="today-grid--skeleton" />
           )}
           {data && <Summary analysis={data} />}
+          {data && (
+            <p className="history-hint">
+              {data.settlement ? (
+                t('gas.settlementNote')
+              ) : (
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  routerLink="/settings/gas"
+                  className="gas-link"
+                >
+                  {t('gas.fillExpected')}
+                </IonButton>
+              )}
+            </p>
+          )}
 
           {data && (
             <div className="history-charts gas-sections">

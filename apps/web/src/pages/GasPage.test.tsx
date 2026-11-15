@@ -18,7 +18,7 @@ vi.mock('../gas/GasCharts', () => ({
 }));
 
 const period = { start: '2026-01-01', key: '2026-01', days: 31, m3: 120, dd: 400, perDd: 0.28 };
-const analysis = (pending = false): GasAnalysis => ({
+const analysis = (pending = false, extra: Partial<GasAnalysis> = {}): GasAnalysis => ({
   station: 260,
   pending,
   weatherUntil: '2026-11-13',
@@ -29,6 +29,7 @@ const analysis = (pending = false): GasAnalysis => ({
   years: [
     {
       year: 2024,
+      label: '2024',
       days: 366,
       m3: 1100,
       dd: 2600,
@@ -39,6 +40,7 @@ const analysis = (pending = false): GasAnalysis => ({
     },
     {
       year: 2025,
+      label: '2025',
       days: 365,
       m3: 980,
       dd: 2500,
@@ -48,10 +50,13 @@ const analysis = (pending = false): GasAnalysis => ({
       ddYear: 2500,
     },
   ],
-  forecast: { year: 2026, actual: 700, estimated: 250, total: 950 },
+  yearStart: '01-01',
+  forecast: { year: 2026, label: '2026', actual: 700, estimated: 250, total: 950 },
+  settlement: null,
   normal: { annual: 2700, years: 20 },
-  degreeDays: { year: 2026, actual: 1397, normal: 1520 },
+  degreeDays: { year: 2026, label: '2026', actual: 1397, normal: 1520 },
   rolling: { corrected: 900, days: 365, previous: 1000 },
+  ...extra,
 });
 const hourly: GasHourly = {
   pending: false,
@@ -86,10 +91,15 @@ const comparison: GasComparison = {
   },
 };
 
-function setup(page: 'gas' | 'settings', pending = false, gas = DEFAULT_GAS_SETTINGS) {
+function setup(
+  page: 'gas' | 'settings',
+  pending = false,
+  gas = DEFAULT_GAS_SETTINGS,
+  extra: Partial<GasAnalysis> = {},
+) {
   const fetch = mockApi({
     '/api/v1/session': { status: 200, body: sessionResponse({ hasGas: true }) },
-    '/api/v1/gas/analysis': { status: 200, body: analysis(pending) },
+    '/api/v1/gas/analysis': { status: 200, body: analysis(pending, extra) },
     '/api/v1/gas/hourly': { status: 200, body: hourly },
     '/api/v1/gas/comparison': { status: 200, body: comparison },
     '/api/v1/gas/profile': { status: 204 },
@@ -130,6 +140,39 @@ describe('GasPage', () => {
     expect(
       urls(fetch).some((u) => u.includes('station=260') && u.includes('method=weighted')),
     ).toBe(true);
+  });
+
+  it('shows the settlement against the expected annual use in contract years', async () => {
+    const fetch = setup(
+      'gas',
+      false,
+      { ...DEFAULT_GAS_SETTINGS, years: 'contract', expected: 1000 },
+      {
+        yearStart: '04-01',
+        forecast: { year: 2026, label: '2026-2027', actual: 700, estimated: 250, total: 950 },
+        settlement: {
+          expected: 1000,
+          forecast: 950,
+          soFar: { actual: 320, expected: 360, days: 200 },
+        },
+      },
+    );
+    expect(await screen.findByText('Eindafrekening 2026-2027')).toBeTruthy();
+    expect(screen.getByText('−50')).toBeTruthy();
+    expect(screen.getByText(/prognose 950 van 1.000 m³ \(−5%\), minder dan verwacht/)).toBeTruthy();
+    expect(screen.getByText('Stand nu')).toBeTruthy();
+    expect(screen.getByText('verwacht 360 m³ bij dit weer (−11%)')).toBeTruthy();
+    // The CBS column is for calendar years only.
+    expect(screen.queryByText('CBS mediaan')).toBeNull();
+    expect(
+      urls(fetch).some((u) => u.includes('years=contract') && u.includes('expected=1000')),
+    ).toBe(true);
+  });
+
+  it('offers to fill in the expected annual use', async () => {
+    setup('gas');
+    expect(await screen.findByText(/Verwacht jaarverbruik invullen/)).toBeTruthy();
+    expect(screen.getByText('CBS mediaan')).toBeTruthy();
   });
 
   it('asks for the nearest station and waits while its weather is fetched', async () => {

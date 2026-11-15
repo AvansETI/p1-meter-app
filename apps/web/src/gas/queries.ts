@@ -19,6 +19,9 @@ export function useGasAnalysis(emonId: string | undefined, gas: GasSettings, ena
     cooking: String(gas.cooking) as 'true' | 'false',
     ...(gas.baseline !== undefined && { baseline: gas.baseline }),
     ...(gas.postcode && { postcode: gas.postcode }),
+    ...(gas.years !== 'calendar' && { years: gas.years }),
+    ...(gas.years === 'contract' && gas.contractStart && { contractStart: gas.contractStart }),
+    ...(gas.expected !== undefined && { expected: gas.expected }),
   };
   return useQuery({
     queryKey: ['gas-analysis', emonId, query],

@@ -208,8 +208,15 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
   );
   const weather = new WeatherService(openDataStore);
   openData.onWeather = (station) => weather.invalidate(station);
-  const gas = new GasService(source, weather, openDataStore, openData, db, (sig) =>
-    usage.hash(sig),
+  const gas = new GasService(
+    source,
+    weather,
+    openDataStore,
+    openData,
+    db,
+    (sig) => usage.hash(sig),
+    undefined,
+    tariffs,
   );
   if (config.NODE_ENV !== 'test') {
     openData.start();

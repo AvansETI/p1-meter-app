@@ -15,6 +15,7 @@ import {
   RESIDENTS,
 } from './profile';
 import { STATION_CODES } from './stations';
+import { MonthDaySchema, YearDivisionSchema, type YearDivision } from './years';
 
 const StationSchema = z.coerce
   .number()
@@ -30,6 +31,12 @@ export const GasAnalysisQuerySchema = z.object({
   /** Manual baseline in m³/day; absent means automatic. */
   baseline: z.coerce.number().min(0).max(20).optional(),
   cooking: flag,
+  /** Year division (§11.1); calendar years when absent. */
+  years: YearDivisionSchema.optional(),
+  /** Contract start "MM-DD"; for contract years, overrides the date from the tariffs. */
+  contractStart: MonthDaySchema.optional(),
+  /** Expected annual use in m³ from the contract, for the settlement forecast (§11.2). */
+  expected: z.coerce.number().min(1).max(20000).optional(),
   /** 2-digit postcode region; stored for the household's own station in comparisons. */
   postcode: z
     .string()
@@ -43,6 +50,9 @@ export interface GasAnalysisQuery {
   method: DegreeDayMethod;
   baseline?: number;
   cooking: 'true' | 'false';
+  years?: YearDivision;
+  contractStart?: string;
+  expected?: number;
   postcode?: string;
 }
 
@@ -95,9 +105,12 @@ export const GasAnalysisSchema = z.object({
     month: z.array(GasPeriodSchema),
     year: z.array(GasPeriodSchema),
   }),
+  /** First day of a year in the chosen division, "MM-DD". */
+  yearStart: z.string(),
   years: z.array(
     z.object({
       year: z.number(),
+      label: z.string(),
       days: z.number(),
       m3: z.number(),
       dd: z.number(),
@@ -110,7 +123,22 @@ export const GasAnalysisSchema = z.object({
     }),
   ),
   forecast: z
-    .object({ year: z.number(), actual: z.number(), estimated: z.number(), total: z.number() })
+    .object({
+      year: z.number(),
+      label: z.string(),
+      actual: z.number(),
+      estimated: z.number(),
+      total: z.number(),
+    })
+    .nullable(),
+  /** Against the expected annual use (§11.2); null without it. */
+  settlement: z
+    .object({
+      expected: z.number(),
+      /** Forecast for the whole year; null without a heating line. */
+      forecast: z.number().nullable(),
+      soFar: z.object({ actual: z.number(), expected: z.number(), days: z.number() }).nullable(),
+    })
     .nullable(),
   normal: z.object({ annual: z.number(), years: z.number() }),
   /** Weather-corrected use of the last 365 days and of the 365 days before; null if too few. */
@@ -122,7 +150,9 @@ export const GasAnalysisSchema = z.object({
     })
     .nullable(),
   /** Degree days of the current year so far, and the normal for the same days. */
-  degreeDays: z.object({ year: z.number(), actual: z.number(), normal: z.number() }).nullable(),
+  degreeDays: z
+    .object({ year: z.number(), label: z.string(), actual: z.number(), normal: z.number() })
+    .nullable(),
 });
 export type GasAnalysis = z.infer<typeof GasAnalysisSchema>;
 

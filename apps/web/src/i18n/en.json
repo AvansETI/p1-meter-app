@@ -938,6 +938,29 @@
     "legendMedian": "median",
     "legendOwn": "you",
     "solarYesShort": "yes",
-    "solarNoShort": "no"
+    "solarNoShort": "no",
+    "yearsSettingsTitle": "Year division and settlement",
+    "division": {
+      "calendar": "Calendar year",
+      "contract": "Contract year",
+      "heating": "Heating season"
+    },
+    "divisionHelp": {
+      "calendar": "Years from 1 January to 31 December. Only calendar years have the CBS median per year.",
+      "contract": "Years from the start date of your energy contract, as on your annual statement.",
+      "heating": "Heating seasons from 1 July to 30 June, so a winter is not cut in two."
+    },
+    "contractStart": "Contract start date",
+    "contractStartTariffs": "Leave empty: {{date}}, the start of your gas tariff under Tariffs.",
+    "contractStartNone": "No gas tariff under Tariffs yet: empty means 1 January.",
+    "expected": "Expected annual use (m³)",
+    "expectedHelp": "On your contract or annual statement; your advance payment is based on it. Used for the settlement forecast.",
+    "settlement": "Settlement {{year}}",
+    "settlementLess": "forecast {{forecast}} of {{expected}} m³ ({{change}}), less than expected",
+    "settlementMore": "forecast {{forecast}} of {{expected}} m³ ({{change}}), more than expected",
+    "soFar": "So far",
+    "soFarNote": "{{expected}} m³ expected at this weather ({{change}})",
+    "settlementNote": "Forecast in m³ against your expected annual use; the settlement also depends on prices, fixed costs and the reduction of energy tax.",
+    "fillExpected": "Fill in your expected annual use for a settlement forecast"
   }
 }

@@ -11,6 +11,14 @@ import {
   type PlainDate,
 } from '../calendar';
 import { degreeDays, type DegreeDayMethod } from './degreeDays';
+import {
+  CALENDAR_START,
+  yearFirstDay,
+  yearLabel,
+  yearLength,
+  yearOf,
+  type YearStart,
+} from './years';
 
 /** One local day: gas use and the day's mean weather, each null when unknown. */
 export interface GasDay {
@@ -166,8 +174,8 @@ export interface GasPeriod {
   perDd: number | null;
 }
 
-function periodKey(date: PlainDate, kind: GasPeriodKind): string {
-  if (kind === 'year') return String(date.year);
+function periodKey(date: PlainDate, kind: GasPeriodKind, start: YearStart): string {
+  if (kind === 'year') return yearLabel(yearOf(formatPlainDate(date), start), start);
   if (kind === 'month') return formatPlainDate(date).slice(0, 7);
   const { year, week } = isoWeek(date);
   return `${year}-W${String(week).padStart(2, '0')}`;
@@ -180,18 +188,27 @@ const baselineOn = (baseline: Baseline, day: string) =>
   typeof baseline === 'number' ? baseline : baseline(day);
 
 /** Heating gas per degree day per week, month or year (§3.4). */
-export function periods(days: RatedDay[], baseline: Baseline, kind: GasPeriodKind): GasPeriod[] {
+export function periods(
+  days: RatedDay[],
+  baseline: Baseline,
+  kind: GasPeriodKind,
+  /** First day of a year, for `year` periods (calendar, contract or heating years). */
+  start: YearStart = CALENDAR_START,
+): GasPeriod[] {
   const result = new Map<string, GasPeriod>();
   /** Baseline gas per period: the sum of each day's baseline. */
   const baseGas = new Map<string, number>();
   for (const d of days) {
     if (d.m3 === null || d.dd === null) continue;
     const date = plain(d.day);
-    const key = periodKey(date, kind);
+    const key = periodKey(date, kind, start);
     let period = result.get(key);
     if (!period) {
       period = {
-        start: formatPlainDate(periodStart(date, kind)),
+        start:
+          kind === 'year'
+            ? yearFirstDay(yearOf(d.day, start), start)
+            : formatPlainDate(periodStart(date, kind)),
         key,
         days: 0,
         m3: 0,
@@ -227,7 +244,10 @@ export function normalised(
 }
 
 export interface GasYear {
+  /** Calendar year the year starts in. */
   year: number;
+  /** "2026" or "2026-2027". */
+  label: string;
   days: number;
   m3: number;
   dd: number;
@@ -239,33 +259,47 @@ export interface GasYear {
   ddYear: number;
 }
 
-const daysInYear = (year: number) =>
-  (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
-
-/** Actual and weather-corrected consumption per calendar year (§3.5). */
-export function yearSummaries(days: RatedDay[], baseline: Baseline, normalDd: number): GasYear[] {
-  const baseSum = new Map<string, number>();
-  const ddYear = new Map<string, number>();
+/** Actual and weather-corrected consumption per year of the chosen division (§3.5, §11.1). */
+export function yearSummaries(
+  days: RatedDay[],
+  baseline: Baseline,
+  normalDd: number,
+  start: YearStart = CALENDAR_START,
+): GasYear[] {
+  const years = new Map<
+    number,
+    { days: number; m3: number; dd: number; base: number; ddYear: number }
+  >();
   for (const d of days) {
-    if (d.dd !== null) ddYear.set(d.day.slice(0, 4), (ddYear.get(d.day.slice(0, 4)) ?? 0) + d.dd);
-    if (d.m3 === null || d.dd === null) continue;
-    const year = d.day.slice(0, 4);
-    baseSum.set(year, (baseSum.get(year) ?? 0) + baselineOn(baseline, d.day));
+    if (d.dd === null) continue;
+    const year = yearOf(d.day, start);
+    const y = years.get(year) ?? { days: 0, m3: 0, dd: 0, base: 0, ddYear: 0 };
+    y.ddYear += d.dd;
+    if (d.m3 !== null) {
+      y.days++;
+      y.m3 += d.m3;
+      y.dd += d.dd;
+      y.base += baselineOn(baseline, d.day);
+    }
+    years.set(year, y);
   }
-  return periods(days, baseline, 'year').map((p) => {
-    const year = Number(p.key);
-    const base = baseSum.get(p.key)! / p.days;
-    return {
-      year,
-      days: p.days,
-      m3: p.m3,
-      dd: p.dd,
-      corrected: normalised(p, base, normalDd, daysInYear(year)),
-      complete: p.days >= COMPLETE_YEAR_DAYS,
-      baseline: base,
-      ddYear: ddYear.get(p.key) ?? p.dd,
-    };
-  });
+  return [...years]
+    .filter(([, y]) => y.days > 0)
+    .sort(([a], [b]) => a - b)
+    .map(([year, y]) => {
+      const base = y.base / y.days;
+      return {
+        year,
+        label: yearLabel(year, start),
+        days: y.days,
+        m3: y.m3,
+        dd: y.dd,
+        corrected: normalised(y, base, normalDd, yearLength(year, start)),
+        complete: y.days >= COMPLETE_YEAR_DAYS,
+        baseline: base,
+        ddYear: y.ddYear,
+      };
+    });
 }
 
 /** Normal degree days per calendar day (`MM-DD`) and per year. */
@@ -316,6 +350,7 @@ const normalOn = (normals: Normals, date: PlainDate) => {
 
 export interface GasForecast {
   year: number;
+  label: string;
   /** Measured so far this year. */
   actual: number;
   /** Estimated for missing past days and the rest of the year. */
@@ -334,15 +369,17 @@ export function forecastYear(
   baseline: number,
   line: HeatingLine | null,
   normals: Normals,
+  start: YearStart = CALENDAR_START,
 ): GasForecast | null {
   if (!line) return null;
-  const year = plain(today).year;
+  const year = yearOf(today, start);
+  const next = yearFirstDay(year + 1, start);
   const byDay = new Map(days.map((d) => [d.day, d]));
   let actual = 0;
   let estimated = 0;
   for (
-    let date: PlainDate = { year, month: 1, day: 1 };
-    date.year === year;
+    let date = plain(yearFirstDay(year, start));
+    formatPlainDate(date) < next;
     date = addDays(date, 1)
   ) {
     const key = formatPlainDate(date);
@@ -353,7 +390,7 @@ export function forecastYear(
       estimated += baseline + Math.max(0, line.slope) * dd;
     }
   }
-  return { year, actual, estimated, total: actual + estimated };
+  return { year, label: yearLabel(year, start), actual, estimated, total: actual + estimated };
 }
 
 /** The fixed method behind every comparison (§4.1): weighted degree days, 18 °C. */
@@ -405,12 +442,15 @@ export function degreeDaysToDate(
   days: RatedDay[],
   today: string,
   normals: Normals,
-): { year: number; actual: number; normal: number } | null {
-  const year = plain(today).year;
-  const inYear = days.filter((d) => d.dd !== null && plain(d.day).year === year && d.day < today);
+  start: YearStart = CALENDAR_START,
+): { year: number; label: string; actual: number; normal: number } | null {
+  const year = yearOf(today, start);
+  const first = yearFirstDay(year, start);
+  const inYear = days.filter((d) => d.dd !== null && d.day >= first && d.day < today);
   if (inYear.length === 0) return null;
   return {
     year,
+    label: yearLabel(year, start),
     actual: inYear.reduce((s, d) => s + d.dd!, 0),
     normal: inYear.reduce((s, d) => s + normalOn(normals, plain(d.day)), 0),
   };
@@ -446,4 +486,30 @@ export function rollingCorrected(
     RECENT_DAYS,
   );
   return corrected === null ? null : { corrected, days: window.length };
+}
+
+/**
+ * How the year so far compares with an expected annual use (design §11.2): over the measured
+ * days of the current year, the actual gas against the baseline plus the expected heating gas
+ * at the actual degree days. Null without measured days.
+ */
+export function expectedSoFar(
+  days: RatedDay[],
+  today: string,
+  baseline: number,
+  expectedAnnual: number,
+  normalAnnual: number,
+  start: YearStart = CALENDAR_START,
+): { actual: number; expected: number; days: number } | null {
+  const first = yearFirstDay(yearOf(today, start), start);
+  const measured = days.filter(
+    (d) => d.m3 !== null && d.dd !== null && d.day >= first && d.day < today,
+  );
+  if (measured.length === 0 || normalAnnual <= 0) return null;
+  const heatingPerDd = Math.max(0, expectedAnnual - baseline * RECENT_DAYS) / normalAnnual;
+  return {
+    actual: measured.reduce((s, d) => s + d.m3!, 0),
+    expected: measured.reduce((s, d) => s + baseline + heatingPerDd * d.dd!, 0),
+    days: measured.length,
+  };
 }

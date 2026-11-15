@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addDays, formatPlainDate } from '../calendar';
 import {
   autoBaseline,
+  expectedSoFar,
   autoBaselineByMonth,
   degreeDaysToDate,
   chooseBaseline,
@@ -17,6 +18,14 @@ import {
   type GasDay,
 } from './analysis';
 import { degreeDays, seasonWeight } from './degreeDays';
+import {
+  CALENDAR_START,
+  HEATING_START,
+  parseYearStart,
+  yearLabel,
+  yearLength,
+  yearOf,
+} from './years';
 import { dayProfile, temperatureCurve, type GasHourSample } from './hourly';
 import { postcodeRegion, stationForPostcode } from './postcodes';
 import {
@@ -193,6 +202,68 @@ describe('analysis', () => {
     expect(referenceAnnual(days.slice(120, 300), dd)).toBeNull();
     const noGas = days.map((d) => ({ ...d, m3: 0.05 }));
     expect(referenceAnnual(noGas, dd)).toBeNull();
+  });
+});
+
+describe('year division', () => {
+  const contract = { month: 3, day: 1 };
+
+  it('finds the year of a day and labels it', () => {
+    expect(yearOf('2026-02-28', contract)).toBe(2025);
+    expect(yearOf('2026-03-01', contract)).toBe(2026);
+    expect(yearLabel(2026, contract)).toBe('2026-2027');
+    expect(yearLabel(2026, CALENDAR_START)).toBe('2026');
+    expect(yearOf('2026-06-30', HEATING_START)).toBe(2025);
+    expect(yearLength(2027, contract)).toBe(366); // includes 29 February 2028
+  });
+
+  it('parses a contract start, also 29 February', () => {
+    expect(parseYearStart('2025-03-15')).toEqual({ month: 3, day: 15 });
+    expect(parseYearStart('02-29')).toEqual({ month: 2, day: 28 });
+    expect(parseYearStart('13-01')).toBeNull();
+  });
+
+  const twoYears = rateDays(syntheticDays('2024-01-01', 731, seasonal), 18, 'plain');
+  const normalsFromData = normals(
+    syntheticDays('2024-01-01', 731, seasonal).map((d) => ({ day: d.day, t: d.t!, fh: 3 })),
+    18,
+    'plain',
+  );
+
+  it('sums years from the contract start', () => {
+    const years = yearSummaries(twoYears, 1, normalsFromData.annual, contract);
+    expect(years.map((y) => y.label)).toEqual(['2023-2024', '2024-2025', '2025-2026']);
+    expect(years[1]!.days).toBe(365);
+    expect(periods(twoYears, 1, 'year', contract).map((p) => p.start)).toEqual([
+      '2023-03-01',
+      '2024-03-01',
+      '2025-03-01',
+    ]);
+  });
+
+  it('forecasts and counts degree days over the contract year', () => {
+    const line = heatingLine(twoYears)!;
+    const forecast = forecastYear(twoYears, '2025-06-01', 1, line, normalsFromData, contract)!;
+    expect(forecast.label).toBe('2025-2026');
+    const dd = degreeDaysToDate(twoYears, '2025-06-01', normalsFromData, contract)!;
+    expect(dd.label).toBe('2025-2026');
+    expect(dd.actual).toBeCloseTo(
+      twoYears
+        .filter((d) => d.day >= '2025-03-01' && d.day < '2025-06-01')
+        .reduce((s, d) => s + d.dd!, 0),
+    );
+  });
+
+  it('compares the year so far with the expected use at the actual weather', () => {
+    // Expected use equal to the real pattern: actual and expected so far agree.
+    const annual = twoYears.slice(0, 366).reduce((s, d) => s + d.m3!, 0);
+    const dd = twoYears.slice(0, 366).reduce((s, d) => s + d.dd!, 0);
+    const result = expectedSoFar(twoYears, '2024-06-01', 1, annual, dd)!;
+    expect(result.days).toBe(152);
+    expect(result.expected / result.actual).toBeCloseTo(1, 2);
+    // Expecting twice the heating gas: the household is well under.
+    const more = expectedSoFar(twoYears, '2024-06-01', 1, annual * 2 - 366, dd)!;
+    expect(more.expected).toBeGreaterThan(more.actual * 1.5);
   });
 });
 

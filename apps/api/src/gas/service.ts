@@ -1,6 +1,12 @@
 import type { DatabaseSync } from 'node:sqlite';
 import {
   autoBaseline,
+  CALENDAR_START,
+  expectedSoFar,
+  formatYearStart,
+  HEATING_START,
+  parseYearStart,
+  type YearStart,
   autoBaselineByMonth,
   chooseBaseline,
   degreeDaysToDate,
@@ -36,6 +42,7 @@ import {
 import { LRUCache } from 'lru-cache';
 import type { z } from 'zod';
 import type { GasDayEnd, HouseholdDataSource } from '../data/source';
+import type { TariffRepository } from '../db/tariffs';
 import { detectHourlyUpdates } from '../live/gas';
 import type { CbsRow } from '../opendata/cbs';
 import type { OpenDataJob } from '../opendata/job';
@@ -87,6 +94,8 @@ export class GasService {
     private readonly db: DatabaseSync,
     private readonly hash: (signature: string) => string,
     private readonly now: () => Date = () => new Date(),
+    /** For the contract start of contract years (§11.1). */
+    private readonly tariffs?: TariffRepository,
   ) {}
 
   /**
@@ -173,6 +182,21 @@ export class GasService {
     return row ? stationForPostcode(row.postcode)?.code : undefined;
   }
 
+  /**
+   * First day of a year in the requested division (design §11.1). Contract years start on the
+   * given date, else on the day and month of the newest own tariff period with a gas tariff,
+   * else on 1 January.
+   */
+  private yearStart(signature: string, query: AnalysisQuery): YearStart {
+    if (query.years === 'heating') return HEATING_START;
+    if (query.years !== 'contract') return CALENDAR_START;
+    const given = query.contractStart ? parseYearStart(query.contractStart) : null;
+    if (given) return given;
+    const periods = this.tariffs?.get(signature).profiles.own.periods ?? [];
+    const latest = periods.filter((p) => p.gas).at(-1);
+    return (latest && parseYearStart(latest.validFrom)) ?? CALENDAR_START;
+  }
+
   async analysis(signature: string, query: AnalysisQuery): Promise<GasAnalysis> {
     this.job.useStation(query.station);
     this.setPostcode(signature, query.postcode);
@@ -213,8 +237,13 @@ export class GasService {
       dd: r(p.dd, 1),
       perDd: p.perDd === null ? null : r(p.perDd, 4),
     });
-    const forecast = forecastYear(rated, today, currentBaseline, line, normals);
-    const degreeDays = degreeDaysToDate(rated, today, normals);
+    const start = this.yearStart(signature, query);
+    const forecast = forecastYear(rated, today, currentBaseline, line, normals, start);
+    const degreeDays = degreeDaysToDate(rated, today, normals, start);
+    const soFar =
+      query.expected === undefined
+        ? null
+        : expectedSoFar(rated, today, currentBaseline, query.expected, normals.annual, start);
     const rolling = rollingCorrected(rated, currentBaseline, normals.annual);
     const yearBefore = `${Number(yesterday.slice(0, 4)) - 1}${yesterday.slice(4, 7)}`;
     const before = rollingCorrected(rated, baselineIn(yearBefore), normals.annual, RECENT_DAYS);
@@ -242,9 +271,10 @@ export class GasService {
       periods: {
         week: periods(rated, baselineOf, 'week').map(roundPeriod),
         month: periods(rated, baselineOf, 'month').map(roundPeriod),
-        year: periods(rated, baselineOf, 'year').map(roundPeriod),
+        year: periods(rated, baselineOf, 'year', start).map(roundPeriod),
       },
-      years: yearSummaries(rated, baselineOf, normals.annual).map((y) => ({
+      yearStart: formatYearStart(start),
+      years: yearSummaries(rated, baselineOf, normals.annual, start).map((y) => ({
         ...y,
         baseline: r(y.baseline, 3),
         ddYear: r(y.ddYear, 1),
@@ -254,10 +284,23 @@ export class GasService {
       })),
       forecast: forecast && {
         year: forecast.year,
+        label: forecast.label,
         actual: r(forecast.actual, 0),
         estimated: r(forecast.estimated, 0),
         total: r(forecast.total, 0),
       },
+      settlement:
+        query.expected === undefined
+          ? null
+          : {
+              expected: query.expected,
+              forecast: forecast && r(forecast.total, 0),
+              soFar: soFar && {
+                actual: r(soFar.actual, 0),
+                expected: r(soFar.expected, 0),
+                days: soFar.days,
+              },
+            },
       normal: { annual: r(normals.annual, 0), years: normals.years },
       rolling: rolling && {
         corrected: r(rolling.corrected, 0),
@@ -266,6 +309,7 @@ export class GasService {
       },
       degreeDays: degreeDays && {
         year: degreeDays.year,
+        label: degreeDays.label,
         actual: r(degreeDays.actual, 0),
         normal: r(degreeDays.normal, 0),
       },

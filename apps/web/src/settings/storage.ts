@@ -2,6 +2,8 @@ import {
   DEFAULT_BASE_TEMPERATURE,
   DegreeDayMethodSchema,
   GasProfileSchema,
+  MonthDaySchema,
+  YearDivisionSchema,
   MAX_BASE_TEMPERATURE,
   MIN_BASE_TEMPERATURE,
 } from '@p1/shared';
@@ -39,6 +41,12 @@ const GasSettingsSchema = z.object({
   cooking: z.boolean().catch(true),
   /** Manual baseline in m³/day; absent means automatic. */
   baseline: z.number().min(0).max(20).optional().catch(undefined),
+  /** Year division: calendar years, contract years or heating seasons (§11.1). */
+  years: YearDivisionSchema.catch('calendar'),
+  /** Contract start "MM-DD"; absent means the date from the tariffs. */
+  contractStart: MonthDaySchema.optional().catch(undefined),
+  /** Expected annual use in m³ from the contract, for the settlement forecast (§11.2). */
+  expected: z.number().min(1).max(20000).optional().catch(undefined),
   profile: GasProfileSchema.catch({}),
   /** Share the profile to compare with similar households. */
   share: z.boolean().catch(false),
@@ -50,6 +58,7 @@ export const DEFAULT_GAS_SETTINGS: GasSettings = {
   base: DEFAULT_BASE_TEMPERATURE,
   method: 'weighted',
   cooking: true,
+  years: 'calendar',
   profile: {},
   share: false,
 };

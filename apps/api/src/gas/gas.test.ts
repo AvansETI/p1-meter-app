@@ -273,6 +273,53 @@ describe('gas routes', () => {
     await app.close();
   });
 
+  it('divides years by contract start from the tariffs and compares with the expected use', async () => {
+    const { app, open, get } = await setup();
+    const session = await open(SIG);
+    const tariffs = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/tariffs',
+      headers: { 'x-session': session, 'if-match': '0' },
+      payload: {
+        profiles: {
+          own: {
+            periods: [
+              {
+                validFrom: '2025-04-01',
+                electricity: { type: 'single', perKwh: 0.3 },
+                export: { compensationPerKwh: 0.1, feePerKwh: 0 },
+                gas: { type: 'fixed', perM3: 1.4 },
+                fixed: { supplierPerMonth: 6, gridPerMonth: 40 },
+                taxReductionPerYear: 600,
+              },
+            ],
+          },
+        },
+      },
+    });
+    expect(tariffs.statusCode).toBe(200);
+    const base = '/api/v1/gas/analysis?station=260&base=18&method=plain&cooking=true';
+    const contract = (
+      await get(session, `${base}&years=contract&expected=900`)
+    ).json<GasAnalysis>();
+    expect(contract.yearStart).toBe('04-01');
+    expect(contract.forecast!.label).toBe('2026-2027');
+    expect(contract.years.map((y) => y.label)).toEqual(['2025-2026', '2026-2027']);
+    expect(contract.settlement).toMatchObject({ expected: 900 });
+    expect(contract.settlement!.soFar!.days).toBeGreaterThan(100);
+
+    const given = (
+      await get(session, `${base}&years=contract&contractStart=09-15`)
+    ).json<GasAnalysis>();
+    expect(given.yearStart).toBe('09-15');
+    expect(given.settlement).toBeNull();
+    const heating = (await get(session, `${base}&years=heating`)).json<GasAnalysis>();
+    expect(heating.yearStart).toBe('07-01');
+    const calendar = (await get(session, base)).json<GasAnalysis>();
+    expect(calendar.forecast!.label).toBe('2026');
+    await app.close();
+  });
+
   it('validates the query and needs gas', async () => {
     const { app, open, get } = await setup();
     const session = await open(SIG);

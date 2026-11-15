@@ -938,6 +938,29 @@
     "legendMedian": "mediaan",
     "legendOwn": "jij",
     "solarYesShort": "ja",
-    "solarNoShort": "nee"
+    "solarNoShort": "nee",
+    "yearsSettingsTitle": "Jaarindeling en eindafrekening",
+    "division": {
+      "calendar": "Kalenderjaar",
+      "contract": "Contractjaar",
+      "heating": "Stookjaar"
+    },
+    "divisionHelp": {
+      "calendar": "Jaren van 1 januari tot en met 31 december. Alleen in kalenderjaren is de CBS-mediaan per jaar beschikbaar.",
+      "contract": "Jaren vanaf de ingangsdatum van je energiecontract, zoals op je jaarafrekening.",
+      "heating": "Stookjaren van 1 juli tot en met 30 juni, zodat een winter niet in tweeën wordt geknipt."
+    },
+    "contractStart": "Ingangsdatum contract",
+    "contractStartTariffs": "Leeg laten: {{date}}, de ingangsdatum van je gastarief bij Tarieven.",
+    "contractStartNone": "Nog geen gastarief bij Tarieven: leeg laten betekent 1 januari.",
+    "expected": "Verwacht jaarverbruik (m³)",
+    "expectedHelp": "Staat in je contract of op je jaarafrekening; je voorschot is erop gebaseerd. Gebruikt voor de prognose van je eindafrekening.",
+    "settlement": "Eindafrekening {{year}}",
+    "settlementLess": "prognose {{forecast}} van {{expected}} m³ ({{change}}), minder dan verwacht",
+    "settlementMore": "prognose {{forecast}} van {{expected}} m³ ({{change}}), meer dan verwacht",
+    "soFar": "Stand nu",
+    "soFarNote": "verwacht {{expected}} m³ bij dit weer ({{change}})",
+    "settlementNote": "Prognose in m³ tegenover je verwachte jaarverbruik; de eindafrekening hangt ook af van prijzen, vaste kosten en de vermindering energiebelasting.",
+    "fillExpected": "Verwacht jaarverbruik invullen voor een prognose van je eindafrekening"
   }
 }

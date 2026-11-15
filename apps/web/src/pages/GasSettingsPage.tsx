@@ -21,6 +21,7 @@ import {
   BUILD_PERIODS,
   DegreeDayMethodSchema,
   DWELLING_TYPES,
+  YearDivisionSchema,
   FLOOR_AREAS,
   HEATINGS,
   MAX_BASE_TEMPERATURE,
@@ -33,6 +34,8 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGasAnalysis, useShareProfile } from '../gas/queries';
+import { useTariffs } from '../tariffs/queries';
+import { dateFormat } from '../i18n/dates';
 import { DAYS_PER_MONTH } from '../gas/units';
 import { stationOf } from '../gas/station';
 import { useSession } from '../session/context';
@@ -46,6 +49,11 @@ const BASES = Array.from(
   { length: (MAX_BASE_TEMPERATURE - MIN_BASE_TEMPERATURE) * 2 + 1 },
   (_, i) => MIN_BASE_TEMPERATURE + i / 2,
 );
+/** "1 april" from a date or "MM-DD". */
+const monthDay = (value: string) =>
+  dateFormat({ day: 'numeric', month: 'long' }).format(
+    new Date(`2026-${value.slice(-5)}T12:00:00`),
+  );
 const decimal = (v: number) => v.toLocaleString('nl-NL', { maximumFractionDigits: 2 });
 
 /** Settings → Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2). */
@@ -59,6 +67,10 @@ export default function GasSettingsPage() {
   const analysis = useGasAnalysis(settings.emonId, gas, ready);
   const share = useShareProfile();
   const [postcode, setPostcode] = useState(gas.postcode ?? '');
+  const [expected, setExpected] = useState(gas.expected === undefined ? '' : String(gas.expected));
+  const tariffs = useTariffs(settings.emonId, ready && gas.years === 'contract');
+  // The default contract start: the newest own tariff period with gas.
+  const tariffStart = tariffs.data?.profiles.own.periods.filter((p) => p.gas).at(-1)?.validFrom;
   // Shown per month in whole m³; stored per day like the API expects.
   const [baseline, setBaseline] = useState(
     gas.baseline === undefined ? '' : String(Math.round(gas.baseline * DAYS_PER_MONTH)),
@@ -200,6 +212,71 @@ export default function GasSettingsPage() {
                 </IonSelectOption>
               ))}
             </IonSelect>
+          </IonItem>
+        </IonList>
+
+        <IonList inset>
+          <IonListHeader>{t('gas.yearsSettingsTitle')}</IonListHeader>
+          <IonItem lines="none">
+            <IonSegment
+              className="gas-method"
+              value={gas.years}
+              onIonChange={(e) => {
+                const years = YearDivisionSchema.safeParse(e.detail.value);
+                if (years.success) setGas({ years: years.data });
+              }}
+            >
+              <IonSegmentButton value="calendar">
+                <IonLabel>{t('gas.division.calendar')}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="contract">
+                <IonLabel>{t('gas.division.contract')}</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="heating">
+                <IonLabel>{t('gas.division.heating')}</IonLabel>
+              </IonSegmentButton>
+            </IonSegment>
+          </IonItem>
+          <IonItem>
+            <IonLabel className="ion-text-wrap">
+              <p>{t(`gas.divisionHelp.${gas.years}`)}</p>
+            </IonLabel>
+          </IonItem>
+          {gas.years === 'contract' && (
+            <IonItem>
+              <IonInput
+                label={t('gas.contractStart')}
+                labelPlacement="stacked"
+                type="date"
+                value={gas.contractStart ? `2026-${gas.contractStart}` : ''}
+                helperText={
+                  tariffStart
+                    ? t('gas.contractStartTariffs', { date: monthDay(tariffStart) })
+                    : t('gas.contractStartNone')
+                }
+                onIonChange={(e) => {
+                  const value = String(e.detail.value ?? '');
+                  setGas({ contractStart: value ? value.slice(5, 10) : undefined });
+                }}
+              />
+            </IonItem>
+          )}
+          <IonItem>
+            <IonInput
+              label={t('gas.expected')}
+              labelPlacement="stacked"
+              inputmode="numeric"
+              value={expected}
+              placeholder="1200"
+              helperText={t('gas.expectedHelp')}
+              onIonInput={(e) => {
+                const text = String(e.detail.value ?? '');
+                setExpected(text);
+                const value = Number(text.replace(/\D/g, ''));
+                if (text.trim() === '') setGas({ expected: undefined });
+                else if (value >= 1 && value <= 20000) setGas({ expected: value });
+              }}
+            />
           </IonItem>
         </IonList>
 
