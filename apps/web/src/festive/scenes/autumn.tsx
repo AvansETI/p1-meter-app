@@ -1,5 +1,6 @@
 /** Halloween, Divali, Sint-Maarten, Loy Krathong, Sinterklaas and Chanoeka (#66). */
-import { Edge, Fig, Figures } from './parts';
+import * as L from './library';
+import { Edge, Falling, Fig, Figures, Walker } from './parts';
 
 function Pumpkin() {
   return (
@@ -36,6 +37,9 @@ export function Halloween() {
         </Fig>
         <Fig fx="sway-low" d={-0.6} s={16}>
           <Pumpkin />
+        </Fig>
+        <Fig s={16}>
+          <L.Owl />
         </Fig>
       </Figures>
     </>
@@ -78,20 +82,25 @@ function Rangoli() {
 
 export function Diwali() {
   return (
-    <Figures>
-      <Fig s={20}>
-        <Diya />
-      </Fig>
-      <Fig fx="spin" s={22}>
-        <Rangoli />
-      </Fig>
-      <Fig s={20} d={-0.4}>
-        <Diya />
-      </Fig>
-      <Fig s={20} d={-0.8}>
-        <Diya />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={9} fx="twinkle-static" s={6}>
+        <L.Star />
+      </Falling>
+      <Figures>
+        <Fig s={20}>
+          <Diya />
+        </Fig>
+        <Fig fx="spin" s={22}>
+          <Rangoli />
+        </Fig>
+        <Fig s={20} d={-0.4}>
+          <Diya />
+        </Fig>
+        <Fig s={20} d={-0.8}>
+          <Diya />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -112,17 +121,25 @@ function Lampion({ colour }: { colour: string }) {
 
 export function StMartin() {
   return (
-    <Figures>
-      <Fig fx="sway" hang s={20}>
-        <Lampion colour="#ff7043" />
-      </Fig>
-      <Fig fx="sway" hang d={-1.3} s={24}>
-        <Lampion colour="#42a5f5" />
-      </Fig>
-      <Fig fx="sway" hang d={-0.5} s={18}>
-        <Lampion colour="#ab47bc" />
-      </Fig>
-    </Figures>
+    <>
+      <Falling count={9} fx="twinkle-static" s={6}>
+        <L.Star />
+      </Falling>
+      <Figures>
+        <Fig fx="sway" hang s={20}>
+          <Lampion colour="#ff7043" />
+        </Fig>
+        <Fig fx="sway" hang d={-1.3} s={24}>
+          <Lampion colour="#42a5f5" />
+        </Fig>
+        <Fig fx="sway" hang d={-0.5} s={18}>
+          <Lampion colour="#ab47bc" />
+        </Fig>
+        <Fig fx="sway" d={-0.9} s={16} hang>
+          <L.Lantern c="#ffca28" />
+        </Fig>
+      </Figures>
+    </>
   );
 }
 
@@ -154,12 +171,15 @@ export function LoyKrathong() {
         <Fig fx="bob" d={-0.6} s={24} className="festive__fig--float">
           <Krathong />
         </Fig>
+        <Fig fx="sway" s={12} hang>
+          <L.Lantern c="#ffb300" />
+        </Fig>
       </Figures>
     </>
   );
 }
 
-function Present({ box, ribbon }: { box: string; ribbon: string }) {
+export function Present({ box, ribbon }: { box: string; ribbon: string }) {
   return (
     <svg viewBox="0 0 24 24">
       <path
@@ -174,49 +194,61 @@ function Present({ box, ribbon }: { box: string; ribbon: string }) {
   );
 }
 
-/** A cheerful roetveegpiet: feathered beret, collar, a few soot smudges. */
-function Piet() {
+/**
+ * The roetveegpiet on the way, side by side with the sack over its shoulder; legs in step.
+ * Walks inside a `Walker`, which turns it round (#75).
+ */
+export function WalkingPiet() {
   return (
-    <svg viewBox="0 0 24 28">
-      <path d="M5 24c1-4 4-5 7-5s6 1 7 5z" fill="#1e88e5" />
-      <path d="M6.5 20.5Q12 24 17.5 20.5 12 18.5 6.5 20.5z" fill="#fff" />
-      <circle cx="12" cy="14" r="5.6" fill="#e9b48c" />
-      <circle cx="9.8" cy="13.4" r=".7" fill="#3e2723" />
-      <circle cx="14.2" cy="13.4" r=".7" fill="#3e2723" />
-      <path
-        d="M9.8 16.2q2.2 1.6 4.4 0"
-        stroke="#8d3a2a"
-        strokeWidth=".8"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <ellipse
-        cx="8.2"
-        cy="15.6"
-        rx="1.4"
-        ry=".7"
-        fill="#4a4a4a"
-        opacity=".55"
-        transform="rotate(-20 8.2 15.6)"
-      />
-      <ellipse
-        cx="15.6"
-        cy="12"
-        rx="1"
-        ry=".5"
-        fill="#4a4a4a"
-        opacity=".5"
-        transform="rotate(25 15.6 12)"
-      />
-      <path d="M5.8 10.5Q8 5.5 13 6.2q5 .7 5.4 4.3-6-1.6-12.6 0z" fill="#d81b60" />
-      <path
-        className="fx-feather"
-        d="M16.5 7.5c2.5-3.5 5-4.5 6.5-4.5-1 2-3 4.5-6 5.5z"
-        fill="#fdd835"
-      />
-      <g className="fx-wave-hand">
-        <circle cx="21" cy="17" r="1.8" fill="#e9b48c" />
-        <path d="M19 22l1.6-4" stroke="#1e88e5" strokeWidth="2.2" strokeLinecap="round" />
+    <svg viewBox="0 0 26 34">
+      <g className="fx-step">
+        <path d="M11 25v6.5" stroke="#5e35b1" strokeWidth="2.6" strokeLinecap="round" />
+        <ellipse cx="12" cy="32" rx="2.2" ry="1.2" fill="#212121" />
+      </g>
+      <g className="fx-step-alt">
+        <path d="M15 25v6.5" stroke="#4527a0" strokeWidth="2.6" strokeLinecap="round" />
+        <ellipse cx="16" cy="32" rx="2.2" ry="1.2" fill="#212121" />
+      </g>
+      <g className="fx-walk-bob">
+        <path d="M2.5 15q-2-7 4.5-8.5 5 .5 4.5 6-1.5 4.5-5.5 4.5-2.6 0-3.5-2z" fill="#8d6e63" />
+        <path d="M7 7l2.5-2" stroke="#6d4c41" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M7 26c.5-5 3-7.5 6-7.5s5.5 2.5 6 7.5z" fill="#1e88e5" />
+        <path d="M8.6 19.4Q13 22.4 17.4 19.4 13 17.6 8.6 19.4z" fill="#fff" />
+        <circle cx="13" cy="13.2" r="5.2" fill="#e9b48c" />
+        <circle cx="15" cy="12.6" r=".7" fill="#3e2723" />
+        <path
+          d="M13.8 15.4q1.6 1.2 3 0"
+          stroke="#8d3a2a"
+          strokeWidth=".8"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <ellipse
+          cx="10.8"
+          cy="14.6"
+          rx="1.3"
+          ry=".6"
+          fill="#4a4a4a"
+          opacity=".55"
+          transform="rotate(-20 10.8 14.6)"
+        />
+        <ellipse
+          cx="16.4"
+          cy="10.8"
+          rx=".9"
+          ry=".45"
+          fill="#4a4a4a"
+          opacity=".5"
+          transform="rotate(25 16.4 10.8)"
+        />
+        <path d="M7.6 10Q9.6 5.4 14.2 6q4.6.6 5 4-5.6-1.4-11.6 0z" fill="#d81b60" />
+        <path
+          className="fx-feather"
+          d="M8.8 7.2c-2.2-3.2-4.6-4.2-6-4.2.9 1.8 2.8 4.2 5.6 5.2z"
+          fill="#fdd835"
+        />
+        <path d="M17 21l3.4 3.4" stroke="#1e88e5" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="21" cy="25" r="1.5" fill="#e9b48c" />
       </g>
     </svg>
   );
@@ -248,18 +280,10 @@ function Crosier() {
   );
 }
 
-export function Sinterklaas() {
+/** Three presents in a row, the most telling figures after the mitre or shoe. */
+export function Presents() {
   return (
-    <Figures>
-      <Fig fx="bob" s={20}>
-        <Mitre />
-      </Fig>
-      <Fig fx="sway-low" s={14} d={-0.8}>
-        <Crosier />
-      </Fig>
-      <Fig fx="peek" s={24}>
-        <Piet />
-      </Fig>
+    <>
       <Fig fx="hop" s={16}>
         <Present box="#e53935" ribbon="#ffd54a" />
       </Fig>
@@ -269,7 +293,30 @@ export function Sinterklaas() {
       <Fig fx="hop" d={0.8} s={14}>
         <Present box="#8e24aa" ribbon="#ffca28" />
       </Fig>
-    </Figures>
+    </>
+  );
+}
+
+/** Pakjesavond (1–5 December): mitre, crosier, presents, pepernoten and the walking piet. */
+export function Sinterklaas() {
+  return (
+    <>
+      <Falling count={10} s={8}>
+        <L.Pepernoot />
+      </Falling>
+      <Figures>
+        <Fig fx="bob" s={20}>
+          <Mitre />
+        </Fig>
+        <Fig fx="sway-low" s={14} d={-0.8}>
+          <Crosier />
+        </Fig>
+        <Presents />
+      </Figures>
+      <Walker s={22}>
+        <WalkingPiet />
+      </Walker>
+    </>
   );
 }
 

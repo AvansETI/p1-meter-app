@@ -54,6 +54,18 @@ export function Traveller({ s = 26, children }: { s?: number; children: ReactNod
   );
 }
 
+/**
+ * A figure that walks across the whole title bar, turns round and walks back (the
+ * roetveegpiet, #75). Unlike `Traveller` it stays on the bar and faces its direction.
+ */
+export function Walker({ s = 24, children }: { s?: number; children: ReactNode }) {
+  return (
+    <span className="festive__walker" style={vars({ s })}>
+      <span className="festive__walker-inner">{children}</span>
+    </span>
+  );
+}
+
 const FLAGS = 96; // 20 px apart: enough for a 1920 px wide title bar
 
 /** Bunting along the bottom edge; flags take the colours (or backgrounds) in turn. */

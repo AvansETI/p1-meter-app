@@ -279,6 +279,144 @@
   }
 }
 
+/* The roetveegpiet walks to the right, turns round and walks back (#75). */
+.festive__walker {
+  --s: 24px;
+  position: absolute;
+  bottom: 1px;
+  left: -4px;
+  width: var(--s);
+  animation: festive-walk 16s linear infinite;
+}
+
+.festive__walker svg {
+  display: block;
+  width: var(--s);
+  height: auto;
+}
+
+.festive__walker-inner {
+  display: block;
+  animation: festive-walk-turn 16s step-end infinite;
+}
+
+@keyframes festive-walk {
+  0%,
+  100% {
+    left: -4px;
+  }
+  50% {
+    left: calc(100% - var(--s) + 4px);
+  }
+}
+
+@keyframes festive-walk-turn {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+}
+
+/* Legs in step and a little bounce while walking. */
+.fx-step,
+.fx-step-alt {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: festive-step 0.5s ease-in-out infinite alternate;
+}
+
+.fx-step-alt {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes festive-step {
+  from {
+    transform: rotate(-22deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+.fx-walk-bob {
+  animation: festive-walk-bob 0.25s ease-in-out infinite alternate;
+}
+
+@keyframes festive-walk-bob {
+  to {
+    transform: translateY(-1px);
+  }
+}
+
+/* Movember: the moustache ends curl up and spring back (#75). */
+.fx-twirl-left,
+.fx-twirl-right {
+  transform-box: fill-box;
+  animation: festive-twirl-left 2.6s ease-in-out infinite;
+}
+
+.fx-twirl-left {
+  transform-origin: 100% 40%;
+}
+
+.fx-twirl-right {
+  transform-origin: 0 40%;
+  animation-name: festive-twirl-right;
+}
+
+@keyframes festive-twirl-left {
+  0%,
+  55%,
+  100% {
+    transform: rotate(0);
+  }
+  70% {
+    transform: rotate(18deg);
+  }
+  82% {
+    transform: rotate(-6deg);
+  }
+  90% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes festive-twirl-right {
+  0%,
+  55%,
+  100% {
+    transform: rotate(0);
+  }
+  70% {
+    transform: rotate(-18deg);
+  }
+  82% {
+    transform: rotate(6deg);
+  }
+  90% {
+    transform: rotate(-3deg);
+  }
+}
+
+/* Small figures drifting across the bar (moustaches, #75). */
+.fx-drift {
+  animation: festive-drift 9s ease-in-out infinite;
+}
+
+@keyframes festive-drift {
+  0% {
+    transform: translate(-20px, 0) rotate(-12deg);
+  }
+  50% {
+    transform: translate(20px, 34px) rotate(10deg);
+  }
+  100% {
+    transform: translate(60px, 80px) rotate(-8deg);
+  }
+}
+
 /* Bunting along the bottom edge. */
 .festive__bunting {
   position: absolute;
@@ -829,13 +967,16 @@
   .festive [class*='fx-'],
   .festive__traveller,
   .festive__traveller-inner,
+  .festive__walker,
+  .festive__walker-inner,
   .festive__flag,
   .festive__edge,
   .festive--earthhour::before {
     animation: none;
   }
   /* Without the walk across, the hare and dragon sit at the end of the free space. */
-  .festive__traveller {
+  .festive__traveller,
+  .festive__walker {
     left: auto;
     right: 130px;
   }
