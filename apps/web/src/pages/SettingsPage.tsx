@@ -23,19 +23,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ToolbarLogo from '../components/ToolbarLogo';
 import FestiveDecoration from '../festive/FestiveDecoration';
-import BrandLogo from '../components/BrandLogo';
 import EmonIdForm from '../components/EmonIdForm';
-import LicensesModal from '../components/LicensesModal';
-import UsageStats from '../components/UsageStats';
+import AboutSection from '../components/AboutSection';
 import InstallSheet from '../install/InstallSheet';
 import { OFFERABLE, useInstall } from '../install/useInstall';
 import { useSession } from '../session/context';
 import { useSettings } from '../settings/context';
 import { LanguageSchema, ThemeSchema } from '../settings/storage';
 import { dateFormat } from '../i18n/dates';
-
-const PROJECT_URL = 'https://github.com/AvansETI/SmartMeter_DIY';
-const LICENSE_URL = 'https://github.com/AvansETI/p1-meter-app/blob/main/LICENSE';
 
 const dateTime = () => dateFormat({ dateStyle: 'medium', timeStyle: 'short' });
 
@@ -86,7 +81,6 @@ export default function SettingsPage() {
   const { state, clear } = useSession();
   const [changing, setChanging] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const [showLicenses, setShowLicenses] = useState(false);
   const install = useInstall();
 
   return (
@@ -237,29 +231,8 @@ export default function SettingsPage() {
           onClose={install.closeSheet}
         />
 
-        <IonList inset>
-          <IonListHeader>{t('settings.about')}</IonListHeader>
-          <div className="about">
-            <BrandLogo className="about__logo" />
-            <p className="about__lectorate">{t('settings.aboutLectorate')}</p>
-            <div className="about__partners" aria-label={t('settings.aboutPartners')}>
-              <img src="/brand/avans-logo.svg" alt="Avans Hogeschool" />
-              <img src="/brand/hz-logo.svg" alt="HZ University of Applied Sciences" />
-            </div>
-            <p>{t('settings.aboutAuthor')}</p>
-            <IonNote>{t('settings.version', { version: __APP_VERSION__ })}</IonNote>
-            <UsageStats />
-            <a href={PROJECT_URL} target="_blank" rel="noreferrer">
-              {t('settings.aboutProject')}
-            </a>
-            <a href={LICENSE_URL} target="_blank" rel="noreferrer">
-              {t('settings.aboutLicense')}
-            </a>
-            <button type="button" className="about__link" onClick={() => setShowLicenses(true)}>
-              {t('settings.aboutThirdParty')}
-            </button>
-          </div>
-        </IonList>
+        {/* On desktop About is its own item in the side menu. */}
+        <AboutSection className="settings__about" />
 
         <IonModal isOpen={changing} onDidDismiss={() => setChanging(false)}>
           <IonHeader>
@@ -274,8 +247,6 @@ export default function SettingsPage() {
             <EmonIdForm onDone={() => setChanging(false)} />
           </IonContent>
         </IonModal>
-
-        <LicensesModal isOpen={showLicenses} onClose={() => setShowLicenses(false)} />
 
         <IonAlert
           isOpen={confirmRemove}

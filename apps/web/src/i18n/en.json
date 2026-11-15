@@ -12,7 +12,8 @@
     "live": "Live",
     "history": "History",
     "settings": "Settings",
-    "gas": "Gas analysis"
+    "gas": "Gas analysis",
+    "about": "About"
   },
   "welcome": {
     "intro": "See the energy use of your home, live and back in time.",
@@ -139,6 +140,8 @@
     "installApp": "Install app",
     "installUnsupported": "Installing as an app works in Chrome, Edge or Safari.",
     "aboutLicense": "Open source under the Apache 2.0 license",
+    "releaseNotes": "Release notes",
+    "thisVersion": "this version",
     "aboutThirdParty": "Licenses of software used",
     "licensesError": "The licenses could not be loaded. Check your connection and try again.",
     "costs": "Costs",

@@ -105,7 +105,44 @@ ion-menu.app-side-menu ion-item.selected {
   font-weight: 700;
 }
 
-/* Settings: about block */
+/* Settings: about block; on desktop About is its own page in the side menu. */
+@media (min-width: 992px) {
+  .settings__about {
+    display: none;
+  }
+}
+/* Release notes: one line per version, newest first. */
+.release-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.release-notes__item {
+  padding: 12px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-text-muted) 20%, transparent);
+}
+.release-notes__item h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: 1rem;
+}
+.release-notes__current {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--app-brand-green) 20%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.release-notes__item time {
+  font-size: 0.8rem;
+  color: var(--app-text-muted);
+}
+.release-notes__item p {
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
 .about {
   display: flex;
   flex-direction: column;
