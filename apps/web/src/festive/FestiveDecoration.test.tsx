@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import '../i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -48,6 +50,53 @@ describe('Decoration', () => {
     setReducedMotion(true);
     const { container } = render(<Decoration season="newyear" />);
     expect(container.querySelector('canvas')).not.toBeInTheDocument();
+  });
+});
+
+/** Full pictures of their own (docs/design/2026-11-15-fuller-festive-scenes.md §2). */
+const FULL_PICTURES = ['christmas', 'newyear', 'hanukkah', 'advent'];
+const WIDE_LAYERS = [
+  '.festive__falling',
+  '.festive__traveller',
+  '.festive__walker',
+  '.festive__bunting',
+  '.festive__edge',
+].join(', ');
+
+describe('Decoration: every scene is well filled (#75)', () => {
+  it.each(SEASONS.filter((season) => !FULL_PICTURES.includes(season)))('fills %s', (season) => {
+    const { container } = render(<Decoration season={season} />);
+    const layer = container.querySelector(`.festive--${season}`)!;
+    expect(
+      layer.querySelectorAll('.festive__figures > .festive__fig').length,
+    ).toBeGreaterThanOrEqual(4);
+    expect(layer.querySelector(WIDE_LAYERS)).not.toBeNull();
+  });
+
+  it.each(['sinttime', 'sinterklaas'] as const)(
+    'lets the walking piet throw the pepernoten in %s',
+    (season) => {
+      const { container } = render(<Decoration season={season} />);
+      expect(
+        container.querySelectorAll('.festive__walker .festive__thrown').length,
+      ).toBeGreaterThan(0);
+      expect(container.querySelector('.festive__falling')).toBeNull();
+    },
+  );
+
+  it('opens the description from anywhere on the title bar', async () => {
+    const { container } = render(<Decoration season="movember" />);
+    // One button over the whole bar, above the decoration, not tied to a figure.
+    const css = readFileSync(path.join(__dirname, 'festive.css'), 'utf8');
+    const rule = (selector: string) =>
+      new RegExp(`\\n${selector.replace('.', '\\.')} \\{([^}]*)\\}`).exec(css)?.[1] ?? '';
+    expect(rule('.festive__info')).toMatch(/inset: env\(safe-area-inset-top, 0px\) 0 0 0;/);
+    const z = (selector: string) => Number(/z-index: (\d+)/.exec(rule(selector))?.[1]);
+    expect(z('.festive__info')).toBeGreaterThan(z('.festive'));
+    const button = container.querySelector('.festive__info')!;
+    expect(button.closest('.festive')).toBeNull();
+    fireEvent.click(button);
+    expect(await screen.findByText(/een snor staan/)).toBeInTheDocument();
   });
 });
 

@@ -279,6 +279,205 @@
   }
 }
 
+/* The roetveegpiet walks to the right, turns round and walks back (#75). */
+.festive__walker {
+  --s: 24px;
+  position: absolute;
+  bottom: 1px;
+  left: -4px;
+  width: var(--s);
+  animation: festive-walk 16s linear infinite;
+}
+
+.festive__walker svg {
+  display: block;
+  width: var(--s);
+  height: auto;
+}
+
+.festive__walker-inner {
+  position: relative;
+  display: block;
+  animation: festive-walk-turn 16s step-end infinite;
+}
+
+@keyframes festive-walk {
+  0%,
+  100% {
+    left: -4px;
+  }
+  50% {
+    left: calc(100% - var(--s) + 4px);
+  }
+}
+
+@keyframes festive-walk-turn {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+}
+
+/* Pepernoten thrown from the piet's hand: up in an arc, then down out of the bar. */
+.festive__thrown {
+  position: absolute;
+  left: 78%;
+  top: 68%;
+  width: var(--s);
+  opacity: 0;
+}
+
+.festive__thrown svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.fx-throw {
+  animation: festive-throw 4.6s linear infinite;
+}
+
+/* Thrown together (about 1.2 s in flight), a moment on the ground, then 3–4 s nothing. */
+@keyframes festive-throw {
+  0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0), calc(var(--h) * 0 + 0px)) rotate(0deg);
+  }
+  5.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.2), calc(var(--h) * -0.64 + 1.8px)) rotate(108deg);
+  }
+  10.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.4), calc(var(--h) * -0.96 + 3.6px)) rotate(216deg);
+  }
+  12.5% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.5), calc(var(--h) * -1 + 4.5px)) rotate(270deg);
+  }
+  15.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.6), calc(var(--h) * -0.96 + 5.4px)) rotate(324deg);
+  }
+  20.0% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 0.8), calc(var(--h) * -0.64 + 7.2px)) rotate(432deg);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(calc(var(--tx) * 1), calc(var(--h) * 0 + 9px)) rotate(540deg);
+  }
+  32% {
+    opacity: 1;
+    transform: translate(var(--tx), 9px) rotate(540deg);
+  }
+  38%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), 9px) rotate(540deg);
+  }
+}
+
+/* Legs in step and a little bounce while walking. */
+.fx-step,
+.fx-step-alt {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: festive-step 0.5s ease-in-out infinite alternate;
+}
+
+.fx-step-alt {
+  animation-direction: alternate-reverse;
+}
+
+@keyframes festive-step {
+  from {
+    transform: rotate(-22deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+.fx-walk-bob {
+  animation: festive-walk-bob 0.25s ease-in-out infinite alternate;
+}
+
+@keyframes festive-walk-bob {
+  to {
+    transform: translateY(-1px);
+  }
+}
+
+/* Movember: the moustache ends curl up and spring back (#75). */
+.fx-twirl-left,
+.fx-twirl-right {
+  transform-box: fill-box;
+  animation: festive-twirl-left 2.6s ease-in-out infinite;
+}
+
+.fx-twirl-left {
+  transform-origin: 100% 40%;
+}
+
+.fx-twirl-right {
+  transform-origin: 0 40%;
+  animation-name: festive-twirl-right;
+}
+
+@keyframes festive-twirl-left {
+  0%,
+  55%,
+  100% {
+    transform: rotate(0);
+  }
+  70% {
+    transform: rotate(18deg);
+  }
+  82% {
+    transform: rotate(-6deg);
+  }
+  90% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes festive-twirl-right {
+  0%,
+  55%,
+  100% {
+    transform: rotate(0);
+  }
+  70% {
+    transform: rotate(-18deg);
+  }
+  82% {
+    transform: rotate(6deg);
+  }
+  90% {
+    transform: rotate(-3deg);
+  }
+}
+
+/* Small figures drifting across the bar (moustaches, #75). */
+.fx-drift {
+  animation: festive-drift 9s ease-in-out infinite;
+}
+
+@keyframes festive-drift {
+  0% {
+    transform: translate(-20px, 0) rotate(-12deg);
+  }
+  50% {
+    transform: translate(20px, 34px) rotate(10deg);
+  }
+  100% {
+    transform: translate(60px, 80px) rotate(-8deg);
+  }
+}
+
 /* Bunting along the bottom edge. */
 .festive__bunting {
   position: absolute;
@@ -829,13 +1028,16 @@
   .festive [class*='fx-'],
   .festive__traveller,
   .festive__traveller-inner,
+  .festive__walker,
+  .festive__walker-inner,
   .festive__flag,
   .festive__edge,
   .festive--earthhour::before {
     animation: none;
   }
   /* Without the walk across, the hare and dragon sit at the end of the free space. */
-  .festive__traveller {
+  .festive__traveller,
+  .festive__walker {
     left: auto;
     right: 130px;
   }

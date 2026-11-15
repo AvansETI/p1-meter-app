@@ -530,6 +530,15 @@ export const Shoe = () => (
     <path d="M3 17h21" stroke="#5d4037" strokeWidth="1.8" />
     <path d="M10 10l2-2M12 11l2-2" stroke="#fafafa" strokeWidth=".9" />
     <circle className="fx-bob" cx="6" cy="6" r="1.6" fill="#8d6e63" />
+    <g>
+      <path d="M6.5 8L11 1.8" stroke="#ff7043" strokeWidth="2.4" strokeLinecap="round" />
+      <path
+        d="M11 1.8l2-1.4M11 1.8l2.4.4"
+        stroke="#43a047"
+        strokeWidth=".9"
+        strokeLinecap="round"
+      />
+    </g>
   </svg>
 );
 
@@ -715,12 +724,99 @@ export const JesterCap = () => (
   </svg>
 );
 
-export const Moustache = () => (
+const MOUSTACHES = {
+  handlebar:
+    'M15 4c-3-3-8-3-11 0-2 2-3 5-3 5s3-2 6-2 6 0 8-3c2 3 5 3 8 3s6 2 6 2-1-3-3-5c-3-3-8-3-11 0z',
+  walrus:
+    'M15 2c-5-1-11 0-13 4 0 3 1 5 2 6l2-2 2 2 2-2 2 2 2-2 1 1 1-1 2 2 2-2 2 2 2-2 2 2c1-1 2-3 2-6-2-4-8-5-13-4z',
+  chevron: 'M15 3c-6 0-10 2-12 6 3 1 6 1 8 0 2-1 3-2 4-2s2 1 4 2c2 1 5 1 8 0-2-4-6-6-12-6z',
+  pencil: 'M6 6c3-1.2 6-1.2 8.4-.3h1.2C18 4.8 21 4.8 24 6c-3 .8-6 .9-8.4.4h-1.2C12 6.9 9 6.8 6 6z',
+} as const;
+export type MoustacheStyle = keyof typeof MOUSTACHES;
+
+export const Moustache = ({
+  style = 'handlebar',
+  c = '#5d4037',
+}: {
+  style?: MoustacheStyle;
+  c?: string;
+}) => (
   <svg viewBox="0 0 30 12">
+    <path d={MOUSTACHES[style]} fill={c} />
+  </svg>
+);
+
+/** Movember face: hat and glasses; the moustache ends curl up and spring back (#75). */
+export const MoFace = () => (
+  <svg viewBox="0 0 28 30">
+    <path d="M8 9.5l1.5-8h9l1.5 8z" fill="#37474f" />
+    <rect x="9.4" y="6.4" width="9.2" height="1.6" fill="#c62828" />
+    <rect x="3" y="9" width="22" height="2.4" rx="1.2" fill="#263238" />
+    <circle cx="14" cy="19" r="8.6" fill="#f1c27d" />
+    <g fill="none" stroke="#263238" strokeWidth="1">
+      <circle cx="10.6" cy="16.6" r="2.5" />
+      <circle cx="17.4" cy="16.6" r="2.5" />
+      <path d="M13.1 16.4h1.8" />
+    </g>
+    <circle cx="10.6" cy="16.8" r=".8" fill="#263238" />
+    <circle cx="17.4" cy="16.8" r=".8" fill="#263238" />
     <path
-      d="M15 4c-3-3-8-3-11 0-2 2-3 5-3 5s3-2 6-2 6 0 8-3c2 3 5 3 8 3s6 2 6 2-1-3-3-5c-3-3-8-3-11 0z"
-      fill="#5d4037"
+      className="fx-twirl-left"
+      d="M14 21.4c-2-1.6-5-1.8-7.4-.4-1.6.9-2.6.1-2.4-1.2-1.4 1.4-.4 3.4 1.6 3.2 2.6-.2 5.6-.4 8.2-.6z"
+      fill="#4e342e"
     />
+    <path
+      className="fx-twirl-right"
+      d="M14 21.4c2-1.6 5-1.8 7.4-.4 1.6.9 2.6.1 2.4-1.2 1.4 1.4.4 3.4-1.6 3.2-2.6-.2-5.6-.4-8.2-.6z"
+      fill="#4e342e"
+    />
+  </svg>
+);
+
+/** Three snippets of confetti in one figure, for falling layers (#75). */
+export const Confetti = () => (
+  <svg viewBox="0 0 12 12">
+    <rect
+      x="1"
+      y="1.5"
+      width="2.6"
+      height="5"
+      rx=".6"
+      fill="#e53935"
+      transform="rotate(-20 2.3 4)"
+    />
+    <rect
+      x="7.6"
+      y="1"
+      width="2.6"
+      height="5"
+      rx=".6"
+      fill="#ffca28"
+      transform="rotate(25 8.9 3.5)"
+    />
+    <rect
+      x="4.4"
+      y="6.6"
+      width="2.6"
+      height="4.6"
+      rx=".6"
+      fill="#29b6f6"
+      transform="rotate(10 5.7 8.9)"
+    />
+  </svg>
+);
+
+export const Drop = ({ c = '#4fc3f7' }: { c?: string }) => (
+  <svg viewBox="0 0 10 14">
+    <path d="M5 1C3.4 4.6 1.5 7.2 1.5 9.5a3.5 3.5 0 0 0 7 0C8.5 7.2 6.6 4.6 5 1z" fill={c} />
+  </svg>
+);
+
+export const Fish = ({ c = '#4fc3f7' }: { c?: string }) => (
+  <svg viewBox="0 0 24 14">
+    <ellipse cx="11" cy="7" rx="8" ry="4.5" fill={c} />
+    <path d="M3 7L0 2v10z" fill={c} />
+    <circle cx="16" cy="6" r=".9" fill="#01579b" />
   </svg>
 );
 
