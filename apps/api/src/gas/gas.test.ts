@@ -6,6 +6,8 @@ import {
   type GasAnalysis,
   type GasComparison,
   type GasHourly,
+  type GasSettingsResponse,
+  type GasSharedSettings,
 } from '@p1/shared';
 import pino from 'pino';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -369,6 +371,61 @@ describe('gas routes', () => {
     });
     expect(del.statusCode).toBe(204);
     expect((await comparison()).shared).toBe(false);
+    await app.close();
+  });
+
+  it('stores the settings shared by every device', async () => {
+    const { app, open, get } = await setup();
+    const session = await open(SIG);
+    const put = (payload: Record<string, unknown>, as = session) =>
+      app.inject({
+        method: 'PUT',
+        url: '/api/v1/gas/settings',
+        headers: { 'x-session': as },
+        payload,
+      });
+    const settings: GasSharedSettings = {
+      postcode: '35',
+      base: 18,
+      method: 'weighted',
+      cooking: true,
+      years: 'calendar',
+      profile: { type: 'terraced' },
+      share: true,
+    };
+    const read = async () =>
+      (await get(session, '/api/v1/gas/settings')).json<GasSettingsResponse>();
+    expect(await read()).toEqual({ settings: null, updatedAt: null });
+
+    expect((await put({ settings: { ...settings, base: 30 } })).statusCode).toBe(400);
+    expect((await put({ settings: { ...settings, extra: 1 } })).statusCode).toBe(400);
+    const saved = await put({ settings });
+    expect(saved.statusCode).toBe(200);
+    expect(await read()).toEqual({
+      settings,
+      updatedAt: saved.json<{ updatedAt: string }>().updatedAt,
+    });
+    const comparison = async () =>
+      (await get(session, '/api/v1/gas/comparison?type=terraced')).json<GasComparison>();
+    expect((await comparison()).shared).toBe(true);
+
+    // Last write wins; turning sharing off withdraws the profile.
+    expect(
+      (await put({ settings: { ...settings, share: false, method: 'plain' } })).statusCode,
+    ).toBe(200);
+    expect((await read()).settings).toMatchObject({ share: false, method: 'plain' });
+    expect((await comparison()).shared).toBe(false);
+
+    // The legacy profile endpoint keeps the stored settings in step.
+    await app.inject({
+      method: 'PUT',
+      url: '/api/v1/gas/profile',
+      headers: { 'x-session': session },
+      payload: { type: 'detached' },
+    });
+    expect((await read()).settings).toMatchObject({ share: true, profile: { type: 'detached' } });
+
+    expect((await put({ settings }, await open(NO_GAS))).statusCode).toBe(404);
     await app.close();
   });
 });

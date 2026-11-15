@@ -917,7 +917,7 @@
     "shareTitle": "Vergelijken met vergelijkbare woningen",
     "share": "Woningprofiel anoniem delen",
     "shareHelp": "Je woningprofiel wordt op de server bewaard onder een versleutelde code, niet onder je EMON-ID. Je ziet dan hoe je verbruik zich verhoudt tot woningen zoals de jouwe; anderen zien nooit jouw cijfers. Uitzetten verwijdert het profiel van de server.",
-    "shareFailed": "Delen is niet gelukt. Probeer het later opnieuw.",
+    "saveFailed": "Niet opgeslagen op de server; dit wordt later opnieuw geprobeerd.",
     "cbsPerM2Median": "Per m² woonoppervlak: CBS-mediaan {{median}} m³.",
     "degreeDaysVsNormal": "normaal {{normal}} ({{change}})",
     "perHourUnit": "m³/uur",
