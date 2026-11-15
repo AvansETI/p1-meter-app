@@ -6,6 +6,7 @@ import {
   type TodayTotals,
 } from '@p1/shared';
 import type { FastifyPluginCallback } from 'fastify';
+import pkg from '../../package.json' with { type: 'json' };
 import type { CapabilityService } from '../data/capabilities';
 import type { LivePoller } from '../live/poller';
 import type { LiveService } from '../live/service';
@@ -97,6 +98,8 @@ export const liveRoutes: FastifyPluginCallback<LiveRouteOptions> = (app, options
       'X-Accel-Buffering': 'no',
     });
     res.write('retry: 5000\n\n');
+    // On every (re)connect, so an open app notices a deployment right after the restart (#64).
+    res.write(`event: version\ndata: ${JSON.stringify(pkg.version)}\n\n`);
 
     const unsubscribe = poller.subscribe(household.signature, (snapshot) => {
       res.write(`event: live\ndata: ${JSON.stringify(snapshot)}\n\n`);

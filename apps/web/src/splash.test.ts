@@ -25,6 +25,15 @@ describe('hideSplash', () => {
     expect(el.isConnected).toBe(false);
   });
 
+  it('adds no minimum after an update reload: the splash already showed its time', async () => {
+    document.documentElement.dataset.splash = 'updating';
+    const done = hideSplash(el, { now: () => 100, reducedMotion: () => true });
+    await vi.advanceTimersByTimeAsync(0);
+    await done;
+    expect(el.isConnected).toBe(false);
+    delete document.documentElement.dataset.splash;
+  });
+
   it('adds no delay when loading took longer than the minimum', async () => {
     const done = hideSplash(el, { minMs: 1200, now: () => 3000, reducedMotion: () => true });
     await vi.advanceTimersByTimeAsync(0);

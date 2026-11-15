@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isHealthResponse } from '@p1/shared';
+import { isHealthResponse, VERSION_HEADER } from '@p1/shared';
 import { loadConfig } from './config';
 import { FakeDataSource } from './data/fake';
 import { buildServer } from './server';
@@ -21,6 +21,15 @@ describe('GET /api/v1/health', () => {
     const res = await app.inject({ method: 'GET', url: '/api/v1/health' });
     expect(res.statusCode).toBe(200);
     expect(isHealthResponse(res.json())).toBe(true);
+    await app.close();
+  });
+
+  it('tells its version on every API response, also on errors', async () => {
+    const app = await buildServer(loadConfig({ NODE_ENV: 'test', LOG_LEVEL: 'silent' }));
+    const ok = await app.inject({ method: 'GET', url: '/api/v1/health' });
+    const missing = await app.inject({ method: 'GET', url: '/api/v1/does-not-exist' });
+    expect(ok.headers[VERSION_HEADER]).toBe(ok.json<{ version: string }>().version);
+    expect(missing.headers[VERSION_HEADER]).toBe(ok.headers[VERSION_HEADER]);
     await app.close();
   });
 });
