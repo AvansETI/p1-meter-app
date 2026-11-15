@@ -11,7 +11,28 @@ export interface GasChartTheme {
   fontFamily: string;
 }
 
-const grid = { left: 48, right: 12, top: 16, bottom: 40 };
+/** Room at the top for the unit of the value axis. */
+const grid = { left: 48, right: 12, top: 30, bottom: 40 };
+
+/** Value axis with its unit above it, e.g. "m³/dag". */
+function valueAxis(theme: GasChartTheme, unit: string) {
+  return {
+    type: 'value',
+    ...axis(theme),
+    // Always at the left edge, also when the x-axis crosses zero (temperatures below 0 °C).
+    axisLine: { onZero: false, lineStyle: { color: theme.mutedColor, opacity: 0.4 } },
+    name: unit,
+    nameLocation: 'end' as const,
+    nameGap: 12,
+    nameTextStyle: {
+      color: theme.mutedColor,
+      fontWeight: 600,
+      align: 'left' as const,
+      padding: [0, 0, 0, -40],
+    },
+    min: 0,
+  };
+}
 
 function axis(theme: GasChartTheme, name?: string) {
   return {
@@ -61,6 +82,7 @@ export function perDegreeDayOption(
   theme: GasChartTheme,
   text: {
     perDd: string;
+    perDdUnit: string;
     trend: string;
     format: (v: number) => string;
     title: (i: number) => string;
@@ -73,7 +95,7 @@ export function perDegreeDayOption(
     grid,
     textStyle: { fontFamily: theme.fontFamily },
     xAxis: { type: 'category', data: labels, ...axis(theme), splitLine: { show: false } },
-    yAxis: { type: 'value', ...axis(theme), min: 0 },
+    yAxis: valueAxis(theme, text.perDdUnit),
     tooltip: tooltip(theme, 'axis', (params) => {
       const i = (params as Array<{ dataIndex: number }>)[0]?.dataIndex ?? 0;
       const v = values[i];
@@ -116,6 +138,7 @@ export function scatterOption(
   theme: GasChartTheme,
   text: {
     dd: string;
+    perDayUnit: string;
     m3: string;
     line: string;
     format: (v: number) => string;
@@ -139,11 +162,11 @@ export function scatterOption(
     grid: { ...grid, bottom: 44 },
     textStyle: { fontFamily: theme.fontFamily },
     xAxis: { type: 'value', ...axis(theme, text.dd), min: 0 },
-    yAxis: { type: 'value', ...axis(theme), min: 0 },
+    yAxis: valueAxis(theme, text.perDayUnit),
     tooltip: tooltip(theme, 'item', (params) => {
       const p = params as { seriesName: string; value: [number, number, string?] };
       if (p.value[2] === undefined) return p.seriesName;
-      return `${text.date(p.value[2])}<br/>${text.dd}: ${p.value[0].toFixed(1)}<br/>${text.m3}: ${text.format(p.value[1])}`;
+      return `${text.date(p.value[2])}<br/>${text.dd}: ${p.value[0].toLocaleString('nl-NL', { maximumFractionDigits: 1 })}<br/>${text.m3}: ${text.format(p.value[1])}`;
     }),
     series: [
       ...seasons.map((season) => ({
@@ -183,6 +206,7 @@ export function temperatureCurveOption(
   theme: GasChartTheme,
   text: {
     temperature: string;
+    perHourUnit: string;
     m3: string;
     format: (v: number) => string;
     hours: (n: number) => string;
@@ -193,7 +217,7 @@ export function temperatureCurveOption(
     grid: { ...grid, bottom: 44 },
     textStyle: { fontFamily: theme.fontFamily },
     xAxis: { type: 'value', ...axis(theme, text.temperature), scale: true },
-    yAxis: { type: 'value', ...axis(theme), min: 0 },
+    yAxis: valueAxis(theme, text.perHourUnit),
     tooltip: tooltip(theme, 'item', (params) => {
       const [t, m3, n] = (params as { value: [number, number, number] }).value;
       return `${t} °C<br/>${text.m3}: ${text.format(m3)}<br/>${text.hours(n)}`;
@@ -214,7 +238,7 @@ export function temperatureCurveOption(
 export function dayProfileOption(
   hourly: GasHourly,
   theme: GasChartTheme,
-  text: { cold: string; mild: string; format: (v: number) => string },
+  text: { cold: string; mild: string; perHourUnit: string; format: (v: number) => string },
 ): EChartsCoreOption {
   const hours = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
   const series = [
@@ -232,7 +256,7 @@ export function dayProfileOption(
       axisLabel: { color: theme.mutedColor, interval: 5 },
       splitLine: { show: false },
     },
-    yAxis: { type: 'value', ...axis(theme), min: 0 },
+    yAxis: valueAxis(theme, text.perHourUnit),
     tooltip: tooltip(theme, 'axis', (params) => {
       const list = params as Array<{ dataIndex: number; seriesName: string; value: number | null }>;
       const head = hours[list[0]?.dataIndex ?? 0]!;

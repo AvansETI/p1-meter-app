@@ -56,6 +56,7 @@ export function PerDegreeDayChart({
     () =>
       perDegreeDayOption(periods, labels, theme(), {
         perDd: t('gas.perDd'),
+        perDdUnit: t('gas.perDdUnit'),
         trend: t('gas.trend'),
         format: m3PerDd,
         title: (i) => titles[i] ?? '',
@@ -74,7 +75,8 @@ export function HeatingLineChart({ analysis }: { analysis: GasAnalysis }) {
   const build = useCallback(
     () =>
       scatterOption(analysis, theme(), {
-        dd: t('gas.degreeDays'),
+        dd: t('gas.degreeDaysPerDay'),
+        perDayUnit: t('gas.perDayUnit'),
         m3: t('gas.gasPerDay'),
         line: t('gas.line'),
         format: m3,
@@ -92,6 +94,7 @@ export function TemperatureCurveChart({ hourly }: { hourly: GasHourly }) {
     () =>
       temperatureCurveOption(hourly, theme(), {
         temperature: t('gas.outdoorTemperature'),
+        perHourUnit: t('gas.perHourUnit'),
         m3: t('gas.gasPerHour'),
         format: m3,
         hours: (n) => t('gas.hoursMeasured', { count: n }),
@@ -108,6 +111,7 @@ export function DayProfileChart({ hourly }: { hourly: GasHourly }) {
     () =>
       dayProfileOption(hourly, theme(), {
         cold: t('gas.coldDays'),
+        perHourUnit: t('gas.perHourUnit'),
         mild: t('gas.mildDays'),
         format: m3,
       }),

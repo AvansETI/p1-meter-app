@@ -2,10 +2,7 @@ import {
   IonButton,
   IonContent,
   IonHeader,
-  IonLabel,
   IonPage,
-  IonSegment,
-  IonSegmentButton,
   IonSkeletonText,
   IonTitle,
   IonToolbar,
@@ -56,7 +53,7 @@ function Tile({
       <span className="today-item__label">{label}</span>
       <span className="today-item__value">
         {value}
-        <small>{unit}</small>
+        {unit && <small>{unit}</small>}
       </span>
       {note && <span className="history-change history-change--neutral">{note}</span>}
     </div>
@@ -65,7 +62,7 @@ function Tile({
 
 function Summary({ analysis }: { analysis: GasAnalysis }) {
   const { t } = useTranslation();
-  const { forecast, line, baseline, years } = analysis;
+  const { forecast, line, baseline, years, degreeDays } = analysis;
   const complete = years.filter((y) => y.complete && y.corrected !== null);
   const last = complete.at(-1);
   const before = complete.at(-2);
@@ -99,6 +96,24 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
                   change: `${change > 0 ? '+' : '−'}${fixed(Math.abs(change), 0)}%`,
                   year: before!.year,
                 })
+          }
+        />
+      )}
+      {degreeDays && (
+        <Tile
+          label={t('gas.degreeDaysYear', { year: degreeDays.year })}
+          value={whole(degreeDays.actual)}
+          unit=""
+          note={
+            degreeDays.normal > 0
+              ? t('gas.degreeDaysVsNormal', {
+                  normal: whole(degreeDays.normal),
+                  change: `${degreeDays.actual >= degreeDays.normal ? '+' : '−'}${fixed(
+                    Math.abs((degreeDays.actual / degreeDays.normal - 1) * 100),
+                    0,
+                  )}%`,
+                })
+              : undefined
           }
         />
       )}
@@ -205,24 +220,23 @@ export default function GasPage() {
           {data && <Summary analysis={data} />}
 
           {data && (
-            <div className="history-charts">
+            <div className="history-charts gas-sections">
               <section>
-                <h2 className="live__heading">{t('gas.perDdTitle')}</h2>
-                <IonSegment
-                  value={kind}
-                  onIonChange={(e) => setKind(e.detail.value as GasPeriodKind)}
-                  className="gas-segment"
-                >
-                  <IonSegmentButton value="week">
-                    <IonLabel>{t('gas.week')}</IonLabel>
-                  </IonSegmentButton>
-                  <IonSegmentButton value="month">
-                    <IonLabel>{t('gas.month')}</IonLabel>
-                  </IonSegmentButton>
-                  <IonSegmentButton value="year">
-                    <IonLabel>{t('gas.yearTab')}</IonLabel>
-                  </IonSegmentButton>
-                </IonSegment>
+                <div className="gas-section-head">
+                  <h2 className="live__heading">{t('gas.perDdTitle')}</h2>
+                  <div className="gas-switch" role="group" aria-label={t('gas.perDdTitle')}>
+                    {(['week', 'month', 'year'] as const).map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        aria-pressed={kind === k}
+                        onClick={() => setKind(k)}
+                      >
+                        {t(k === 'year' ? 'gas.yearTab' : `gas.${k}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <Suspense fallback={chartFallback}>
                   <PerDegreeDayChart periods={periods} kind={kind} />
                 </Suspense>
@@ -244,6 +258,35 @@ export default function GasPage() {
                     : t('gas.lineTooFew')}
                 </p>
               </section>
+              {hourly.data && hourly.data.curve.length > 0 && (
+                <>
+                  <section>
+                    <h2 className="live__heading">{t('gas.curveTitle')}</h2>
+                    <Suspense fallback={chartFallback}>
+                      <TemperatureCurveChart hourly={hourly.data} />
+                    </Suspense>
+                    <p className="history-hint">
+                      {t('gas.curveHint')}
+                      {hourly.data.hourlyUpdates && ` ${t('gas.hourlyShifted')}`}
+                    </p>
+                  </section>
+                  <section>
+                    <h2 className="live__heading">{t('gas.profileTitle2')}</h2>
+                    <Suspense fallback={chartFallback}>
+                      <DayProfileChart hourly={hourly.data} />
+                    </Suspense>
+                    <p className="gas-legend">
+                      <span style={{ '--marker': 'var(--app-data-import)' } as CSSProperties}>
+                        {t('gas.coldDays')}
+                      </span>
+                      <span style={{ '--marker': 'var(--app-data-gas)' } as CSSProperties}>
+                        {t('gas.mildDays')}
+                      </span>
+                    </p>
+                    <p className="history-hint">{t('gas.profileHint')}</p>
+                  </section>
+                </>
+              )}
               <section>
                 <h2 className="live__heading">{t('gas.yearsTitle')}</h2>
                 <Years analysis={data} comparison={comparison.data} />
@@ -254,29 +297,6 @@ export default function GasPage() {
                   })}
                 </p>
               </section>
-              {hourly.data && hourly.data.curve.length > 0 && (
-                <section>
-                  <h2 className="live__heading">{t('gas.hourlyTitle')}</h2>
-                  <Suspense fallback={chartFallback}>
-                    <TemperatureCurveChart hourly={hourly.data} />
-                  </Suspense>
-                  <Suspense fallback={chartFallback}>
-                    <DayProfileChart hourly={hourly.data} />
-                  </Suspense>
-                  <p className="gas-legend">
-                    <span style={{ '--marker': 'var(--app-data-import)' } as CSSProperties}>
-                      {t('gas.coldDays')}
-                    </span>
-                    <span style={{ '--marker': 'var(--app-data-gas)' } as CSSProperties}>
-                      {t('gas.mildDays')}
-                    </span>
-                  </p>
-                  <p className="history-hint">
-                    {t('gas.hourlyHint')}
-                    {hourly.data.hourlyUpdates && ` ${t('gas.hourlyShifted')}`}
-                  </p>
-                </section>
-              )}
               <section>
                 <h2 className="live__heading">{t('gas.compareTitle')}</h2>
                 {comparison.data ? (

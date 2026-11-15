@@ -331,3 +331,22 @@ export function referenceAnnual(days: GasDay[], normalAnnual: number): number | 
   );
   return annual !== null && annual >= REFERENCE_MIN_M3 ? annual : null;
 }
+
+/**
+ * Degree days of the calendar year of `today` up to the last day with weather, and the normal
+ * degree days of those same calendar days; null without weather this year.
+ */
+export function degreeDaysToDate(
+  days: RatedDay[],
+  today: string,
+  normals: Normals,
+): { year: number; actual: number; normal: number } | null {
+  const year = plain(today).year;
+  const inYear = days.filter((d) => d.dd !== null && plain(d.day).year === year && d.day < today);
+  if (inYear.length === 0) return null;
+  return {
+    year,
+    actual: inYear.reduce((s, d) => s + d.dd!, 0),
+    normal: inYear.reduce((s, d) => s + normalOn(normals, plain(d.day)), 0),
+  };
+}

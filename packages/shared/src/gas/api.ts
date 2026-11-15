@@ -109,6 +109,8 @@ export const GasAnalysisSchema = z.object({
     .object({ year: z.number(), actual: z.number(), estimated: z.number(), total: z.number() })
     .nullable(),
   normal: z.object({ annual: z.number(), years: z.number() }),
+  /** Degree days of the current year so far, and the normal for the same days. */
+  degreeDays: z.object({ year: z.number(), actual: z.number(), normal: z.number() }).nullable(),
 });
 export type GasAnalysis = z.infer<typeof GasAnalysisSchema>;
 

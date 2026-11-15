@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addDays, formatPlainDate } from '../calendar';
 import {
   autoBaseline,
+  degreeDaysToDate,
   chooseBaseline,
   forecastYear,
   heatingLine,
@@ -126,6 +127,19 @@ describe('analysis', () => {
     const total = days.reduce((s, d) => s + d.m3!, 0);
     expect(forecast.total).toBeCloseTo(total, 0);
     expect(forecastYear(half, '2025-07-01', 1, null, normalsFromYear)).toBeNull();
+  });
+
+  it('sums degree days of the year so far against the normal for the same days', () => {
+    const normalsFromYear = normals(
+      days.map((d) => ({ day: d.day, t: d.t!, fh: 3 })),
+      18,
+      'plain',
+    );
+    const result = degreeDaysToDate(rated, '2025-03-01', normalsFromYear)!;
+    expect(result.year).toBe(2025);
+    expect(result.actual).toBeCloseTo(result.normal);
+    expect(result.actual).toBeCloseTo(rated.slice(0, 59).reduce((s, d) => s + d.dd!, 0));
+    expect(degreeDaysToDate(rated, '2027-03-01', normalsFromYear)).toBeNull();
   });
 
   it('computes the reference value only with enough data and gas', () => {

@@ -742,8 +742,50 @@ ion-menu.app-side-menu ion-item.selected {
 }
 
 /* Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.1) */
-.gas-segment {
-  margin-bottom: 8px;
+.gas-sections {
+  align-items: start;
+}
+.gas-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* Equal heading heights, so charts side by side start at the same line. */
+.gas-sections > section > .live__heading,
+.gas-section-head {
+  min-height: 32px;
+  margin: 0 0 8px;
+}
+.gas-sections > section > .live__heading {
+  display: flex;
+  align-items: center;
+}
+.gas-section-head .live__heading {
+  margin: 0;
+  min-width: 0;
+}
+.gas-switch {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--app-surface);
+}
+.gas-switch button {
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--app-text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gas-switch button[aria-pressed='true'] {
+  background: var(--app-data-gas);
+  color: #fff;
 }
 .gas-link {
   margin: 0;

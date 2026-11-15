@@ -12,7 +12,7 @@
     "live": "Live",
     "history": "History",
     "settings": "Settings",
-    "gas": "Gas"
+    "gas": "Gas analysis"
   },
   "welcome": {
     "intro": "See the energy use of your home, live and back in time.",
@@ -769,7 +769,7 @@
     }
   },
   "gas": {
-    "title": "Gas",
+    "title": "Gas analysis",
     "settingsTitle": "Gas analysis",
     "station": "Weather station {{name}}",
     "weatherUntil": "weather up to {{day}}",
@@ -815,7 +815,6 @@
     "cbsMedian": "CBS median",
     "incompleteYear": "({{days}} days)",
     "yearsHint": "Corrected = converted to a normal weather year ({{normal}} degree days, mean of {{years}} years).",
-    "hourlyTitle": "Per hour",
     "curveChart": "Gas per hour against outdoor temperature",
     "profileChart": "Average gas use per hour of the day",
     "outdoorTemperature": "Outdoor temperature (°C)",
@@ -824,7 +823,6 @@
     "hoursMeasured_other": "{{count}} hours measured",
     "coldDays": "Cold days (< 5 °C)",
     "mildDays": "Mild days (5–12 °C)",
-    "hourlyHint": "Last 90 days: average use per hour at each outdoor temperature, and per hour of the day.",
     "hourlyShifted": "Your meter reports gas once an hour; use is attributed to the hour before.",
     "compareTitle": "Compare",
     "ownReference": "Your use over the past 365 days, converted to a normal weather year: {{m3}} m³.",
@@ -923,6 +921,14 @@
     "share": "Share home profile anonymously",
     "shareHelp": "Your home profile is stored on the server under an encrypted code, not under your EMON ID. You then see how your use compares with homes like yours; others never see your figures. Switching off removes the profile from the server.",
     "shareFailed": "Sharing failed. Please try again later.",
-    "cbsPerM2Median": "Per m² of floor area: CBS median {{median}} m³."
+    "cbsPerM2Median": "Per m² of floor area: CBS median {{median}} m³.",
+    "degreeDaysYear": "Degree days {{year}}",
+    "degreeDaysVsNormal": "normal {{normal}} ({{change}})",
+    "perHourUnit": "m³/hour",
+    "curveTitle": "Hourly use and outdoor temperature",
+    "curveHint": "Last 90 days: average gas use per hour at each outdoor temperature.",
+    "profileTitle2": "Use over the day",
+    "profileHint": "Last 90 days: average gas use per hour of the day, on cold and on mild days.",
+    "degreeDaysPerDay": "Degree days per day"
   }
 }

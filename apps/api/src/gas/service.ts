@@ -2,6 +2,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import {
   autoBaseline,
   chooseBaseline,
+  degreeDaysToDate,
   cbsKey,
   forecastYear,
   GasProfileSchema,
@@ -185,6 +186,7 @@ export class GasService {
       perDd: p.perDd === null ? null : r(p.perDd, 4),
     });
     const forecast = forecastYear(rated, today, baseline.value, line, normals);
+    const degreeDays = degreeDaysToDate(rated, today, normals);
     return {
       station: query.station,
       pending: !this.job.ready(query.station),
@@ -224,6 +226,11 @@ export class GasService {
         total: r(forecast.total, 0),
       },
       normal: { annual: r(normals.annual, 0), years: normals.years },
+      degreeDays: degreeDays && {
+        year: degreeDays.year,
+        actual: r(degreeDays.actual, 0),
+        normal: r(degreeDays.normal, 0),
+      },
     };
   }
 

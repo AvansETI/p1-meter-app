@@ -32,6 +32,7 @@ const analysis = (pending = false): GasAnalysis => ({
   ],
   forecast: { year: 2026, actual: 700, estimated: 250, total: 950 },
   normal: { annual: 2700, years: 20 },
+  degreeDays: { year: 2026, actual: 1397, normal: 1520 },
 });
 const hourly: GasHourly = {
   pending: false,
@@ -95,9 +96,11 @@ describe('GasPage', () => {
     expect(screen.getByText('950')).toBeTruthy();
     expect(screen.getByText('2025 gecorrigeerd')).toBeTruthy();
     expect(screen.getByText('−10% t.o.v. 2024')).toBeTruthy();
+    expect(screen.getByText('Graaddagen 2026')).toBeTruthy();
+    expect(screen.getByText('normaal 1.520 (−8%)')).toBeTruthy();
     expect(await screen.findByTestId('per-dd-chart')).toBeTruthy();
     // Only the first lazy chart is checked: jsdom resolves the others late.
-    expect(screen.getByText('Per uur')).toBeTruthy();
+    expect(screen.getByText('Verbruik over de dag')).toBeTruthy();
     expect(await screen.findByText(/minder dan 70% van deze 40 huishoudens/)).toBeTruthy();
     expect(screen.getByText('CBS 2025: Tussenwoning')).toBeTruthy();
     expect(screen.getByText(/één keer per uur/)).toBeTruthy();
