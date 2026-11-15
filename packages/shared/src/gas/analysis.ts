@@ -235,6 +235,8 @@ export interface GasYear {
   complete: boolean;
   /** Mean baseline over the measured days of this year, m³/day. */
   baseline: number;
+  /** Degree days of every day of the year with weather, measured or not (for display). */
+  ddYear: number;
 }
 
 const daysInYear = (year: number) =>
@@ -243,7 +245,9 @@ const daysInYear = (year: number) =>
 /** Actual and weather-corrected consumption per calendar year (§3.5). */
 export function yearSummaries(days: RatedDay[], baseline: Baseline, normalDd: number): GasYear[] {
   const baseSum = new Map<string, number>();
+  const ddYear = new Map<string, number>();
   for (const d of days) {
+    if (d.dd !== null) ddYear.set(d.day.slice(0, 4), (ddYear.get(d.day.slice(0, 4)) ?? 0) + d.dd);
     if (d.m3 === null || d.dd === null) continue;
     const year = d.day.slice(0, 4);
     baseSum.set(year, (baseSum.get(year) ?? 0) + baselineOn(baseline, d.day));
@@ -259,6 +263,7 @@ export function yearSummaries(days: RatedDay[], baseline: Baseline, normalDd: nu
       corrected: normalised(p, base, normalDd, daysInYear(year)),
       complete: p.days >= COMPLETE_YEAR_DAYS,
       baseline: base,
+      ddYear: ddYear.get(p.key) ?? p.dd,
     };
   });
 }

@@ -243,6 +243,7 @@ export class GasService {
       years: yearSummaries(rated, baselineOf, normals.annual).map((y) => ({
         ...y,
         baseline: r(y.baseline, 3),
+        ddYear: r(y.ddYear, 1),
         m3: r(y.m3, 1),
         dd: r(y.dd, 1),
         corrected: y.corrected === null ? null : r(y.corrected, 0),

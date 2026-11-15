@@ -151,7 +151,7 @@ function Years({ analysis, comparison }: { analysis: GasAnalysis; comparison?: G
               {!y.complete && <small> {t('gas.incompleteYear', { days: y.days })}</small>}
             </td>
             <td>{whole(y.m3)}</td>
-            <td>{whole(y.dd)}</td>
+            <td>{whole(y.ddYear)}</td>
             <td>{y.corrected === null ? '—' : whole(y.corrected)}</td>
             <td>{whole(y.baseline * DAYS_PER_MONTH)}</td>
             {cbs.size > 0 && <td>{cbs.has(y.year) ? whole(cbs.get(y.year)!) : '—'}</td>}
