@@ -127,16 +127,22 @@ export default function GasSettingsPage() {
               label={t('gas.postcode')}
               labelPlacement="stacked"
               inputmode="numeric"
-              maxlength={4}
-              placeholder="3511"
+              maxlength={2}
+              placeholder="35"
               value={postcode}
               helperText={t('gas.postcodeHelp')}
               errorText={t('gas.postcodeInvalid')}
-              className={postcode && !postcodeRegion(postcode) ? 'ion-invalid ion-touched' : ''}
+              className={
+                postcode.length === 2 && !postcodeRegion(postcode) ? 'ion-invalid ion-touched' : ''
+              }
               onIonInput={(e) => {
-                const value = String(e.detail.value ?? '');
+                // Only two digits: anything else is removed while typing.
+                const value = String(e.detail.value ?? '')
+                  .replace(/\D/g, '')
+                  .slice(0, 2);
+                e.target.value = value;
                 setPostcode(value);
-                const region = postcodeRegion(value);
+                const region = value.length === 2 ? postcodeRegion(value) : null;
                 if (region || value === '') setGas({ postcode: region ?? undefined });
               }}
             />
