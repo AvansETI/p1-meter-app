@@ -17,8 +17,10 @@ export type Theme = z.infer<typeof ThemeSchema>;
 export const LanguageSchema = z.enum(['system', 'nl', 'en']);
 export type Language = z.infer<typeof LanguageSchema>;
 
-/** Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2); only the station leaves the device. */
+/** Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.2). */
 const GasSettingsSchema = z.object({
+  /** Show the Gas tab and load its data at start-up. */
+  enabled: z.boolean().catch(true),
   /** 2-digit postcode region, to pick the nearest KNMI station. */
   postcode: z
     .string()
@@ -44,6 +46,7 @@ const GasSettingsSchema = z.object({
 export type GasSettings = z.infer<typeof GasSettingsSchema>;
 
 export const DEFAULT_GAS_SETTINGS: GasSettings = {
+  enabled: true,
   base: DEFAULT_BASE_TEMPERATURE,
   method: 'weighted',
   cooking: true,

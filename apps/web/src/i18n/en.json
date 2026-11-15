@@ -143,7 +143,8 @@
     "licensesError": "The licenses could not be loaded. Check your connection and try again.",
     "costs": "Costs",
     "tariffs": "Tariffs",
-    "gasAnalysis": "Gas"
+    "gasAnalysis": "Gas",
+    "gasEnabled": "Show gas analysis"
   },
   "pwa": {
     "updated": "Updated to version {{version}}"
@@ -845,7 +846,7 @@
     "attribution": "Weather data: KNMI · Comparison: CBS StatLine 85140NED (CC BY 4.0)",
     "location": "Location",
     "postcode": "Postcode (first digits)",
-    "postcodeHelp": "Only the first two digits are used to pick the nearest KNMI station. Your postcode stays on this device.",
+    "postcodeHelp": "Only the first two digits are used: for the nearest KNMI station and, on the server, to compare your use with the weather in your own region.",
     "postcodeInvalid": "Enter a Dutch postcode, e.g. 3511.",
     "stationLabel": "Weather station",
     "stationAuto": "Automatic (by postcode)",

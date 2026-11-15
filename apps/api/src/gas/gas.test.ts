@@ -162,6 +162,50 @@ describe('GasService comparison', () => {
   });
 });
 
+describe('GasService storage', () => {
+  function service(db: ReturnType<typeof openDatabase>, source: FakeDataSource) {
+    const store = new MemoryOpenDataStore();
+    const job = new OpenDataJob(store, undefined as never, db, pino({ level: 'silent' }));
+    return new GasService(
+      source,
+      new WeatherService(store),
+      store,
+      job,
+      db,
+      (s) => `h-${s}`,
+      () => NOW,
+    );
+  }
+
+  it('keeps daily readings across restarts and then reads only the newest days', async () => {
+    const db = openDatabase(':memory:');
+    const source = new FakeDataSource({
+      [SIG]: { capabilities: CAPS, gasDays: dayEnds(380), firstPoint: new Date('2025-11-01') },
+    });
+    const first = await service(db, source).gasDays(SIG);
+    const calls: Date[] = [];
+    const original = source.gasDayEnds.bind(source);
+    source.gasDayEnds = (signature, from, to) => {
+      calls.push(from);
+      return original(signature, from, to);
+    };
+    const again = await service(db, source).gasDays(SIG);
+    expect([...again]).toEqual([...first]);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.getTime()).toBeGreaterThan(NOW.getTime() - 20 * 86_400_000);
+  });
+
+  it('stores the postcode region and derives the station from it', () => {
+    const db = openDatabase(':memory:');
+    const gas = service(db, new FakeDataSource());
+    expect(gas.stationOf(SIG)).toBeUndefined();
+    gas.setPostcode(SIG, '62');
+    expect(gas.stationOf(SIG)).toBe(380);
+    gas.setPostcode(SIG, undefined);
+    expect(gas.stationOf(SIG)).toBeUndefined();
+  });
+});
+
 describe('gas routes', () => {
   afterEach(() => vi.useRealTimers());
 
@@ -205,7 +249,7 @@ describe('gas routes', () => {
 
     const off = await get(
       session,
-      '/api/v1/gas/analysis?station=260&base=18&method=weighted&cooking=false',
+      '/api/v1/gas/analysis?station=260&base=18&method=weighted&cooking=false&postcode=35',
     );
     expect(off.json<GasAnalysis>().baseline).toMatchObject({ value: 0, source: 'off' });
     await app.close();
@@ -218,6 +262,7 @@ describe('gas routes', () => {
       'station=999&base=18&method=plain&cooking=true',
       'station=260&base=25&method=plain&cooking=true',
       'station=260&base=18&method=other&cooking=true',
+      'station=260&base=18&method=plain&cooking=true&postcode=3511',
     ]) {
       expect((await get(session, `/api/v1/gas/analysis?${query}`)).statusCode).toBe(400);
     }

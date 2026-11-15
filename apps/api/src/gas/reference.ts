@@ -5,20 +5,22 @@ import type { HouseholdDataSource } from '../data/source';
 import type { OpenDataJob } from '../opendata/job';
 import { zonedHour } from '../time';
 import { dayKey } from '../usage/tracker';
-import { dailyGas, mergeDays, readDayEnds } from './days';
-import { REFERENCE_MAX_AGE_DAYS } from './service';
+import { mergeDays } from './days';
+import { REFERENCE_MAX_AGE_DAYS, type GasService } from './service';
 import type { WeatherService } from './weather';
 
 const DAY_MS = 86_400_000;
 /** KNMI has published the previous day by then (design §4.2). */
 const RUN_FROM_HOUR = 11;
-/** Days of gas read per household: a year plus the day before. */
+/** Households with gas data in this many days take part. */
 const WINDOW_DAYS = 367;
 
 /**
  * Nightly reference values for the comparison (design §4.1–4.2): the weather-corrected
- * consumption of the last 365 days of every household with gas, stored under its hash.
- * Households are read one after another with a pause, to keep the load on InfluxDB low.
+ * consumption of the last 365 days of every household with gas, stored under its hash. Uses
+ * the household's own station when its postcode region is known. Households are read one
+ * after another with a pause, to keep the load on InfluxDB low; their daily readings are kept,
+ * so after the first run only the newest days are read.
  */
 export class ReferenceJob {
   private timer: NodeJS.Timeout | undefined;
@@ -26,6 +28,7 @@ export class ReferenceJob {
 
   constructor(
     private readonly source: HouseholdDataSource,
+    private readonly gas: GasService,
     private readonly weather: WeatherService,
     private readonly openData: OpenDataJob,
     private readonly db: DatabaseSync,
@@ -73,10 +76,6 @@ export class ReferenceJob {
       const today = dayKey(now);
       const yesterday = dayKey(new Date(now.getTime() - DAY_MS));
       const from = new Date(now.getTime() - WINDOW_DAYS * DAY_MS);
-      const [weather, normals] = await Promise.all([
-        this.weather.daily(REFERENCE_STATION),
-        this.weather.normals(REFERENCE_STATION, REFERENCE_BASE, REFERENCE_METHOD),
-      ]);
       const signatures = await this.source.gasSignatures(from);
       const upsert = this.db.prepare(
         'INSERT OR REPLACE INTO gas_reference (hash, annual_m3, updated_day) VALUES (?, ?, ?)',
@@ -84,7 +83,15 @@ export class ReferenceJob {
       let stored = 0;
       for (const signature of signatures) {
         try {
-          const gas = dailyGas(await readDayEnds(this.source, signature, from, now));
+          // The household's own station when its postcode is known and that weather is
+          // complete; De Bilt otherwise (design §4.1).
+          const own = this.gas.stationOf(signature);
+          const station = own !== undefined && this.openData.ready(own) ? own : REFERENCE_STATION;
+          const [gas, weather, normals] = await Promise.all([
+            this.gas.gasDays(signature),
+            this.weather.daily(station),
+            this.weather.normals(station, REFERENCE_BASE, REFERENCE_METHOD),
+          ]);
           const first = [...gas.keys()].sort()[0];
           if (!first) continue;
           const annual = referenceAnnual(mergeDays(gas, weather, first, yesterday), normals.annual);

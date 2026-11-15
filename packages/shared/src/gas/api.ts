@@ -30,6 +30,11 @@ export const GasAnalysisQuerySchema = z.object({
   /** Manual baseline in m³/day; absent means automatic. */
   baseline: z.coerce.number().min(0).max(20).optional(),
   cooking: flag,
+  /** 2-digit postcode region; stored for the household's own station in comparisons. */
+  postcode: z
+    .string()
+    .regex(/^[1-9]\d$/)
+    .optional(),
 });
 /** The query as the web app sends it. */
 export interface GasAnalysisQuery {
@@ -38,6 +43,7 @@ export interface GasAnalysisQuery {
   method: DegreeDayMethod;
   baseline?: number;
   cooking: 'true' | 'false';
+  postcode?: string;
 }
 
 export const GasHourlyQuerySchema = z.object({ station: StationSchema });

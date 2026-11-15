@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route } from 'react-router-dom';
 import SideMenu from './components/SideMenu';
+import { useGasWarmup } from './gas/queries';
 import { navItems } from './navigation';
 import GasPage from './pages/GasPage';
 import GasSettingsPage from './pages/GasSettingsPage';
@@ -32,10 +33,13 @@ import { useThemeClass } from './theme/theme';
 function MainLayout() {
   const { t } = useTranslation();
   const { state } = useSession();
+  const { settings } = useSettings();
   const hasGas = state.status === 'ready' && state.capabilities.hasGas;
+  const showGas = hasGas && settings.gas.enabled;
+  useGasWarmup(settings.emonId, settings.gas, hasGas);
   return (
     <IonSplitPane contentId="main" when="lg">
-      <SideMenu hasGas={hasGas} />
+      <SideMenu hasGas={showGas} />
       <div className="ion-page" id="main">
         <IonTabs>
           <IonRouterOutlet>
@@ -47,14 +51,14 @@ function MainLayout() {
             <Route
               path="/gas"
               element={
-                state.status === 'ready' && !hasGas ? <Navigate to="/live" replace /> : <GasPage />
+                state.status === 'ready' && !showGas ? <Navigate to="/live" replace /> : <GasPage />
               }
             />
             <Route path="/settings/gas" element={<GasSettingsPage />} />
             <Route path="*" element={<Navigate to="/live" replace />} />
           </IonRouterOutlet>
           <IonTabBar slot="bottom" className="app-tab-bar">
-            {navItems(hasGas).map((item) => (
+            {navItems(showGas).map((item) => (
               <IonTabButton key={item.tab} tab={item.tab} href={item.path}>
                 <IonIcon aria-hidden="true" icon={item.icon} />
                 <IonLabel>{t(item.labelKey)}</IonLabel>

@@ -215,6 +215,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
     openData.start();
     const reference = new ReferenceJob(
       source,
+      gas,
       weather,
       openData,
       db,

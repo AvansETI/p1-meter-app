@@ -53,6 +53,21 @@ const MIGRATIONS: string[] = [
      profile    TEXT NOT NULL,
      updated_at TEXT NOT NULL
    );`,
+  // Gas analysis (#68): daily gas readings kept across restarts (reading them from InfluxDB
+  // takes seconds per year) and the 2-digit postcode region for the household's own station.
+  `CREATE TABLE gas_day_ends (
+     hash    TEXT NOT NULL,
+     day     TEXT NOT NULL,
+     time    INTEGER NOT NULL,
+     day_end INTEGER NOT NULL,
+     value   REAL NOT NULL,
+     PRIMARY KEY (hash, day)
+   );
+   CREATE TABLE gas_locations (
+     hash       TEXT PRIMARY KEY,
+     postcode   TEXT NOT NULL,
+     updated_at TEXT NOT NULL
+   );`,
 ];
 
 /** Opens (and migrates) the app database in `dir` (docs/design/2026-11-09-costs.md §5). */

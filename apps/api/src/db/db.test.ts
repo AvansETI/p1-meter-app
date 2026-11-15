@@ -35,6 +35,7 @@ describe('migrations', () => {
       { version: 3 },
       { version: 4 },
       { version: 5 },
+      { version: 6 },
     ]);
   });
 });

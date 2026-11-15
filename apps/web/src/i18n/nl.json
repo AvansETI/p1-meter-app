@@ -143,7 +143,8 @@
     "licensesError": "De licenties konden niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
     "costs": "Kosten",
     "tariffs": "Tarieven",
-    "gasAnalysis": "Gas"
+    "gasAnalysis": "Gas",
+    "gasEnabled": "Gasanalyse tonen"
   },
   "pwa": {
     "updated": "Bijgewerkt naar versie {{version}}"
@@ -845,7 +846,7 @@
     "attribution": "Weergegevens: KNMI · Vergelijking: CBS StatLine 85140NED (CC BY 4.0)",
     "location": "Locatie",
     "postcode": "Postcode (eerste cijfers)",
-    "postcodeHelp": "Alleen de eerste twee cijfers worden gebruikt om het dichtstbijzijnde KNMI-station te kiezen. Je postcode blijft op dit apparaat.",
+    "postcodeHelp": "Alleen de eerste twee cijfers worden gebruikt: voor het dichtstbijzijnde KNMI-station en, op de server, om je verbruik met het weer in je eigen regio te vergelijken.",
     "postcodeInvalid": "Vul een Nederlandse postcode in, bijv. 3511.",
     "stationLabel": "Weerstation",
     "stationAuto": "Automatisch (op postcode)",

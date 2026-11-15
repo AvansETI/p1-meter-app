@@ -308,7 +308,26 @@ filter it on `capabilities.gas`, and `/gas` redirects to `/live` without gas.
 - **Pending station:** while the weather of a new station is being fetched, the page shows
   only a notice and refreshes every 15 seconds.
 
-## 10. Out of scope
+## 10. Changes after review (2026-11-15)
+
+- **Postcode on the server:** the 2-digit postcode region may be stored on the server; it is
+  not privacy-sensitive.
+  - The web app sends it with the analysis request.
+  - It is stored in `gas_locations` under the hashed code, and deleted when the user clears
+    it.
+  - The nightly reference value then uses the household's own station and its normal,
+    falling back to De Bilt when no region is known or that station's weather is incomplete.
+- **Daily readings kept:**
+  - Daily gas readings are stored in `gas_day_ends`, under the hashed code.
+  - After a restart or deploy only the newest days are read from InfluxDB. The analysis and
+    the nightly job share these readings.
+- **Pre-loading:** the web app starts loading the analysis, the hourly analysis and the
+  comparison as soon as the session is known, while the splash screen still shows.
+- **On/off:**
+  - Settings has a "Show gas analysis" toggle, on by default.
+  - When off, the Gas tab, the gas settings page and the pre-loading are gone.
+
+## 11. Out of scope
 
 - Electricity analysis.
 - Exports.

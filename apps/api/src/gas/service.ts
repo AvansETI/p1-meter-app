@@ -13,6 +13,7 @@ import {
   periods,
   quantile,
   rateDays,
+  stationForPostcode,
   temperatureCurve,
   dayProfile,
   yearSummaries,
@@ -82,30 +83,78 @@ export class GasService {
 
   /**
    * Gas per local day over all data of the household. A year of readings takes seconds to
-   * aggregate, so the history is read once and then topped up.
+   * aggregate, so the daily readings are kept in the database and only the newest days are
+   * read again: after the first time (or a restart) this takes well under a second.
    */
   async gasDays(signature: string): Promise<Map<string, number>> {
     const now = this.now().getTime();
-    const cached = this.endsCache.get(signature);
+    const hash = this.hash(signature);
+    const cached = this.endsCache.get(hash);
     if (cached && now - cached.at < GAS_CACHE_MS) return dailyGas(cached.ends);
-    let ends: GasDayEnd[];
-    if (cached?.ends.length) {
+    const stored = cached?.ends ?? this.storedEnds(hash);
+    let fresh: GasDayEnd[];
+    let from: number;
+    if (stored.length) {
       // Re-read the last two days: the latest one was still running.
-      const from = cached.ends.at(-1)!.dayEnd - 2 * DAY_MS;
-      const fresh = await this.source.gasDayEnds(signature, new Date(from));
-      ends = [...cached.ends.filter((e) => e.dayEnd <= from), ...fresh];
+      from = stored.at(-1)!.dayEnd - 2 * DAY_MS;
+      fresh = await readDayEnds(this.source, signature, new Date(from), this.now());
     } else {
       const first = await this.source.firstPoint(signature);
-      ends = first
-        ? await readDayEnds(this.source, signature, new Date(first.getTime() - DAY_MS), this.now())
-        : [];
+      from = first ? first.getTime() - DAY_MS : now;
+      fresh = first ? await readDayEnds(this.source, signature, new Date(from), this.now()) : [];
     }
-    this.endsCache.set(signature, { ends, at: now });
+    this.storeEnds(hash, fresh);
+    const ends = [...stored.filter((e) => e.dayEnd <= from), ...fresh];
+    this.endsCache.set(hash, { ends, at: now });
     return dailyGas(ends);
+  }
+
+  private storedEnds(hash: string): GasDayEnd[] {
+    const rows = this.db
+      .prepare('SELECT day, time, day_end, value FROM gas_day_ends WHERE hash = ? ORDER BY day')
+      .all(hash) as Array<{ day: string; time: number; day_end: number; value: number }>;
+    return rows.map((r) => ({ day: r.day, time: r.time, dayEnd: r.day_end, value: r.value }));
+  }
+
+  private storeEnds(hash: string, ends: GasDayEnd[]): void {
+    const upsert = this.db.prepare(
+      'INSERT OR REPLACE INTO gas_day_ends (hash, day, time, day_end, value) VALUES (?, ?, ?, ?, ?)',
+    );
+    this.db.exec('BEGIN');
+    try {
+      for (const e of ends) upsert.run(hash, e.day, e.time, e.dayEnd, e.value);
+      this.db.exec('COMMIT');
+    } catch (error) {
+      this.db.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  /** Remembers (or forgets) the household's postcode region for its own station. */
+  setPostcode(signature: string, postcode: string | undefined): void {
+    const hash = this.hash(signature);
+    if (postcode) {
+      this.db
+        .prepare(
+          'INSERT OR REPLACE INTO gas_locations (hash, postcode, updated_at) VALUES (?, ?, ?)',
+        )
+        .run(hash, postcode, this.now().toISOString());
+    } else {
+      this.db.prepare('DELETE FROM gas_locations WHERE hash = ?').run(hash);
+    }
+  }
+
+  /** The station nearest to the household's stored postcode region, if any. */
+  stationOf(signature: string): number | undefined {
+    const row = this.db
+      .prepare('SELECT postcode FROM gas_locations WHERE hash = ?')
+      .get(this.hash(signature)) as { postcode: string } | undefined;
+    return row ? stationForPostcode(row.postcode)?.code : undefined;
   }
 
   async analysis(signature: string, query: AnalysisQuery): Promise<GasAnalysis> {
     this.job.useStation(query.station);
+    this.setPostcode(signature, query.postcode);
     const [gas, weather, normals] = await Promise.all([
       this.gasDays(signature),
       this.weather.daily(query.station),

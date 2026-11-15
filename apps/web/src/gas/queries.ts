@@ -18,6 +18,7 @@ export function useGasAnalysis(emonId: string | undefined, gas: GasSettings, ena
     method: gas.method,
     cooking: String(gas.cooking) as 'true' | 'false',
     ...(gas.baseline !== undefined && { baseline: gas.baseline }),
+    ...(gas.postcode && { postcode: gas.postcode }),
   };
   return useQuery({
     queryKey: ['gas-analysis', emonId, query],
@@ -60,4 +61,15 @@ export function useShareProfile() {
       unwrap(profile ? api.shareGasProfile(profile) : api.unshareGasProfile()),
     onSettled: () => client.invalidateQueries({ queryKey: ['gas-comparison'] }),
   });
+}
+
+/**
+ * Starts loading the gas analysis as soon as the session is known, while the splash screen
+ * still shows: the first analysis of a household can take a while on the server.
+ */
+export function useGasWarmup(emonId: string | undefined, gas: GasSettings, hasGas: boolean) {
+  const enabled = hasGas && gas.enabled;
+  useGasAnalysis(emonId, gas, enabled);
+  useGasHourly(emonId, gas, enabled);
+  useGasComparison(emonId, gas.profile, enabled);
 }

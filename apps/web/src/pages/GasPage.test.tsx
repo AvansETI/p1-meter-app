@@ -118,11 +118,14 @@ describe('GasPage', () => {
 });
 
 describe('GasSettingsPage', () => {
-  it('uses the station nearest to the stored postcode, which never leaves the device', async () => {
+  it('uses the station nearest to the postcode and sends the region along', async () => {
     const fetch = setup('settings', false, { ...DEFAULT_GAS_SETTINGS, postcode: '97' });
     expect(await screen.findByText('In gebruik: Eelde.')).toBeTruthy();
-    await waitFor(() => expect(urls(fetch).some((u) => u.includes('station=280'))).toBe(true));
-    expect(urls(fetch).some((u) => u.includes('postcode') || u.includes('=97'))).toBe(false);
+    await waitFor(() =>
+      expect(urls(fetch).some((u) => u.includes('station=280') && u.includes('postcode=97'))).toBe(
+        true,
+      ),
+    );
   });
 
   it('tells which station is used without a location', async () => {
