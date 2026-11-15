@@ -414,7 +414,44 @@ statement. The comparison is made with that number.
   - The CBS column hidden outside calendar years.
   - The settlement and so-far tiles, with and without the expected annual use.
 
-## 12. Out of scope
+## 12. Gaps in the readings (fix, 2026-11-15)
+
+When a kit is offline for days or weeks, it sends nothing at all, so those days have no gas.
+The meter counter does run on, and the first reading after the gap shows the total use over
+it. Before this fix those days were simply left out. Totals then fell far short of the meter.
+For example, "Used so far" showed 9 m³ since 5 September where the meter said 56 m³.
+
+- `gasGaps` (API) gives every gap between two readings near midnight: the days in between
+  plus the first day after (whose own reading is not a day difference), and the counter
+  difference over them. Only complete days before today count. Jumps that are negative, or
+  above 100 m³ per day, are ignored.
+- `fillGaps` (shared) spreads that use over the gap days by their expected use: the
+  baseline plus the heating line's slope times the degree days (normal degree days without
+  weather). Without any expected use it spreads evenly. Those days are marked `filled`.
+- Totals use the filled days:
+  - periods;
+  - years and the weather correction;
+  - forecast;
+  - "used so far" and its expected value;
+  - the rolling 12 months.
+- The baseline, the heating line and the scatter plot keep measured days only, since a filled
+  day lies on the model by construction.
+- A day without use is 0 m³, not unknown; only a day without a reading is unknown. The
+  heating line leaves out days with 0 m³ (heating off, e.g. nobody home), the totals count
+  them.
+- Estimates stay out of InfluxDB: `p1-smartmeters` holds what the kits measured, the token is
+  read-only, and estimates follow the model, so they are recomputed from the real readings.
+  The app marks them instead:
+  - periods, years, the forecast and "used so far" carry `filled` (the number of estimated
+    days);
+  - the tiles say "waarvan N dagen geschat (meetkit offline)";
+  - the years table says "(N dagen geschat)";
+  - bars of periods with estimated days are paler by their share, with the count in the
+    tooltip.
+- The comparison reference value is unchanged: it scales measured days to a normal year and
+  so already copes with gaps.
+
+## 13. Out of scope
 
 - Electricity analysis.
 - Exports.

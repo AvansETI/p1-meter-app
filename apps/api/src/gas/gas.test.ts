@@ -19,7 +19,7 @@ import { OpenDataJob } from '../opendata/job';
 import { MemoryOpenDataStore } from '../opendata/store';
 import { buildServer } from '../server';
 import { zonedToUtc } from '../time';
-import { dailyGas, mergeDays, readDayEnds } from './days';
+import { dailyGas, gasGaps, mergeDays, readDayEnds } from './days';
 import { distribution, GasService } from './service';
 import { WeatherService } from './weather';
 
@@ -92,6 +92,29 @@ describe('dailyGas', () => {
   });
 });
 
+describe('gasGaps', () => {
+  it("takes the meter's use over days without a reading near midnight", () => {
+    const ends = dayEnds(8);
+    ends.splice(2, 2); // the kit sent nothing on days 2 and 3
+    ends[3] = { ...ends[3]!, time: ends[3]!.dayEnd - 2 * HOUR_MS }; // day 5 read at 22:00
+    const gaps = gasGaps(ends, day(8));
+    expect(gaps.map((g) => [g.from, g.to])).toEqual([
+      [day(2), day(4)],
+      [day(5), day(6)],
+    ]);
+    expect(gaps[0]!.m3).toBeCloseTo(ends[2]!.value - ends[1]!.value, 3);
+    expect(gaps[1]!.m3).toBeCloseTo(ends[4]!.value - ends[2]!.value, 3);
+  });
+
+  it('leaves out today and impossible jumps', () => {
+    const ends = dayEnds(6);
+    ends.splice(4, 1); // gap on day 4, closed only by today's (partial) reading
+    ends.splice(1, 1); // gap on day 1 …
+    ends[1] = { ...ends[1]!, value: ends[0]!.value - 5 }; // … with the counter going back
+    expect(gasGaps(ends, day(5))).toEqual([]);
+  });
+});
+
 describe('readDayEnds', () => {
   it('reads in chunks and keeps one reading per day', async () => {
     const ends = dayEnds(400);
@@ -115,13 +138,13 @@ describe('readDayEnds', () => {
 });
 
 describe('mergeDays', () => {
-  it('leaves out days without any gas (nobody home)', () => {
+  it('keeps a day without gas as 0, and a day without a reading as unknown', () => {
     const gas = new Map([
       ['2026-01-01', 3],
       ['2026-01-02', 0],
     ]);
     const days = mergeDays(gas, new Map(), '2026-01-01', '2026-01-03');
-    expect(days.map((d) => d.m3)).toEqual([3, null, null]);
+    expect(days.map((d) => d.m3)).toEqual([3, 0, null]);
   });
 });
 
@@ -336,6 +359,43 @@ describe('gas routes', () => {
     const noGas = await open(NO_GAS);
     expect((await get(noGas, '/api/v1/gas/hourly?station=260')).statusCode).toBe(404);
     expect((await get('nope', '/api/v1/gas/hourly?station=260')).statusCode).toBe(401);
+    await app.close();
+  });
+
+  it("fills a gap in the readings from the meter's use, so totals match the meter", async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+    const ends = dayEnds(380);
+    // The kit was offline for three weeks in October 2026.
+    const gap = ends.filter((e) => e.day >= '2026-10-05' && e.day <= '2026-10-25');
+    const withGap = ends.filter((e) => !gap.includes(e));
+    const source = new FakeDataSource({
+      [SIG]: { capabilities: CAPS, gasDays: withGap, firstPoint: new Date('2025-11-01') },
+    });
+    const app = await buildServer(loadConfig({ NODE_ENV: 'test', LOG_LEVEL: 'silent' }), {
+      source,
+      openData: await weatherStore(),
+    });
+    const { sessionId } = (
+      await app.inject({ method: 'POST', url: '/api/v1/session', payload: { emonId: SIG } })
+    ).json<{ sessionId: string }>();
+    const body = (
+      await app.inject({
+        method: 'GET',
+        url: '/api/v1/gas/analysis?station=260&base=18&method=plain&cooking=true',
+        headers: { 'x-session': sessionId },
+      })
+    ).json<GasAnalysis>();
+    const october = body.days.filter((d) => d.day >= '2026-10-01' && d.day <= '2026-10-31');
+    expect(october.filter((d) => d.filled).map((d) => d.day)).toEqual(
+      gap.map((e) => e.day).concat('2026-10-26'),
+    );
+    const meter =
+      ends.find((e) => e.day === '2026-10-31')!.value -
+      ends.find((e) => e.day === '2026-09-30')!.value;
+    expect(october.reduce((s, d) => s + d.m3!, 0)).toBeCloseTo(meter, 1);
+    // The heating line still comes from measured days only.
+    expect(body.line!.slope).toBeCloseTo(0.3, 2);
     await app.close();
   });
 

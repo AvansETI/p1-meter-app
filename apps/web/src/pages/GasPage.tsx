@@ -63,6 +63,7 @@ function Tile({
   unit,
   note,
   period,
+  estimate,
 }: {
   label: string;
   value: string;
@@ -70,6 +71,8 @@ function Tile({
   note?: string;
   /** The dates the value covers, e.g. "1 apr 2026 – 31 mrt 2027". */
   period?: string;
+  /** How much of the value is estimated over gaps in the readings. */
+  estimate?: string;
 }) {
   return (
     <div className="today-item">
@@ -80,6 +83,7 @@ function Tile({
         {unit && <small>{unit}</small>}
       </span>
       {note && <span className="history-change history-change--neutral">{note}</span>}
+      {estimate && <span className="today-item__estimate">{estimate}</span>}
     </div>
   );
 }
@@ -97,6 +101,8 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
     last: dayBefore(`${startYear + 1}-${analysis.yearStart}`),
   };
   const yesterday = dayBefore(formatPlainDate(today()));
+  const estimated = (days: number) =>
+    days > 0 ? t('gas.estimatedDays', { count: days }) : undefined;
   return (
     <div className="today-grid">
       {forecast &&
@@ -133,6 +139,7 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
           period={range(year.first, yesterday)}
           value={whole(settlement?.soFar?.actual ?? forecast.actual)}
           unit="m³"
+          estimate={estimated(settlement?.soFar?.filled ?? forecast.filled)}
           note={
             settlement?.soFar
               ? t('gas.soFarNote', {
@@ -216,7 +223,15 @@ function Years({ analysis, comparison }: { analysis: GasAnalysis; comparison?: G
               {y.label}
               {!y.complete && <small> {t('gas.incompleteYear', { days: y.days })}</small>}
             </td>
-            <td>{whole(y.m3)}</td>
+            <td>
+              {whole(y.m3)}
+              {y.filled > 0 && (
+                <small className="gas-years__estimate">
+                  {' '}
+                  {t('gas.estimatedShort', { count: y.filled })}
+                </small>
+              )}
+            </td>
             <td>{whole(y.ddYear)}</td>
             <td>{y.corrected === null ? '—' : whole(y.corrected)}</td>
             <td>{whole(y.baseline * DAYS_PER_MONTH)}</td>
