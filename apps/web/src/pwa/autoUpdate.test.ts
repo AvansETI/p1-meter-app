@@ -62,6 +62,57 @@ describe('startUpdateChecks', () => {
     expect(update).toHaveBeenCalledTimes(2);
   });
 
+  describe('says "Bijwerken…" on the splash as soon as an update is found', () => {
+    // jsdom has no service worker container.
+    const withController = (controller: object | null) =>
+      Object.defineProperty(navigator, 'serviceWorker', {
+        configurable: true,
+        value: { controller },
+      });
+    afterEach(() => {
+      delete (navigator as { serviceWorker?: unknown }).serviceWorker;
+    });
+
+    it('when the update is found later', () => {
+      document.body.innerHTML = '<div id="splash"></div>';
+      withController({});
+      const target = new EventTarget();
+      const stop = startUpdateChecks({
+        update: () => Promise.resolve(),
+        addEventListener: (type, listener) => target.addEventListener(type, listener),
+      });
+      expect(document.documentElement.dataset.splash).toBeUndefined();
+      target.dispatchEvent(new Event('updatefound'));
+      expect(document.documentElement.dataset.splash).toBe('updating');
+      stop();
+    });
+
+    it('when the browser is already installing it at start-up', () => {
+      document.body.innerHTML = '<div id="splash"></div>';
+      withController({});
+      const stop = startUpdateChecks({ update: () => Promise.resolve(), installing: {} });
+      expect(document.documentElement.dataset.splash).toBe('updating');
+      stop();
+    });
+
+    it('not on the first visit, nor after the splash is gone', () => {
+      document.body.innerHTML = '<div id="splash"></div>';
+      withController(null);
+      startUpdateChecks({
+        update: () => Promise.resolve(),
+        installing: {},
+      })();
+      expect(document.documentElement.dataset.splash).toBeUndefined();
+      document.body.innerHTML = '';
+      withController({});
+      startUpdateChecks({
+        update: () => Promise.resolve(),
+        installing: {},
+      })();
+      expect(document.documentElement.dataset.splash).toBeUndefined();
+    });
+  });
+
   it('does not check while hidden', () => {
     const update = vi.fn(() => Promise.resolve());
     const stop = startUpdateChecks({ update });
@@ -81,6 +132,7 @@ describe('useReloadWhenIdle', () => {
   });
 
   it('reloads right away when the user is not busy, and remembers the old version', () => {
+    document.body.innerHTML = '<div id="splash"></div>';
     const update = vi.fn(() => Promise.resolve());
     renderHook(() => useReloadWhenIdle(true, update, '0.9.0'));
     expect(update).toHaveBeenCalledWith(true);

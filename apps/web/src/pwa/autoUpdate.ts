@@ -15,7 +15,30 @@ export const UPDATED_FROM_KEY = 'p1meter.updatedFrom';
  * without a page load, so the browser's own check would not run. Lives as long as the app;
  * returns a stop function for tests.
  */
-export function startUpdateChecks(registration: { update: () => Promise<unknown> }) {
+/**
+ * Shows "Bijwerken…" on the splash as soon as a new version is found, while it still shows
+ * (#73); the splash then stays until the reload.
+ */
+export function markUpdating() {
+  if (document.getElementById('splash')) document.documentElement.dataset.splash = 'updating';
+}
+
+/** The parts of a `ServiceWorkerRegistration` used here. */
+interface Registration {
+  update: () => Promise<unknown>;
+  addEventListener?: (type: 'updatefound', listener: () => void) => void;
+  installing?: unknown;
+  waiting?: unknown;
+}
+
+export function startUpdateChecks(registration: Registration) {
+  // Not on the very first visit: then the service worker installs without an update.
+  const isUpdate = () => Boolean(navigator.serviceWorker?.controller);
+  // The browser checks by itself on start-up; its update may already be installing.
+  if ((registration.installing || registration.waiting) && isUpdate()) markUpdating();
+  registration.addEventListener?.('updatefound', () => {
+    if (isUpdate()) markUpdating();
+  });
   let lastCheck = Date.now();
   const check = () => {
     if (document.hidden || Date.now() - lastCheck < MIN_CHECK_GAP_MS) return;
@@ -57,7 +80,7 @@ export function useReloadWhenIdle(
         // Without storage the update still happens, only the message is skipped.
       }
       // A splash that is still showing says "Bijwerken…" and continues after the reload.
-      document.documentElement.dataset.splash = 'updating';
+      markUpdating();
       void updateServiceWorker(true);
     };
     tryReload();

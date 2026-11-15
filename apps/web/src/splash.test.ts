@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { hideSplash } from './splash';
+import { SPLASH_UPDATED_MS, UPDATE_HOLD_MAX_MS, hideSplash } from './splash';
 
 describe('hideSplash', () => {
   let el: HTMLElement;
@@ -25,13 +25,31 @@ describe('hideSplash', () => {
     expect(el.isConnected).toBe(false);
   });
 
-  it('adds no minimum after an update reload: the splash already showed its time', async () => {
-    document.documentElement.dataset.splash = 'updating';
+  it('stays two seconds after an update reload, with "Bijwerken…"', async () => {
+    document.documentElement.dataset.splash = 'updated';
     const done = hideSplash(el, { now: () => 100, reducedMotion: () => true });
-    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(SPLASH_UPDATED_MS - 101);
+    expect(el.isConnected).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
     await done;
     expect(el.isConnected).toBe(false);
     delete document.documentElement.dataset.splash;
+  });
+
+  it('waits while a found update installs, then the page reloads', async () => {
+    let updating = true;
+    void hideSplash(el, {
+      minMs: 0,
+      now: () => 0,
+      reducedMotion: () => true,
+      updating: () => updating,
+    });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(el.isConnected).toBe(true);
+    // A failed install: the splash does not stay forever.
+    await vi.advanceTimersByTimeAsync(UPDATE_HOLD_MAX_MS);
+    expect(el.isConnected).toBe(false);
+    updating = false;
   });
 
   it('adds no delay when loading took longer than the minimum', async () => {
