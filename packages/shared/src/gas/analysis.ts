@@ -30,6 +30,46 @@ export interface GasDay {
 
 export interface RatedDay extends GasDay {
   dd: number | null;
+  /** The gas of this day is a share of a gap in the readings, not measured (`fillGaps`). */
+  filled?: boolean;
+}
+
+/** Gas over days without readings, from the meter counter before and after (inclusive). */
+export interface GasGap {
+  from: string;
+  to: string;
+  m3: number;
+}
+
+/**
+ * Spreads the gas of each gap over its days by their expected use (`weight`, e.g. baseline
+ * plus heating by degree days), evenly when no day has any expected use. Totals then match
+ * the meter again; the filled days are marked, so the heating line and baseline keep using
+ * measured days only.
+ */
+export function fillGaps(
+  days: RatedDay[],
+  gaps: GasGap[],
+  weight: (day: RatedDay) => number,
+): RatedDay[] {
+  const index = new Map(days.map((d, i) => [d.day, i]));
+  const result = [...days];
+  for (const gap of gaps) {
+    const inGap = days.filter((d) => d.day >= gap.from && d.day <= gap.to);
+    // A gap that runs past the analysed days cannot be spread fairly.
+    if (inGap.length === 0 || inGap[0]!.day !== gap.from || inGap.at(-1)!.day !== gap.to) continue;
+    const weights = inGap.map((d) => Math.max(0, weight(d)));
+    const total = weights.reduce((s, w) => s + w, 0);
+    inGap.forEach((d, i) => {
+      const share = total > 0 ? weights[i]! / total : 1 / inGap.length;
+      result[index.get(d.day)!] = {
+        ...d,
+        m3: Math.round(gap.m3 * share * 1000) / 1000,
+        filled: true,
+      };
+    });
+  }
+  return result;
 }
 
 export interface HeatingLine {
@@ -108,17 +148,25 @@ export function autoBaselineByMonth(days: GasDay[], base: number): Map<string, n
   return result;
 }
 
-function warmMedian(days: GasDay[], base: number): number | null {
-  const values = days.filter((d) => d.m3 !== null && d.t !== null && d.t >= base).map((d) => d.m3!);
+function warmMedian(days: Array<GasDay & { filled?: boolean }>, base: number): number | null {
+  const values = days
+    .filter((d) => d.m3 !== null && d.t !== null && d.t >= base && !d.filled)
+    .map((d) => d.m3!);
   if (values.length < MIN_BASELINE_DAYS) return null;
   const used = values.filter((m3) => m3 > 0);
   if (used.length < values.length * MIN_USE_SHARE) return 0;
   return median(used);
 }
 
-/** Least-squares line of gas against degree days over the heating days of the last year. */
+/**
+ * Least-squares line of gas against degree days over the heating days of the last year. Days
+ * without any gas are real (0 m³) but left out here: on a cold day they mean the heating was
+ * off (nobody home), which says nothing about how the house responds to cold.
+ */
 export function heatingLine(days: RatedDay[]): HeatingLine | null {
-  const points = recent(days).filter((d) => d.m3 !== null && d.dd !== null && d.dd > 0);
+  const points = recent(days).filter(
+    (d) => d.m3 !== null && d.m3 > 0 && d.dd !== null && d.dd > 0 && !d.filled,
+  );
   const n = points.length;
   if (n < MIN_LINE_DAYS) return null;
   let sx = 0;
@@ -168,6 +216,8 @@ export interface GasPeriod {
   key: string;
   /** Days with both gas and weather. */
   days: number;
+  /** Of those, days estimated from the meter over a gap in the readings. */
+  filled: number;
   m3: number;
   dd: number;
   /** Heating gas per degree day; null below the minimum number of degree days. */
@@ -211,6 +261,7 @@ export function periods(
             : formatPlainDate(periodStart(date, kind)),
         key,
         days: 0,
+        filled: 0,
         m3: 0,
         dd: 0,
         perDd: null,
@@ -218,6 +269,7 @@ export function periods(
       result.set(key, period);
     }
     period.days++;
+    if (d.filled) period.filled++;
     period.m3 += d.m3;
     period.dd += d.dd;
     baseGas.set(key, (baseGas.get(key) ?? 0) + baselineOn(baseline, d.day));
@@ -249,6 +301,8 @@ export interface GasYear {
   /** "2026" or "2026-2027". */
   label: string;
   days: number;
+  /** Of those, days estimated from the meter over a gap in the readings. */
+  filled: number;
   m3: number;
   dd: number;
   corrected: number | null;
@@ -268,15 +322,16 @@ export function yearSummaries(
 ): GasYear[] {
   const years = new Map<
     number,
-    { days: number; m3: number; dd: number; base: number; ddYear: number }
+    { days: number; filled: number; m3: number; dd: number; base: number; ddYear: number }
   >();
   for (const d of days) {
     if (d.dd === null) continue;
     const year = yearOf(d.day, start);
-    const y = years.get(year) ?? { days: 0, m3: 0, dd: 0, base: 0, ddYear: 0 };
+    const y = years.get(year) ?? { days: 0, filled: 0, m3: 0, dd: 0, base: 0, ddYear: 0 };
     y.ddYear += d.dd;
     if (d.m3 !== null) {
       y.days++;
+      if (d.filled) y.filled++;
       y.m3 += d.m3;
       y.dd += d.dd;
       y.base += baselineOn(baseline, d.day);
@@ -292,6 +347,7 @@ export function yearSummaries(
         year,
         label: yearLabel(year, start),
         days: y.days,
+        filled: y.filled,
         m3: y.m3,
         dd: y.dd,
         corrected: normalised(y, base, normalDd, yearLength(year, start)),
@@ -348,11 +404,16 @@ const normalOn = (normals: Normals, date: PlainDate) => {
   return normals.byDay[key] ?? normals.byDay['02-28'] ?? 0;
 };
 
+/** Normal degree days of a day (`YYYY-MM-DD`), for days without weather. */
+export const normalDegreeDays = (normals: Normals, day: string) => normalOn(normals, plain(day));
+
 export interface GasForecast {
   year: number;
   label: string;
   /** Measured so far this year. */
   actual: number;
+  /** Days of `actual` estimated from the meter over a gap in the readings. */
+  filled: number;
   /** Estimated for missing past days and the rest of the year. */
   estimated: number;
   total: number;
@@ -376,6 +437,7 @@ export function forecastYear(
   const next = yearFirstDay(year + 1, start);
   const byDay = new Map(days.map((d) => [d.day, d]));
   let actual = 0;
+  let filled = 0;
   let estimated = 0;
   for (
     let date = plain(yearFirstDay(year, start));
@@ -384,13 +446,22 @@ export function forecastYear(
   ) {
     const key = formatPlainDate(date);
     const d = byDay.get(key);
-    if (d?.m3 !== null && d?.m3 !== undefined && key < today) actual += d.m3;
-    else {
+    if (d?.m3 !== null && d?.m3 !== undefined && key < today) {
+      actual += d.m3;
+      if (d.filled) filled++;
+    } else {
       const dd = key < today && d?.dd != null ? d.dd : normalOn(normals, date);
       estimated += baseline + Math.max(0, line.slope) * dd;
     }
   }
-  return { year, label: yearLabel(year, start), actual, estimated, total: actual + estimated };
+  return {
+    year,
+    label: yearLabel(year, start),
+    actual,
+    filled,
+    estimated,
+    total: actual + estimated,
+  };
 }
 
 /** The fixed method behind every comparison (§4.1): weighted degree days, 18 °C. */
@@ -500,7 +571,7 @@ export function expectedSoFar(
   expectedAnnual: number,
   normalAnnual: number,
   start: YearStart = CALENDAR_START,
-): { actual: number; expected: number; days: number } | null {
+): { actual: number; expected: number; days: number; filled: number } | null {
   const first = yearFirstDay(yearOf(today, start), start);
   const measured = days.filter(
     (d) => d.m3 !== null && d.dd !== null && d.day >= first && d.day < today,
@@ -511,5 +582,6 @@ export function expectedSoFar(
     actual: measured.reduce((s, d) => s + d.m3!, 0),
     expected: measured.reduce((s, d) => s + baseline + heatingPerDd * d.dd!, 0),
     days: measured.length,
+    filled: measured.filter((d) => d.filled).length,
   };
 }

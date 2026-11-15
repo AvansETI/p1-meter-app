@@ -86,6 +86,8 @@ export function perDegreeDayOption(
     trend: string;
     format: (v: number) => string;
     title: (i: number) => string;
+    /** "waarvan 12 dagen geschat (meetkit offline)". */
+    estimated: (count: number) => string;
   },
 ): EChartsCoreOption {
   const values = periods.map((p) => p.perDd);
@@ -99,13 +101,20 @@ export function perDegreeDayOption(
     tooltip: tooltip(theme, 'axis', (params) => {
       const i = (params as Array<{ dataIndex: number }>)[0]?.dataIndex ?? 0;
       const v = values[i];
-      return `${text.title(i)}<br/>${text.perDd}: ${v === null || v === undefined ? '—' : text.format(v)}`;
+      const filled = periods[i]?.filled ?? 0;
+      return `${text.title(i)}<br/>${text.perDd}: ${v === null || v === undefined ? '—' : text.format(v)}${
+        filled > 0 ? `<br/><i>${text.estimated(filled)}</i>` : ''
+      }`;
     }),
     series: [
       {
         type: 'bar',
         name: text.perDd,
-        data: values,
+        // Periods with days estimated over a gap in the readings are paler, by their share.
+        data: periods.map((p, i) => ({
+          value: values[i],
+          itemStyle: { opacity: p.filled > 0 ? 1 - 0.6 * Math.min(1, p.filled / p.days) : 1 },
+        })),
         itemStyle: { color: theme.gasColor, borderRadius: [3, 3, 0, 0] },
         barMaxWidth: 28,
       },
@@ -147,7 +156,8 @@ export function scatterOption(
 ): EChartsCoreOption {
   const bySeason = new Map<string, Array<[number, number, string]>>();
   for (const d of analysis.days) {
-    if (d.m3 === null || d.dd === null) continue;
+    // Days filled in from the meter over a gap lie on the line by construction: only measured.
+    if (d.m3 === null || d.dd === null || d.filled) continue;
     const season = heatingSeason(d.day);
     const list = bySeason.get(season) ?? [];
     list.push([d.dd, d.m3, d.day]);

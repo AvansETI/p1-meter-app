@@ -1,4 +1,4 @@
-import { addDays, formatPlainDate, parsePlainDate, type GasDay } from '@p1/shared';
+import { addDays, formatPlainDate, parsePlainDate, type GasDay, type GasGap } from '@p1/shared';
 import type { GasDayEnd, HouseholdDataSource } from '../data/source';
 import type { DailyWeather } from '../opendata/store';
 
@@ -28,7 +28,33 @@ export function dailyGas(ends: GasDayEnd[]): Map<string, number> {
   return result;
 }
 
-/** Every day in [first, last] with its gas and weather (null when unknown or zero). */
+/**
+ * Gas over each gap in the readings (the kit was offline, or a day has no reading near
+ * midnight): the counter difference between the last midnight reading before and the first
+ * after it. Only complete days before `today` count. The use per day in a gap is unknown, so
+ * the analysis spreads it over the days (`fillGaps`).
+ */
+export function gasGaps(ends: GasDayEnd[], today: string): GasGap[] {
+  const valid = ends.filter((e) => e.day < today && e.dayEnd - e.time <= HOUR_MS);
+  const gaps: GasGap[] = [];
+  for (let i = 1; i < valid.length; i++) {
+    const prev = valid[i - 1]!;
+    const cur = valid[i]!;
+    const from = nextDay(prev.day);
+    if (from === cur.day) continue;
+    const m3 = cur.value - prev.value;
+    const days = Math.round((Date.parse(cur.day) - Date.parse(prev.day)) / (24 * HOUR_MS));
+    if (m3 >= 0 && m3 <= MAX_M3_PER_DAY * days) {
+      gaps.push({ from, to: cur.day, m3: Math.round(m3 * 1000) / 1000 });
+    }
+  }
+  return gaps;
+}
+
+/**
+ * Every day in [first, last] with its gas and weather. A day without use is 0; null means no
+ * reading (the kit sent nothing), not zero.
+ */
 export function mergeDays(
   gas: Map<string, number>,
   weather: Map<string, DailyWeather>,
@@ -38,8 +64,7 @@ export function mergeDays(
   const days: GasDay[] = [];
   for (let day = first; day <= last; day = nextDay(day)) {
     const w = weather.get(day);
-    // A day without any gas is almost always a day nobody was home: left out like a gap.
-    const m3 = gas.get(day) || null;
+    const m3 = gas.get(day) ?? null;
     days.push({ day, m3, t: w?.t ?? null, fh: w?.fh ?? null });
   }
   return days;
