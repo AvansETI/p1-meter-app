@@ -62,12 +62,8 @@ function Tile({
 
 function Summary({ analysis }: { analysis: GasAnalysis }) {
   const { t } = useTranslation();
-  const { forecast, line, baseline, years, degreeDays } = analysis;
-  const complete = years.filter((y) => y.complete && y.corrected !== null);
-  const last = complete.at(-1);
-  const before = complete.at(-2);
-  const change =
-    last && before && before.corrected ? (last.corrected! / before.corrected - 1) * 100 : null;
+  const { forecast, line, baseline, rolling, degreeDays } = analysis;
+  const change = rolling?.previous ? (rolling.corrected / rolling.previous - 1) * 100 : null;
   return (
     <div className="today-grid">
       {forecast && (
@@ -84,17 +80,18 @@ function Summary({ analysis }: { analysis: GasAnalysis }) {
           />
         </>
       )}
-      {last && (
+      {rolling && (
         <Tile
-          label={t('gas.correctedYear', { year: last.year })}
-          value={whole(last.corrected!)}
+          label={t('gas.rolling')}
+          value={whole(rolling.corrected)}
           unit="m³"
           note={
             change === null
-              ? undefined
-              : t('gas.changeVsYear', {
+              ? rolling.days < 365
+                ? t('gas.rollingDays', { days: rolling.days })
+                : undefined
+              : t('gas.rollingChange', {
                   change: `${change > 0 ? '+' : '−'}${fixed(Math.abs(change), 0)}%`,
-                  year: before!.year,
                 })
           }
         />

@@ -14,6 +14,8 @@ import {
   periods,
   quantile,
   rateDays,
+  RECENT_DAYS,
+  rollingCorrected,
   stationForPostcode,
   temperatureCurve,
   dayProfile,
@@ -187,6 +189,8 @@ export class GasService {
     });
     const forecast = forecastYear(rated, today, baseline.value, line, normals);
     const degreeDays = degreeDaysToDate(rated, today, normals);
+    const rolling = rollingCorrected(rated, baseline.value, normals.annual);
+    const before = rollingCorrected(rated, baseline.value, normals.annual, RECENT_DAYS);
     return {
       station: query.station,
       pending: !this.job.ready(query.station),
@@ -226,6 +230,11 @@ export class GasService {
         total: r(forecast.total, 0),
       },
       normal: { annual: r(normals.annual, 0), years: normals.years },
+      rolling: rolling && {
+        corrected: r(rolling.corrected, 0),
+        days: rolling.days,
+        previous: before && r(before.corrected, 0),
+      },
       degreeDays: degreeDays && {
         year: degreeDays.year,
         actual: r(degreeDays.actual, 0),

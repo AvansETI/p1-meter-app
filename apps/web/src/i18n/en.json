@@ -778,8 +778,6 @@
     "unavailable": "The gas analysis is not available right now. Please try again later.",
     "thisYear": "Used in {{year}}",
     "forecast": "Forecast {{year}}",
-    "correctedYear": "{{year}} corrected",
-    "changeVsYear": "{{change}} vs {{year}}",
     "slope": "Heating line",
     "perDdUnit": "m³/degree day",
     "perDayUnit": "m³/day",
@@ -868,7 +866,7 @@
     "baselineLabel": "Base load (m³/day)",
     "baselineAuto": "automatic: {{value}}",
     "baselineAutoUnknown": "automatic",
-    "baselineHelp": "Leave empty for automatic (median of days without heating demand).",
+    "baselineHelp": "Leave empty for automatic: the median of warm days, without days with no gas use (away).",
     "profileTitle": "Home profile",
     "profileHelp": "Classes as used by CBS. Used for the comparison with CBS figures; the profile stays on this device unless you share it below.",
     "profile": {
@@ -929,6 +927,9 @@
     "curveHint": "Last 90 days: average gas use per hour at each outdoor temperature.",
     "profileTitle2": "Use over the day",
     "profileHint": "Last 90 days: average gas use per hour of the day, on cold and on mild days.",
-    "degreeDaysPerDay": "Degree days per day"
+    "degreeDaysPerDay": "Degree days per day",
+    "rolling": "Last 12 months, corrected",
+    "rollingChange": "{{change}} vs the 12 months before",
+    "rollingDays": "{{days}} days measured"
   }
 }

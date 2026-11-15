@@ -64,13 +64,24 @@ export function median(values: number[]): number | null {
 
 const recent = <T>(days: T[]) => days.slice(-RECENT_DAYS);
 
+/** Below this share of days with some gas, the household does not cook or heat water on gas. */
+const MIN_USE_SHARE = 0.2;
+
 /**
- * Median gas of days without heating demand (mean temperature at or above the base) in the
- * last year; null with too few such days.
+ * Median gas of days without heating demand (mean temperature at or above the base). Days
+ * without any gas are left out: they are almost always days nobody was home (holidays). When
+ * nearly all such days are zero, there is no base load. Looks back further than a year when
+ * the last year has too few warm days; null when there are still too few.
  */
 export function autoBaseline(days: GasDay[], base: number): number | null {
-  const free = recent(days).filter((d) => d.m3 !== null && d.t !== null && d.t >= base);
-  return free.length >= MIN_BASELINE_DAYS ? median(free.map((d) => d.m3!)) : null;
+  const warm = (list: GasDay[]) =>
+    list.filter((d) => d.m3 !== null && d.t !== null && d.t >= base).map((d) => d.m3!);
+  let values = warm(recent(days));
+  if (values.length < MIN_BASELINE_DAYS) values = warm(days);
+  if (values.length < MIN_BASELINE_DAYS) return null;
+  const used = values.filter((m3) => m3 > 0);
+  if (used.length < values.length * MIN_USE_SHARE) return 0;
+  return median(used);
 }
 
 /** Least-squares line of gas against degree days over the heating days of the last year. */
@@ -349,4 +360,36 @@ export function degreeDaysToDate(
     actual: inYear.reduce((s, d) => s + d.dd!, 0),
     normal: inYear.reduce((s, d) => s + normalOn(normals, plain(d.day)), 0),
   };
+}
+
+/** At least this share of a 365-day window must be measured for a rolling value. */
+const MIN_ROLLING_DAYS = 180;
+
+/**
+ * Weather-corrected consumption of the 365 days ending `offset` days before the last day, or
+ * null when fewer than 180 of those days have both gas and weather.
+ */
+export function rollingCorrected(
+  days: RatedDay[],
+  baseline: number,
+  normalAnnual: number,
+  offset = 0,
+): { corrected: number; days: number } | null {
+  const end = days.length - offset;
+  if (end <= 0) return null;
+  const window = days
+    .slice(Math.max(0, end - RECENT_DAYS), end)
+    .filter((d) => d.m3 !== null && d.dd !== null);
+  if (window.length < MIN_ROLLING_DAYS) return null;
+  const corrected = normalised(
+    {
+      days: window.length,
+      m3: window.reduce((s, d) => s + d.m3!, 0),
+      dd: window.reduce((s, d) => s + d.dd!, 0),
+    },
+    baseline,
+    normalAnnual,
+    RECENT_DAYS,
+  );
+  return corrected === null ? null : { corrected, days: window.length };
 }

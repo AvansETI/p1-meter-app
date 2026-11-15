@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { REFERENCE_STATION } from '@p1/shared';
 import pino from 'pino';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { openDatabase } from '../db/database';
 import { cbsRowsUrl, parseCbsPeriods, parseCbsRows, type CbsRow } from './cbs';
 import { OpenDataJob, type OpenDataFetchers } from './job';
@@ -174,6 +174,32 @@ describe('OpenDataJob', () => {
       now: () => new Date(now.getTime() + 4 * HOUR_MS),
     }).tick();
     expect(calls.filter((c) => c.startsWith('knmi'))).toEqual(['knmi 260 2026-01-01']);
+  });
+
+  it('counts a station with complete stored weather as ready before topping up', async () => {
+    const store = new MemoryOpenDataStore();
+    const { fetchers } = fakeFetchers();
+    await new OpenDataJob(store, fetchers, openDatabase(':memory:'), log, {
+      pauseMs: 0,
+      now: () => now,
+    }).tick();
+    // A restart two days later: KNMI is slow, but the station is ready at once.
+    let release: () => void = () => {};
+    const slow: OpenDataFetchers = {
+      ...fetchers,
+      knmi: (station, from, to) =>
+        new Promise((resolve) => {
+          release = () => void fetchers.knmi(station, from, to).then(resolve);
+        }),
+    };
+    const job = new OpenDataJob(store, slow, openDatabase(':memory:'), log, {
+      pauseMs: 0,
+      now: () => new Date(now.getTime() + 48 * HOUR_MS),
+    });
+    const pass = job.tick();
+    await vi.waitFor(() => expect(job.ready(260)).toBe(true));
+    release();
+    await pass;
   });
 
   it('fetches a newly used station and reports it', async () => {

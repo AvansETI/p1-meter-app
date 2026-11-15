@@ -33,6 +33,7 @@ const analysis = (pending = false): GasAnalysis => ({
   forecast: { year: 2026, actual: 700, estimated: 250, total: 950 },
   normal: { annual: 2700, years: 20 },
   degreeDays: { year: 2026, actual: 1397, normal: 1520 },
+  rolling: { corrected: 900, days: 365, previous: 1000 },
 });
 const hourly: GasHourly = {
   pending: false,
@@ -94,8 +95,8 @@ describe('GasPage', () => {
     const fetch = setup('gas');
     expect(await screen.findByText('Prognose 2026')).toBeTruthy();
     expect(screen.getByText('950')).toBeTruthy();
-    expect(screen.getByText('2025 gecorrigeerd')).toBeTruthy();
-    expect(screen.getByText('−10% t.o.v. 2024')).toBeTruthy();
+    expect(screen.getByText('Afgelopen 12 mnd, gecorrigeerd')).toBeTruthy();
+    expect(screen.getByText('−10% t.o.v. 12 mnd ervoor')).toBeTruthy();
     expect(screen.getByText('Graaddagen 2026')).toBeTruthy();
     expect(screen.getByText('normaal 1.520 (−8%)')).toBeTruthy();
     expect(await screen.findByTestId('per-dd-chart')).toBeTruthy();

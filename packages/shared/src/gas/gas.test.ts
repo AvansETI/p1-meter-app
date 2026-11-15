@@ -10,6 +10,7 @@ import {
   normals,
   periods,
   rateDays,
+  rollingCorrected,
   referenceAnnual,
   yearSummaries,
   type GasDay,
@@ -63,6 +64,16 @@ describe('analysis', () => {
   it('finds the baseline from days without heating demand', () => {
     expect(autoBaseline(days, 18)).toBeCloseTo(1);
     expect(autoBaseline(days.slice(0, 30), 18)).toBeNull();
+  });
+
+  it('ignores days without any gas (nobody home) for the baseline', () => {
+    // Half of the warm days are a holiday with zero use.
+    let warm = 0;
+    const holiday = days.map((d) => (d.t! >= 18 && warm++ % 2 === 0 ? { ...d, m3: 0 } : d));
+    expect(autoBaseline(holiday, 18)).toBeCloseTo(1);
+    // Nearly all warm days zero: no cooking or hot water on gas.
+    const none = days.map((d) => (d.t! >= 18 ? { ...d, m3: 0 } : d));
+    expect(autoBaseline(none, 18)).toBe(0);
   });
 
   it('fits the heating line', () => {
@@ -140,6 +151,16 @@ describe('analysis', () => {
     expect(result.actual).toBeCloseTo(result.normal);
     expect(result.actual).toBeCloseTo(rated.slice(0, 59).reduce((s, d) => s + d.dd!, 0));
     expect(degreeDaysToDate(rated, '2027-03-01', normalsFromYear)).toBeNull();
+  });
+
+  it('corrects the last 365 days and the 365 days before', () => {
+    const twoYears = rateDays(syntheticDays('2024-01-01', 730, seasonal), 18, 'plain');
+    const dd = twoYears.slice(-365).reduce((s, d) => s + d.dd!, 0);
+    const last = rollingCorrected(twoYears, 1, dd)!;
+    expect(last.days).toBe(365);
+    expect(last.corrected).toBeCloseTo(twoYears.slice(-365).reduce((s, d) => s + d.m3!, 0));
+    expect(rollingCorrected(twoYears, 1, dd, 365)!.days).toBe(365);
+    expect(rollingCorrected(twoYears.slice(0, 100), 1, dd)).toBeNull();
   });
 
   it('computes the reference value only with enough data and gas', () => {

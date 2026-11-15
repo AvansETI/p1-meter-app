@@ -20,7 +20,7 @@ export const NORMAL_YEARS = 20;
 /** A past year with fewer stored hours is fetched (again); tolerates small KNMI gaps. */
 const FULL_YEAR_HOURS = 8000;
 /** The current year is topped up when the newest hour is older than this … */
-const STALE_AFTER_MS = DAY_MS;
+const STALE_AFTER_MS = 36 * HOUR_MS;
 /** … but at most this often per station (KNMI publishes about a day behind). */
 const RECENT_EVERY_MS = 3 * HOUR_MS;
 /** Hours the current year may lack (publication delay plus a little); more means gaps. */
@@ -95,7 +95,7 @@ export class OpenDataJob {
   }
 
   start(intervalMs = 10 * 60_000): void {
-    setTimeout(() => void this.tick(), 5_000).unref();
+    setTimeout(() => void this.tick(), 1_000).unref();
     this.timer = setInterval(() => void this.tick(), intervalMs);
     this.timer.unref();
   }
@@ -201,6 +201,13 @@ export class OpenDataJob {
         const gaps = (counts.get(currentYear) ?? 0) < elapsed - MISSING_HOURS_ALLOWED;
         const from =
           last && last >= yearStart(currentYear) && !gaps ? last : yearStart(currentYear);
+        // Stored data is complete: usable right away, even before topping up (e.g. after a
+        // restart), so the analysis does not wait for KNMI.
+        const pastComplete = Array.from(
+          { length: NORMAL_YEARS },
+          (_, i) => counts.get(currentYear - 1 - i) ?? 0,
+        ).every((n) => n >= FULL_YEAR_HOURS);
+        if (pastComplete && !gaps) this.complete.add(station);
         const stale = now.getTime() - from.getTime() > STALE_AFTER_MS;
         const due = now.getTime() - (this.lastRecent.get(station) ?? 0) >= RECENT_EVERY_MS;
         if (stale && due) {

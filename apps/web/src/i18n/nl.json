@@ -778,8 +778,6 @@
     "unavailable": "De gasanalyse is nu niet beschikbaar. Probeer het later opnieuw.",
     "thisYear": "Verbruikt in {{year}}",
     "forecast": "Prognose {{year}}",
-    "correctedYear": "{{year}} gecorrigeerd",
-    "changeVsYear": "{{change}} t.o.v. {{year}}",
     "slope": "Stooklijn",
     "perDdUnit": "m³/graaddag",
     "perDayUnit": "m³/dag",
@@ -868,7 +866,7 @@
     "baselineLabel": "Basisverbruik (m³/dag)",
     "baselineAuto": "automatisch: {{value}}",
     "baselineAutoUnknown": "automatisch",
-    "baselineHelp": "Leeg laten voor automatisch (mediaan van dagen zonder stookbehoefte).",
+    "baselineHelp": "Leeg laten voor automatisch: de mediaan van warme dagen, zonder dagen zonder gasverbruik (afwezig).",
     "profileTitle": "Woningprofiel",
     "profileHelp": "Indeling zoals het CBS die gebruikt. Wordt gebruikt voor de vergelijking met CBS-cijfers; dat profiel blijft op dit apparaat, tenzij je het hieronder deelt.",
     "profile": {
@@ -929,6 +927,9 @@
     "curveHint": "Laatste 90 dagen: gemiddeld gasverbruik per uur bij elke buitentemperatuur.",
     "profileTitle2": "Verbruik over de dag",
     "profileHint": "Laatste 90 dagen: gemiddeld gasverbruik per uur van de dag, op koude en op milde dagen.",
-    "degreeDaysPerDay": "Graaddagen per dag"
+    "degreeDaysPerDay": "Graaddagen per dag",
+    "rolling": "Afgelopen 12 mnd, gecorrigeerd",
+    "rollingChange": "{{change}} t.o.v. 12 mnd ervoor",
+    "rollingDays": "{{days}} dagen gemeten"
   }
 }

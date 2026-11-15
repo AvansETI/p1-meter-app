@@ -109,6 +109,14 @@ export const GasAnalysisSchema = z.object({
     .object({ year: z.number(), actual: z.number(), estimated: z.number(), total: z.number() })
     .nullable(),
   normal: z.object({ annual: z.number(), years: z.number() }),
+  /** Weather-corrected use of the last 365 days and of the 365 days before; null if too few. */
+  rolling: z
+    .object({
+      corrected: z.number(),
+      days: z.number(),
+      previous: z.number().nullable(),
+    })
+    .nullable(),
   /** Degree days of the current year so far, and the normal for the same days. */
   degreeDays: z.object({ year: z.number(), actual: z.number(), normal: z.number() }).nullable(),
 });
