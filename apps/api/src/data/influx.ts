@@ -1,11 +1,13 @@
 import { InfluxDB, type QueryApi } from '@influxdata/influxdb-client';
 import { DEFAULT_PROFILE, SIGNATURE_PATTERN, type Capabilities } from '@p1/shared';
+import { dayKey } from '../usage/tracker';
 import { decideOrientation, type DayStats } from './orientation';
 import {
   UpstreamError,
   type CounterDeltas,
   type CounterField,
   type GasData,
+  type GasDayEnd,
   type HouseholdDataSource,
   type PowerPoint,
   type PowerWindow,
@@ -296,6 +298,41 @@ gas
       if (row.result === 'increases') increaseTimes.push(Date.parse(row._time));
     }
     return { lastPerHour, increaseTimes };
+  }
+
+  async gasDayEnds(signature: string, from: Date): Promise<GasDayEnd[]> {
+    assertNormalized(signature);
+    const rows = await this.query(`
+import "timezone"
+option location = timezone.location(name: "Europe/Amsterdam")
+from(bucket: ${literal(this.options.bucket)})
+  |> range(start: ${from.toISOString()})
+  |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
+  |> filter(fn: (r) => r._field == "gas_delivered")
+  |> window(every: 1d)
+  |> last()
+  |> keep(columns: ["_stop", "_time", "_value"])`);
+    return rows.flatMap((row) => {
+      const value = num(row._value);
+      if (typeof row._time !== 'string' || typeof row._stop !== 'string' || value === null) {
+        return [];
+      }
+      const dayEnd = Date.parse(row._stop);
+      return [{ day: dayKey(new Date(dayEnd - 1)), time: Date.parse(row._time), dayEnd, value }];
+    });
+  }
+
+  async gasSignatures(from: Date): Promise<string[]> {
+    const rows = await this.query(`import "influxdata/influxdb/schema"
+schema.tagValues(
+  bucket: ${literal(this.options.bucket)},
+  tag: "signature",
+  predicate: (r) => r._field == "gas_delivered",
+  start: ${from.toISOString()},
+)`);
+    return rows.flatMap((row) =>
+      typeof row._value === 'string' && SIGNATURE_PATTERN.test(row._value) ? [row._value] : [],
+    );
   }
 
   async recentPower(signature: string): Promise<PowerWindow[]> {

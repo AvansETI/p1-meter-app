@@ -1,17 +1,29 @@
 export const TIME_ZONE = 'Europe/Amsterdam';
 
 /** Offset of `timeZone` from UTC at `date`, in milliseconds (e.g. +3_600_000 for CET). */
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+/** Creating a formatter is slow; one per zone is reused. */
+function formatter(timeZone: string): Intl.DateTimeFormat {
+  let format = formatters.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    formatters.set(timeZone, format);
+  }
+  return format;
+}
+
 function zoneOffsetMs(date: Date, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(date);
+  const parts = formatter(timeZone).formatToParts(date);
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     Number(parts.find((part) => part.type === type)?.value ?? 0);
   const asUtc = Date.UTC(
@@ -49,4 +61,9 @@ export function zonedToUtc(
 export function zonedDate(instant: Date, timeZone = TIME_ZONE) {
   const local = new Date(instant.getTime() + zoneOffsetMs(instant, timeZone));
   return { year: local.getUTCFullYear(), month: local.getUTCMonth() + 1, day: local.getUTCDate() };
+}
+
+/** Local hour of the day (0–23) of an instant in `timeZone`. */
+export function zonedHour(instant: Date, timeZone = TIME_ZONE): number {
+  return new Date(instant.getTime() + zoneOffsetMs(instant, timeZone)).getUTCHours();
 }

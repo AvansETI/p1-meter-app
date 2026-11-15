@@ -29,6 +29,12 @@ import { UsageTracker } from './usage/tracker';
 import { LivePoller } from './live/poller';
 import { LiveService } from './live/service';
 import { AttemptCounter, SessionStore } from './sessions';
+import { gasRoutes } from './routes/gas';
+import { GasService } from './gas/service';
+import { ReferenceJob } from './gas/reference';
+import { WeatherService } from './gas/weather';
+import { OpenDataJob, httpOpenDataFetchers, type OpenDataFetchers } from './opendata/job';
+import { InfluxOpenDataStore, MemoryOpenDataStore, type OpenDataStore } from './opendata/store';
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -46,6 +52,9 @@ export interface ServerDeps {
   source?: HouseholdDataSource;
   /** Price reader for the cost engine; from PRICES_INFLUX_* otherwise. */
   prices?: PriceReader;
+  /** Open-data cache and its fetchers; from OPEN_DATA_INFLUX_* or in memory otherwise. */
+  openData?: OpenDataStore;
+  openDataFetchers?: OpenDataFetchers;
   /** Overrides for tests. */
   pollIntervalMs?: number;
   heartbeatMs?: number;
@@ -171,6 +180,54 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
     app.log.info('prices unavailable (PRICES_INFLUX_* not set)');
   }
 
+  // Gas analysis (#68): public KNMI and CBS data cached in the open-data bucket.
+  const { OPEN_DATA_INFLUX_BUCKET, OPEN_DATA_INFLUX_TOKEN } = config;
+  const openDataStore =
+    deps.openData ??
+    (config.NODE_ENV !== 'test' &&
+    INFLUX_URL &&
+    INFLUX_ORG &&
+    OPEN_DATA_INFLUX_BUCKET &&
+    OPEN_DATA_INFLUX_TOKEN
+      ? new InfluxOpenDataStore({
+          url: INFLUX_URL,
+          org: INFLUX_ORG,
+          bucket: OPEN_DATA_INFLUX_BUCKET,
+          token: OPEN_DATA_INFLUX_TOKEN,
+        })
+      : new MemoryOpenDataStore());
+  if (openDataStore instanceof MemoryOpenDataStore && config.NODE_ENV !== 'test') {
+    app.log.info('open data kept in memory (OPEN_DATA_INFLUX_* not set)');
+  }
+  app.addHook('onClose', () => openDataStore.close());
+  const openData = new OpenDataJob(
+    openDataStore,
+    deps.openDataFetchers ?? httpOpenDataFetchers(),
+    db,
+    app.log,
+  );
+  const weather = new WeatherService(openDataStore);
+  openData.onWeather = (station) => weather.invalidate(station);
+  const gas = new GasService(source, weather, openDataStore, openData, db, (sig) =>
+    usage.hash(sig),
+  );
+  if (config.NODE_ENV !== 'test') {
+    openData.start();
+    const reference = new ReferenceJob(
+      source,
+      weather,
+      openData,
+      db,
+      (sig) => usage.hash(sig),
+      app.log,
+    );
+    reference.start();
+    app.addHook('onClose', () => {
+      openData.stop();
+      reference.stop();
+    });
+  }
+
   const costs = new CostService(source, prices, tariffs, new CostCache(db));
   const costViews = new CostViews(costs);
 
@@ -179,6 +236,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
       await api.register(healthRoutes, {
         source,
         ...(priceJob && { prices: () => priceJob.status() }),
+        ...(config.NODE_ENV !== 'test' && { openData: () => openData.status() }),
       });
       await api.register(tariffRoutes, {
         sessions,
@@ -202,6 +260,7 @@ export async function buildServer(config: Config, deps: ServerDeps = {}) {
         heartbeatMs: deps.heartbeatMs,
       });
       await api.register(statsRoutes, { source, usage });
+      await api.register(gasRoutes, { sessions, capabilities, gas });
       await api.register(sessionRoutes, {
         sessions,
         capabilities,

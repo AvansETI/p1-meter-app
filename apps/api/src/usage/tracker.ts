@@ -29,7 +29,7 @@ export class UsageTracker {
 
   /** Records that a household used the app on the day of `now`. */
   record(signature: string, now = new Date()): void {
-    const hash = createHmac('sha256', this.salt).update(signature).digest('hex');
+    const hash = this.hash(signature);
     const day = dayKey(now);
     if (this.written.has(`${hash}|${day}`)) return;
     this.db
@@ -42,6 +42,11 @@ export class UsageTracker {
     // Only today's entries matter; drop the rest when the day changes.
     if ([...this.written].some((key) => !key.endsWith(day))) this.written.clear();
     this.written.add(`${hash}|${day}`);
+  }
+
+  /** Salted hash of a signature; also keys gas reference values and profiles (#68). */
+  hash(signature: string): string {
+    return createHmac('sha256', this.salt).update(signature).digest('hex');
   }
 
   /** Distinct households that used the app in the last `days` days (including today). */
