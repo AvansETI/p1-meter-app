@@ -23,6 +23,8 @@ const FULL_YEAR_HOURS = 8000;
 const STALE_AFTER_MS = DAY_MS;
 /** … but at most this often per station (KNMI publishes about a day behind). */
 const RECENT_EVERY_MS = 3 * HOUR_MS;
+/** Hours the current year may lack (publication delay plus a little); more means gaps. */
+const MISSING_HOURS_ALLOWED = 72;
 const CBS_CHECK_EVERY_MS = 30 * DAY_MS;
 const RETRY_AFTER_FAILURE_MS = HOUR_MS;
 const USER_AGENT = 'p1-meter-app (+https://p1-meter.sendlab.nl)';
@@ -148,6 +150,10 @@ export class OpenDataJob {
           await this.weather();
           await this.cbs();
         } while (this.again);
+        // Load the CBS rows now rather than on the first comparison (tens of thousands of rows).
+        await this.cbsRows().catch((error: unknown) =>
+          this.log.warn({ err: error }, 'loading CBS rows failed'),
+        );
       } finally {
         this.running = undefined;
       }
@@ -186,8 +192,15 @@ export class OpenDataJob {
       let fetchedAny = false;
       try {
         // The current year first, so a new station is usable quickly; then older years.
-        const last = await this.store.lastWeatherHour(station);
-        const from = last && last >= yearStart(currentYear) ? last : yearStart(currentYear);
+        const [last, counts] = await Promise.all([
+          this.store.lastWeatherHour(station),
+          this.store.weatherHoursPerYear(station),
+        ]);
+        // Continue after the newest hour, unless the year so far has gaps: then refetch it.
+        const elapsed = (floorHour(now).getTime() - yearStart(currentYear).getTime()) / HOUR_MS;
+        const gaps = (counts.get(currentYear) ?? 0) < elapsed - MISSING_HOURS_ALLOWED;
+        const from =
+          last && last >= yearStart(currentYear) && !gaps ? last : yearStart(currentYear);
         const stale = now.getTime() - from.getTime() > STALE_AFTER_MS;
         const due = now.getTime() - (this.lastRecent.get(station) ?? 0) >= RECENT_EVERY_MS;
         if (stale && due) {
@@ -199,7 +212,6 @@ export class OpenDataJob {
           if (fetched) fetchedAny = true;
           else stationOk = false;
         }
-        const counts = await this.store.weatherHoursPerYear(station);
         for (let year = currentYear - 1; year >= currentYear - NORMAL_YEARS; year--) {
           if ((counts.get(year) ?? 0) >= FULL_YEAR_HOURS) continue;
           const fetched = await this.attempt(`knmi:${station}:${year}`, async () => {

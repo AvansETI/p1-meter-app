@@ -5,7 +5,7 @@ import type { HouseholdDataSource } from '../data/source';
 import type { OpenDataJob } from '../opendata/job';
 import { zonedHour } from '../time';
 import { dayKey } from '../usage/tracker';
-import { dailyGas, mergeDays } from './days';
+import { dailyGas, mergeDays, readDayEnds } from './days';
 import { REFERENCE_MAX_AGE_DAYS } from './service';
 import type { WeatherService } from './weather';
 
@@ -84,7 +84,7 @@ export class ReferenceJob {
       let stored = 0;
       for (const signature of signatures) {
         try {
-          const gas = dailyGas(await this.source.gasDayEnds(signature, from));
+          const gas = dailyGas(await readDayEnds(this.source, signature, from, now));
           const first = [...gas.keys()].sort()[0];
           if (!first) continue;
           const annual = referenceAnnual(mergeDays(gas, weather, first, yesterday), normals.annual);

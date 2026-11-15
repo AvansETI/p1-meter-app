@@ -73,8 +73,8 @@ export interface HouseholdDataSource {
   firstPoint(signature: string): Promise<Date | null>;
   /** Gas counter per hour since `from`, and its increase times. */
   gasHourly(signature: string, from: Date): Promise<GasData>;
-  /** Last gas reading per local day since `from` (gas analysis, #68). */
-  gasDayEnds(signature: string, from: Date): Promise<GasDayEnd[]>;
+  /** Last gas reading per local day in [from, to) (gas analysis, #68); `to` defaults to now. */
+  gasDayEnds(signature: string, from: Date, to?: Date): Promise<GasDayEnd[]>;
   /** Households with gas data since `from`; internal use only, never sent to a client. */
   gasSignatures(from: Date): Promise<string[]>;
   /** 5-minute mean power over the last 24 hours. */

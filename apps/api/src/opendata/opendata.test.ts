@@ -14,6 +14,16 @@ const log = pino({ level: 'silent' });
 const HOUR_MS = 3_600_000;
 
 describe('KNMI', () => {
+  it('asks for whole days: KNMI applies the hour window to every day', () => {
+    const partial = knmiHourlyBody(
+      260,
+      new Date('2026-01-01T00:00Z'),
+      new Date('2026-11-15T13:00Z'),
+    );
+    expect(partial.get('start')).toBe('2026010101');
+    expect(partial.get('end')).toBe('2026111524');
+  });
+
   it('asks for the hours ending in (from, to] in KNMI notation', () => {
     const body = knmiHourlyBody(260, new Date('2025-01-01T00:00Z'), new Date('2026-01-01T00:00Z'));
     expect(Object.fromEntries(body)).toMatchObject({
@@ -143,6 +153,27 @@ describe('OpenDataJob', () => {
     calls.length = 0;
     await job.tick();
     expect(calls).toEqual([]);
+  });
+
+  it('refetches the current year when it has gaps', async () => {
+    const store = new MemoryOpenDataStore();
+    const { calls, fetchers } = fakeFetchers();
+    const job = new OpenDataJob(store, fetchers, openDatabase(':memory:'), log, {
+      pauseMs: 0,
+      now: () => now,
+    });
+    await job.tick();
+    // Only the last week of the year so far is stored.
+    const hours = store.weather.get(260)!;
+    for (const time of [...hours.keys()]) {
+      if (time >= Date.parse('2026-01-01') && time < Date.parse('2026-11-01')) hours.delete(time);
+    }
+    calls.length = 0;
+    await new OpenDataJob(store, fetchers, openDatabase(':memory:'), log, {
+      pauseMs: 0,
+      now: () => new Date(now.getTime() + 4 * HOUR_MS),
+    }).tick();
+    expect(calls.filter((c) => c.startsWith('knmi'))).toEqual(['knmi 260 2026-01-01']);
   });
 
   it('fetches a newly used station and reports it', async () => {

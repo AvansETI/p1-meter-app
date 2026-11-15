@@ -26,14 +26,14 @@ import {
 } from '@p1/shared';
 import { LRUCache } from 'lru-cache';
 import type { z } from 'zod';
-import type { HouseholdDataSource } from '../data/source';
+import type { GasDayEnd, HouseholdDataSource } from '../data/source';
 import { detectHourlyUpdates } from '../live/gas';
 import type { CbsRow } from '../opendata/cbs';
 import type { OpenDataJob } from '../opendata/job';
 import type { OpenDataStore } from '../opendata/store';
 import { zonedHour } from '../time';
 import { dayKey } from '../usage/tracker';
-import { dailyGas, mergeDays } from './days';
+import { dailyGas, mergeDays, readDayEnds } from './days';
 import type { WeatherService } from './weather';
 
 type AnalysisQuery = z.output<typeof GasAnalysisQuerySchema>;
@@ -65,9 +65,9 @@ export function distribution(values: number[], own: number | null): Distribution
 }
 
 export class GasService {
-  private readonly gasCache = new LRUCache<string, Map<string, number>>({
+  /** Daily readings per household; the full history once, then only the newest days. */
+  private readonly endsCache = new LRUCache<string, { ends: GasDayEnd[]; at: number }>({
     max: 500,
-    ttl: GAS_CACHE_MS,
   });
 
   constructor(
@@ -80,16 +80,28 @@ export class GasService {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  /** Gas per local day over all data of the household. */
+  /**
+   * Gas per local day over all data of the household. A year of readings takes seconds to
+   * aggregate, so the history is read once and then topped up.
+   */
   async gasDays(signature: string): Promise<Map<string, number>> {
-    const cached = this.gasCache.get(signature);
-    if (cached) return cached;
-    const first = await this.source.firstPoint(signature);
-    const days = first
-      ? dailyGas(await this.source.gasDayEnds(signature, new Date(first.getTime() - DAY_MS)))
-      : new Map<string, number>();
-    this.gasCache.set(signature, days);
-    return days;
+    const now = this.now().getTime();
+    const cached = this.endsCache.get(signature);
+    if (cached && now - cached.at < GAS_CACHE_MS) return dailyGas(cached.ends);
+    let ends: GasDayEnd[];
+    if (cached?.ends.length) {
+      // Re-read the last two days: the latest one was still running.
+      const from = cached.ends.at(-1)!.dayEnd - 2 * DAY_MS;
+      const fresh = await this.source.gasDayEnds(signature, new Date(from));
+      ends = [...cached.ends.filter((e) => e.dayEnd <= from), ...fresh];
+    } else {
+      const first = await this.source.firstPoint(signature);
+      ends = first
+        ? await readDayEnds(this.source, signature, new Date(first.getTime() - DAY_MS), this.now())
+        : [];
+    }
+    this.endsCache.set(signature, { ends, at: now });
+    return dailyGas(ends);
   }
 
   async analysis(signature: string, query: AnalysisQuery): Promise<GasAnalysis> {

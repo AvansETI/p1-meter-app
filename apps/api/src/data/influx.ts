@@ -300,13 +300,13 @@ gas
     return { lastPerHour, increaseTimes };
   }
 
-  async gasDayEnds(signature: string, from: Date): Promise<GasDayEnd[]> {
+  async gasDayEnds(signature: string, from: Date, to?: Date): Promise<GasDayEnd[]> {
     assertNormalized(signature);
     const rows = await this.query(`
 import "timezone"
 option location = timezone.location(name: "Europe/Amsterdam")
 from(bucket: ${literal(this.options.bucket)})
-  |> range(start: ${from.toISOString()})
+  |> range(start: ${from.toISOString()}${to ? `, stop: ${to.toISOString()}` : ''})
   |> filter(fn: (r) => r._measurement == ${literal(DEFAULT_PROFILE.measurement)} and r.signature == ${literal(signature)})
   |> filter(fn: (r) => r._field == "gas_delivered")
   |> window(every: 1d)

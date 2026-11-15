@@ -1,6 +1,11 @@
 /** Request and response shapes of the gas analysis endpoints (design §6). */
 import { z } from 'zod';
-import { DegreeDayMethodSchema, MAX_BASE_TEMPERATURE, MIN_BASE_TEMPERATURE } from './degreeDays';
+import {
+  DegreeDayMethodSchema,
+  MAX_BASE_TEMPERATURE,
+  MIN_BASE_TEMPERATURE,
+  type DegreeDayMethod,
+} from './degreeDays';
 import {
   BUILD_PERIODS,
   DWELLING_TYPES,
@@ -26,7 +31,14 @@ export const GasAnalysisQuerySchema = z.object({
   baseline: z.coerce.number().min(0).max(20).optional(),
   cooking: flag,
 });
-export type GasAnalysisQuery = z.input<typeof GasAnalysisQuerySchema>;
+/** The query as the web app sends it. */
+export interface GasAnalysisQuery {
+  station: number;
+  base: number;
+  method: DegreeDayMethod;
+  baseline?: number;
+  cooking: 'true' | 'false';
+}
 
 export const GasHourlyQuerySchema = z.object({ station: StationSchema });
 

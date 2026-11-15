@@ -1,11 +1,11 @@
 import { IonContent, IonIcon, IonItem, IonLabel, IonList, IonMenu } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import { NAV_ITEMS } from '../navigation';
+import { navItems } from '../navigation';
 import BrandLogo from './BrandLogo';
 
 /** Desktop navigation; only visible when the split pane is expanded (≥ 992 px). */
-export default function SideMenu() {
+export default function SideMenu({ hasGas }: { hasGas: boolean }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
 
@@ -15,7 +15,7 @@ export default function SideMenu() {
         <BrandLogo className="app-side-menu__logo" />
         <p className="app-side-menu__name">{t('app.shortName')}</p>
         <IonList lines="none">
-          {NAV_ITEMS.map((item) => (
+          {navItems(hasGas).map((item) => (
             <IonItem
               key={item.tab}
               routerLink={item.path}

@@ -135,7 +135,8 @@ ion-menu.app-side-menu ion-item.selected {
   cursor: pointer;
 }
 /* "Nederlands" is the longest label; Material's padding and letter spacing cut it off. */
-.language-segment ion-segment-button {
+.language-segment ion-segment-button,
+.gas-method ion-segment-button {
   --padding-start: 4px;
   --padding-end: 4px;
   min-width: 0;
@@ -738,4 +739,132 @@ ion-menu.app-side-menu ion-item.selected {
   display: flex;
   justify-content: center;
   margin: 8px 0;
+}
+
+/* Gas analysis (docs/design/2026-11-15-gas-analysis.md §7.1) */
+.gas-segment {
+  margin-bottom: 8px;
+}
+.gas-link {
+  margin: 0;
+  height: auto;
+  --padding-start: 0;
+  --padding-end: 0;
+  font-size: inherit;
+  text-transform: none;
+  vertical-align: baseline;
+}
+.gas-years {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.gas-years th,
+.gas-years td {
+  padding: 8px 6px;
+  text-align: right;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-text-muted) 20%, transparent);
+}
+.gas-years th:first-child,
+.gas-years td:first-child {
+  text-align: left;
+}
+.gas-years th {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-text-muted);
+}
+.gas-years small {
+  color: var(--app-text-muted);
+}
+.gas-comparison {
+  display: grid;
+  gap: 16px;
+}
+.gas-comparison > p {
+  margin: 0;
+}
+.gas-compare {
+  padding: 12px 14px;
+  border-radius: var(--app-radius);
+  background: var(--app-surface);
+}
+.gas-compare h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.gas-compare__lead {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+.gas-compare .history-hint {
+  margin-top: 8px;
+}
+.gas-band {
+  margin-bottom: 8px;
+}
+.gas-band__track {
+  position: relative;
+  height: 14px;
+  margin: 6px 0;
+}
+.gas-band__outer,
+.gas-band__inner {
+  position: absolute;
+  top: 3px;
+  height: 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--app-data-gas) 30%, transparent);
+}
+.gas-band__inner {
+  background: color-mix(in srgb, var(--app-data-gas) 60%, transparent);
+}
+.gas-band__median {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 14px;
+  margin-left: -1px;
+  background: var(--ion-text-color);
+}
+.gas-band__own {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: var(--app-data-gas);
+  border: 2px solid var(--app-surface);
+  box-shadow: 0 0 0 1px var(--app-data-gas);
+}
+.gas-band__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--app-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.gas-attribution {
+  font-size: 11px;
+}
+.gas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--app-text-muted);
+}
+.gas-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 2px;
+  background: var(--marker);
 }

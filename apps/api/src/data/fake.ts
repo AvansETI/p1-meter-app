@@ -136,9 +136,11 @@ export class FakeDataSource implements HouseholdDataSource {
     );
   }
 
-  gasDayEnds(signature: string, from: Date): Promise<GasDayEnd[]> {
+  gasDayEnds(signature: string, from: Date, to?: Date): Promise<GasDayEnd[]> {
     return this.run(() =>
-      (this.households[signature]?.gasDays ?? []).filter((d) => d.dayEnd > from.getTime()),
+      (this.households[signature]?.gasDays ?? []).filter(
+        (d) => d.time >= from.getTime() && (!to || d.time < to.getTime()),
+      ),
     );
   }
 

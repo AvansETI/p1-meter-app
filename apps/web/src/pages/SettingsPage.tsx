@@ -138,6 +138,15 @@ export default function SettingsPage() {
           </IonItem>
         </IonList>
 
+        {state.status === 'ready' && state.capabilities.hasGas && (
+          <IonList inset>
+            <IonListHeader>{t('settings.gasAnalysis')}</IonListHeader>
+            <IonItem routerLink="/settings/gas" detail>
+              <IonLabel>{t('gas.settingsTitle')}</IonLabel>
+            </IonItem>
+          </IonList>
+        )}
+
         <IonList inset>
           <IonListHeader>{t('settings.display')}</IonListHeader>
           <IonItem>

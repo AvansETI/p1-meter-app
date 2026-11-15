@@ -257,8 +257,9 @@ export class MemoryOpenDataStore implements OpenDataStore {
 
   lastWeatherHour(station: number): Promise<Date | null> {
     return this.run(() => {
-      const times = [...this.hours(station).keys()];
-      return times.length ? new Date(Math.max(...times)) : null;
+      let last = -Infinity;
+      for (const time of this.hours(station).keys()) last = Math.max(last, time);
+      return Number.isFinite(last) ? new Date(last) : null;
     });
   }
 

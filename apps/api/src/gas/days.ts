@@ -1,8 +1,10 @@
 import { addDays, formatPlainDate, parsePlainDate, type GasDay } from '@p1/shared';
-import type { GasDayEnd } from '../data/source';
+import type { GasDayEnd, HouseholdDataSource } from '../data/source';
 import type { DailyWeather } from '../opendata/store';
 
 const HOUR_MS = 3_600_000;
+/** A quarter of readings per query stays well within the InfluxDB timeout. */
+const CHUNK_MS = 91 * 24 * HOUR_MS;
 /** More than this per day is a counter glitch, not use. */
 const MAX_M3_PER_DAY = 100;
 
@@ -39,4 +41,23 @@ export function mergeDays(
     days.push({ day, m3: gas.get(day) ?? null, t: w?.t ?? null, fh: w?.fh ?? null });
   }
   return days;
+}
+
+/**
+ * Last reading per local day in [from, to), read in quarters: aggregating a year of 5-minute
+ * readings in one query can exceed the InfluxDB timeout.
+ */
+export async function readDayEnds(
+  source: HouseholdDataSource,
+  signature: string,
+  from: Date,
+  to: Date,
+): Promise<GasDayEnd[]> {
+  const ends: GasDayEnd[] = [];
+  for (let start = from.getTime(); start < to.getTime(); start += CHUNK_MS) {
+    const stop = new Date(Math.min(start + CHUNK_MS, to.getTime()));
+    ends.push(...(await source.gasDayEnds(signature, new Date(start), stop)));
+  }
+  // A day cut by a chunk edge appears twice; the later (complete) reading wins.
+  return [...new Map(ends.map((e) => [e.day, e])).values()];
 }

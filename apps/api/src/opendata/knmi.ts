@@ -13,23 +13,20 @@ export interface WeatherHour {
 
 const HOUR_MS = 3_600_000;
 
-/** KNMI hour notation: hour 1 is 00:00–01:00 UT, so a UT instant ends hour `getUTCHours() || 24`. */
-function knmiHour(end: Date): string {
-  const shifted = new Date(end.getTime() - HOUR_MS);
-  const date = shifted.toISOString().slice(0, 10).replaceAll('-', '');
-  return `${date}${String(shifted.getUTCHours() + 1).padStart(2, '0')}`;
-}
+/** UT calendar date of an instant as YYYYMMDD. */
+const knmiDate = (instant: Date) => instant.toISOString().slice(0, 10).replaceAll('-', '');
 
 /**
- * Form body for the hours ending in (from, to], both whole UTC hours. KNMI answers whole
- * days, so a little more may come back; rewriting a stored hour is harmless.
+ * Form body for the hours ending in (from, to], both whole UTC hours. KNMI reads start and
+ * end as a date range plus an hour window applied to every day, so the request always asks
+ * for hours 1–24 of each day; a little more may come back, and rewriting an hour is harmless.
  */
 export function knmiHourlyBody(station: number, from: Date, to: Date): URLSearchParams {
   return new URLSearchParams({
     stns: String(station),
     vars: 'T:FH',
-    start: knmiHour(new Date(from.getTime() + HOUR_MS)),
-    end: knmiHour(to),
+    start: `${knmiDate(from)}01`,
+    end: `${knmiDate(new Date(to.getTime() - HOUR_MS))}24`,
     fmt: 'json',
   });
 }

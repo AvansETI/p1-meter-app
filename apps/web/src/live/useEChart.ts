@@ -1,12 +1,12 @@
 import { useIonViewDidEnter } from '@ionic/react';
-import { BarChart, LineChart } from 'echarts/charts';
+import { BarChart, LineChart, ScatterChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import * as echarts from 'echarts/core';
 import type { EChartsCoreOption } from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { useEffect, useRef } from 'react';
 
-echarts.use([LineChart, BarChart, GridComponent, TooltipComponent, SVGRenderer]);
+echarts.use([LineChart, BarChart, ScatterChart, GridComponent, TooltipComponent, SVGRenderer]);
 
 /** Reads a theme token from <html>, so chart colours follow light/dark. */
 export const css = (name: string) =>

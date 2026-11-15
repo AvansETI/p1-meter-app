@@ -17,7 +17,7 @@ import { OpenDataJob } from '../opendata/job';
 import { MemoryOpenDataStore } from '../opendata/store';
 import { buildServer } from '../server';
 import { zonedToUtc } from '../time';
-import { dailyGas } from './days';
+import { dailyGas, readDayEnds } from './days';
 import { distribution, GasService } from './service';
 import { WeatherService } from './weather';
 
@@ -81,6 +81,28 @@ describe('dailyGas', () => {
     const ends = dayEnds(3);
     ends[2] = { ...ends[2]!, value: ends[1]!.value - 1 };
     expect(dailyGas(ends).has(day(2))).toBe(false);
+  });
+});
+
+describe('readDayEnds', () => {
+  it('reads in chunks and keeps one reading per day', async () => {
+    const ends = dayEnds(400);
+    const source = new FakeDataSource({ [SIG]: { capabilities: CAPS, gasDays: ends } });
+    const calls: Array<[Date, Date | undefined]> = [];
+    const original = source.gasDayEnds.bind(source);
+    source.gasDayEnds = (signature, from, to) => {
+      calls.push([from, to]);
+      return original(signature, from, to);
+    };
+    const result = await readDayEnds(
+      source,
+      SIG,
+      new Date(midnight(day(0))),
+      new Date(midnight(day(400))),
+    );
+    expect(calls).toHaveLength(5);
+    expect(result).toHaveLength(400);
+    expect(result.map((e) => e.day)).toEqual(ends.map((e) => e.day));
   });
 });
 
