@@ -1,5 +1,6 @@
 import type { History } from '@p1/shared';
 import type { EChartsCoreOption } from 'echarts/core';
+import { hairline } from '../live/hairline';
 
 export interface HistoryChartTheme {
   importColor: string;
@@ -59,7 +60,7 @@ function base(theme: HistoryChartTheme, text: Pick<HistoryChartText, 'labels' | 
 function tooltip(theme: HistoryChartTheme, lines: (index: number) => string[]) {
   return {
     trigger: 'axis',
-    axisPointer: { type: 'shadow' },
+    axisPointer: hairline(theme.mutedColor),
     backgroundColor: theme.surfaceColor,
     borderWidth: 0,
     textStyle: { color: theme.textColor },

@@ -1,6 +1,7 @@
 import type { GasSeries } from '@p1/shared';
 import type { EChartsCoreOption } from 'echarts/core';
 import type { ChartTheme } from './chartOption';
+import { hairline } from './hairline';
 
 export interface GasChartText {
   formatM3: (value: number) => string;
@@ -38,7 +39,7 @@ export function gasChartOption(
     textStyle: { fontFamily: theme.fontFamily },
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'shadow' },
+      axisPointer: hairline(theme.mutedColor),
       backgroundColor: theme.surfaceColor,
       borderWidth: 0,
       textStyle: { color: theme.textColor },

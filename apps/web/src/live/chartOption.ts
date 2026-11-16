@@ -1,5 +1,6 @@
 import type { RecentSeries } from '@p1/shared';
 import type { EChartsCoreOption } from 'echarts/core';
+import { hairline } from './hairline';
 
 export type Point = [string, number | null];
 
@@ -58,6 +59,7 @@ export function recentChartOption(
     textStyle: { fontFamily: theme.fontFamily },
     tooltip: {
       trigger: 'axis',
+      axisPointer: hairline(theme.mutedColor),
       backgroundColor: theme.surfaceColor,
       borderWidth: 0,
       textStyle: { color: theme.textColor },

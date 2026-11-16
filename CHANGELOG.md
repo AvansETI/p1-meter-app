@@ -4,6 +4,10 @@ All versions, newest first, with a one-sentence summary. The full notes are on t
 [GitHub releases](https://github.com/AvansETI/p1-meter-app/releases) page. Generated from `apps/web/src/releases/releases.ts`
 by `pnpm changelog`; do not edit by hand.
 
+## [0.15.1] - 2026-11-16
+
+Every chart shows a hairline that follows your finger or mouse.
+
 ## [0.15.0] - 2026-11-15
 
 Release notes under About (with About as its own menu item on desktop), and feed-in is called "Teruglevering" in Dutch.
@@ -100,6 +104,7 @@ Automatic deployment to production at p1-meter.sendlab.nl.
 
 First release: an installable app with EMON ID entry and a live dashboard for electricity and gas.
 
+[0.15.1]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.15.1
 [0.15.0]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.15.0
 [0.14.2]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.14.2
 [0.14.1]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.14.1
