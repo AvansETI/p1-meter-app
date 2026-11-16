@@ -10,7 +10,7 @@ set -euo pipefail
 
 REF="${P1_REF:-main}"
 RAW="https://raw.githubusercontent.com/AvansETI/p1-meter-app/$REF/scripts/deploy"
-PROXY_IP="${P1_PROXY_IP:-10.0.0.51}"
+PROXY_IP="${P1_PROXY_IP:-}" # the reverse proxy that sets X-Forwarded-For
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 say() { echo "==> $*"; }
@@ -46,12 +46,24 @@ id p1meter >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbi
 install -d -m 755 /opt/p1-meter-app /opt/p1-meter-app/releases /opt/node
 install -d -m 750 -o root -g p1meter /etc/p1-meter-app
 
+# The proxy's address is not in the repository: from P1_PROXY_IP, an existing env file or a prompt.
+if [ -z "$PROXY_IP" ] && [ -f /etc/p1-meter-app/env ]; then
+  PROXY_IP="$(grep -oP '^TRUST_PROXY=\K.*' /etc/p1-meter-app/env || true)"
+fi
+if [ -z "$PROXY_IP" ]; then
+  read -r -p "IP address of the reverse proxy (empty: set TRUST_PROXY later): " PROXY_IP || true
+fi
+
 if [ -f /etc/p1-meter-app/env ]; then
   say "Keeping existing /etc/p1-meter-app/env"
 else
   say "Creating /etc/p1-meter-app/env (fill in INFLUX_TOKEN!)"
   fetch env.template /etc/p1-meter-app/env
-  sed -i "s/^TRUST_PROXY=.*/TRUST_PROXY=$PROXY_IP/" /etc/p1-meter-app/env
+  if [ -n "$PROXY_IP" ]; then
+    sed -i "s/^TRUST_PROXY=.*/TRUST_PROXY=$PROXY_IP/" /etc/p1-meter-app/env
+  else
+    warn "TRUST_PROXY is empty: set it in /etc/p1-meter-app/env, or client IPs are the proxy's"
+  fi
   chown root:p1meter /etc/p1-meter-app/env
   chmod 640 /etc/p1-meter-app/env
 fi
@@ -79,7 +91,7 @@ systemctl daemon-reload
 systemctl enable p1-meter-app.service >/dev/null
 systemctl enable --now p1-meter-update.timer >/dev/null
 
-if command -v ufw >/dev/null; then
+if command -v ufw >/dev/null && [ -n "$PROXY_IP" ]; then
   answer="${P1_UFW:-}"
   if [ -z "$answer" ]; then
     read -r -p "Allow port 8080 only from the reverse proxy ($PROXY_IP) with ufw? [Y/n] " answer || true

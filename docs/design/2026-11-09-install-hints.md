@@ -143,7 +143,7 @@ Manual verification (acceptance criterion):
 - **Desktop Chromium:** SSH tunnel to `localhost:4173` (`pnpm build && pnpm --filter @p1/web preview`).
 - **Android Chrome:** the phone cannot use the tunnel easily; for testing, enable
   `chrome://flags/#unsafely-treat-insecure-origin-as-secure` for
-  `http://192.168.123.78:4173` (preview on `0.0.0.0`), or test after the LXC deployment over HTTPS.
+  `http://192.0.2.50:4173` (preview on `0.0.0.0`), or test after the LXC deployment over HTTPS.
 - **iOS Safari:** instructions can be checked over plain HTTP; "Zet op beginscherm" works there
   too (without offline support until HTTPS).
 
