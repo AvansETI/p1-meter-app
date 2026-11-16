@@ -14,6 +14,12 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: '0.15.1',
+    date: '2026-11-16',
+    en: 'Every chart shows a hairline that follows your finger or mouse.',
+    nl: 'Alle grafieken tonen een haarlijn die je vinger of muis volgt.',
+  },
+  {
     version: '0.15.0',
     date: '2026-11-15',
     en: 'Release notes under About (with About as its own menu item on desktop), and feed-in is called "Teruglevering" in Dutch.',
