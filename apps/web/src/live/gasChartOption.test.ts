@@ -53,4 +53,14 @@ describe('gasChartOption renders in ECharts', () => {
     const tooltip = option.tooltip.formatter([{ dataIndex: 2 }]);
     expect(tooltip).toBe('15:00–18:00: 0.60 m³ (niet uitgesplitst)<br/>uurlijks');
   });
+
+  it('follows the pointer with a hairline, not a shaded band', () => {
+    const option = gasChartOption(series([0.1]), theme, text, false) as {
+      tooltip: { axisPointer: unknown };
+    };
+    expect(option.tooltip.axisPointer).toMatchObject({
+      type: 'line',
+      lineStyle: { type: 'dashed' },
+    });
+  });
 });

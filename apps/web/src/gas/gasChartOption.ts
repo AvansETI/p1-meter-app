@@ -1,6 +1,7 @@
 /** ECharts options of the Gas page (docs/design/2026-11-15-gas-analysis.md §7.1). */
 import type { GasAnalysis, GasHourly, GasPeriodResponse } from '@p1/shared';
 import type { EChartsCoreOption } from 'echarts/core';
+import { hairline } from '../live/hairline';
 
 export interface GasChartTheme {
   gasColor: string;
@@ -54,6 +55,7 @@ function tooltip(
 ) {
   return {
     trigger,
+    axisPointer: hairline(theme.mutedColor),
     backgroundColor: theme.surfaceColor,
     borderWidth: 0,
     textStyle: { color: theme.textColor },
@@ -171,7 +173,19 @@ export function scatterOption(
     animation: false,
     grid: { ...grid, bottom: 44 },
     textStyle: { fontFamily: theme.fontFamily },
-    xAxis: { type: 'value', ...axis(theme, text.dd), min: 0 },
+    xAxis: {
+      type: 'value',
+      ...axis(theme, text.dd),
+      min: 0,
+      // The tooltip shows a single day; the hairline follows the pointer on its own.
+      axisPointer: {
+        show: true,
+        ...hairline(theme.mutedColor),
+        snap: false,
+        triggerTooltip: false,
+        label: { show: false },
+      },
+    },
     yAxis: valueAxis(theme, text.perDayUnit),
     tooltip: tooltip(theme, 'item', (params) => {
       const p = params as { seriesName: string; value: [number, number, string?] };
@@ -228,8 +242,8 @@ export function temperatureCurveOption(
     textStyle: { fontFamily: theme.fontFamily },
     xAxis: { type: 'value', ...axis(theme, text.temperature), scale: true },
     yAxis: valueAxis(theme, text.perHourUnit),
-    tooltip: tooltip(theme, 'item', (params) => {
-      const [t, m3, n] = (params as { value: [number, number, number] }).value;
+    tooltip: tooltip(theme, 'axis', (params) => {
+      const [t, m3, n] = (params as Array<{ value: [number, number, number] }>)[0]!.value;
       return `${t} °C<br/>${text.m3}: ${text.format(m3)}<br/>${text.hours(n)}`;
     }),
     series: [
