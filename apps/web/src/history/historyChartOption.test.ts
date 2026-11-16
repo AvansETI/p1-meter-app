@@ -81,6 +81,18 @@ describe('history chart options render in ECharts', () => {
     expect((option.series[1]!.data[0] as { value: number }).value).toBe(-2);
     expect(option.tooltip.formatter([{ dataIndex: 3 }])).toContain('niet uitgesplitst');
   });
+
+  it('follows the pointer with a hairline, not a shaded band', () => {
+    for (const option of [
+      energyChartOption(history(7, true), true, theme, text(7)),
+      gasHistoryChartOption(history(7, true), theme, text(7)),
+    ]) {
+      expect((option as { tooltip: { axisPointer: unknown } }).tooltip.axisPointer).toMatchObject({
+        type: 'line',
+        lineStyle: { type: 'dashed' },
+      });
+    }
+  });
 });
 
 describe('cost chart', () => {

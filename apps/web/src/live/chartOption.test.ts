@@ -50,3 +50,10 @@ describe('recentChartOption renders in ECharts', () => {
     chart.dispose();
   });
 });
+
+it('follows the pointer with a hairline', () => {
+  const option = recentChartOption(series([1]), false, theme, text, false) as {
+    tooltip: { axisPointer: unknown };
+  };
+  expect(option.tooltip.axisPointer).toMatchObject({ type: 'line', lineStyle: { type: 'dashed' } });
+});
