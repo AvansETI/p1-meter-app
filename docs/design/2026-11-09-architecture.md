@@ -3,6 +3,10 @@
 - Issue: #1
 - Status: **approved** (2026-11-09)
 - Date: 2026-11-09
+- Last updated: 2026-11-16 (version 0.15.1)
+
+This document started as the MVP design. It is kept up to date as the overview of the whole
+app; the feature designs in this folder hold the details (§1.1).
 
 ## 1. Purpose and scope
 
@@ -16,6 +20,26 @@ In scope for the MVP: live dashboard, history and charts, export (via P1 only), 
 Out of scope for the MVP: costs and tariffs, comparing or viewing other households,
 user accounts, inverter integrations, voltage/current/per-phase data.
 
+### 1.1 Since the MVP
+
+Added after the MVP, each with its own design:
+
+| Feature                                                           | Design                                                                                                                                                |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live dashboard, hourly gas chart                                  | [live dashboard](2026-11-09-live-dashboard.md), [gas chart](2026-11-09-gas-chart.md)                                                                  |
+| History per day, week, month and year                             | [history](2026-11-09-history.md)                                                                                                                      |
+| Day-ahead prices, tariffs per household, daily costs              | [costs](2026-11-09-costs.md)                                                                                                                          |
+| Automatic deployment                                              | [deployment](2026-11-09-deployment.md)                                                                                                                |
+| Dutch and English                                                 | [language](2026-11-12-language.md)                                                                                                                    |
+| Automatic updates of the installed app                            | [auto-update](2026-11-14-auto-update.md)                                                                                                              |
+| Anonymous usage statistics                                        | [usage stats](2026-11-14-usage-stats.md)                                                                                                              |
+| Festive decorations in the title bar                              | [festive](2026-11-14-festive-decoration.md), [more seasons](2026-11-15-more-festive-seasons.md), [fuller scenes](2026-11-15-fuller-festive-scenes.md) |
+| Gas analysis (degree days, forecast, comparison), shared settings | [gas analysis](2026-11-15-gas-analysis.md), [shared gas settings](2026-11-15-shared-gas-settings.md)                                                  |
+| Release notes                                                     | [release notes](2026-11-15-release-notes.md)                                                                                                          |
+
+Comparing with other households exists only in the gas analysis, as an anonymous
+distribution with a minimum group size; no other household's data can be viewed.
+
 ## 2. Context and constraints
 
 - InfluxDB 2.x (Flux), bucket `p1-smartmeters`, remote over HTTPS. The app only reads,
@@ -24,7 +48,7 @@ user accounts, inverter integrations, voltage/current/per-phase data.
 - Public access through a reverse proxy, **no login** (deliberate). The signature is the
   only key to a household's data and its dynamic part is derived from a MAC address,
   so it is guessable. The design must not make guessing easy.
-- Runs later in a Proxmox LXC container.
+- Runs in a Proxmox LXC container (§14).
 
 ## 3. InfluxDB schema (observed 2026-11-09)
 
@@ -84,23 +108,29 @@ is where such fields would be added.
 ## 4. Architecture overview
 
 ```
- Browser (PWA)                       LXC container                       remote
-┌────────────────────┐   HTTPS   ┌──────────────┐  HTTP  ┌──────────────────────┐  HTTPS  ┌──────────┐
-│ apps/web           │──────────▶│ reverse proxy│──────▶│ apps/api (Fastify)   │────────▶│ InfluxDB │
-│ React+Ionic+Vite   │◀── SSE ───│ (TLS)        │◀──────│ - static web files   │  Flux   │ 2.x      │
-│ service worker     │           └──────────────┘        │ - REST + SSE         │ read-   └──────────┘
-│ localStorage       │                                    │ - cache, rate limit  │ only
-└────────────────────┘                                    │ - live poller        │ token
-                                                          └──────────────────────┘
+ Browser (PWA)                                 LXC container                      remote
+┌────────────────────┐   HTTPS   ┌──────────────┐  HTTP  ┌───────────────────────┐  HTTPS  ┌──────────────────────┐
+│ apps/web           │──────────▶│ reverse proxy│──────▶│ apps/api (Fastify)    │────────▶│ InfluxDB 2.x         │
+│ React+Ionic+Vite   │◀── SSE ───│ (TLS)        │◀──────│ - static web files    │  Flux   │ p1-smartmeters (ro)  │
+│ service worker     │           └──────────────┘        │ - REST + SSE          │         │ prices (rw)          │
+│ localStorage       │                                    │ - cache, rate limit   │         │ open data (rw)       │
+└────────────────────┘                                    │ - live poller         │         └──────────────────────┘
+                                                          │ - price + open-data   │  HTTPS  ┌──────────────────────┐
+                                                          │   jobs                │────────▶│ ENTSO-E, EnergyZero, │
+                                                          │ - SQLite (p1.db)      │         │ KNMI, CBS            │
+                                                          └───────────────────────┘         └──────────────────────┘
 ```
+
+The household data in `p1-smartmeters` is only read. The API writes only to its own buckets
+(prices, cached public data) and to its SQLite database (§8.3).
 
 Monorepo (pnpm workspaces):
 
-| Package           | Responsibility                                                                                      |
-| ----------------- | --------------------------------------------------------------------------------------------------- |
-| `apps/web`        | UI, routing, charts, PWA (service worker, manifest), local settings                                 |
-| `apps/api`        | HTTP API, SSE, Flux queries, capability detection, caching, rate limiting; serves the built web app |
-| `packages/shared` | API types and schemas (zod), signature normalization, device profiles, unit helpers                 |
+| Package           | Responsibility                                                                                                                            |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`        | UI, routing, charts, PWA (service worker, manifest), local settings, translations, release notes                                          |
+| `apps/api`        | HTTP API, SSE, Flux queries, capability detection, caching, rate limiting, costs, gas analysis, background jobs; serves the built web app |
+| `packages/shared` | API types and schemas (zod), signature normalization, device profiles, unit helpers, cost and gas calculations                            |
 
 The API serves the static web build itself (`@fastify/static`), so production is one
 Node process behind the proxy. Same origin means no CORS configuration.
@@ -295,19 +325,55 @@ and are validated on both sides.
   place. After an API restart the web app silently creates a new session using the
   locally stored signature.
 
+`DELETE /api/v1/session` ends a session.
+
 ### 8.2 Data
 
-| Method & path                                            | Returns                                                       |
-| -------------------------------------------------------- | ------------------------------------------------------------- |
-| `GET /api/v1/live`                                       | latest values, `live: boolean`, `time`                        |
-| `GET /api/v1/live/stream`                                | SSE stream of live values (see §10)                           |
-| `GET /api/v1/history/power?period=day&date=2026-11-09`   | power series (§7.2)                                           |
-| `GET /api/v1/history/energy?period=week&date=2026-11-09` | import/export/gas buckets with gap flags (§7.3)               |
-| `GET /api/v1/capabilities`                               | capabilities (§6.2)                                           |
-| `GET /api/v1/health`                                     | liveness (no Influx call) and readiness (Influx ping, cached) |
+All routes except `/health` and `/stats` need a session.
 
-`period` ∈ `day|week|month|year`; `date` is any date inside the period (local time);
-weeks start on Monday (ISO).
+| Method & path                                          | Returns                                                                    |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `GET /live`                                            | latest values, `live: boolean`, `time`                                     |
+| `GET /live/stream?session=…`                           | SSE stream of live values (§10)                                            |
+| `GET /live/recent`, `/live/today`, `/live/gas`         | the Live page: recent power, today's totals, today's gas per hour          |
+| `GET /history?period=week&date=2026-11-09`             | import/export/gas buckets with gap flags (§7.3), with costs when available |
+| `GET /costs/today`, `/costs/days?from=…&to=…`          | costs per day ([costs](2026-11-09-costs.md))                               |
+| `GET`/`PUT /tariffs`, `GET /tariffs/versions`          | the household's tariffs and their versions                                 |
+| `GET /gas/analysis`, `/gas/hourly`, `/gas/comparison`  | the gas analysis ([gas analysis](2026-11-15-gas-analysis.md))              |
+| `GET`/`PUT /gas/settings`, `PUT`/`DELETE /gas/profile` | shared gas settings and the anonymous comparison profile                   |
+| `GET /capabilities`                                    | capabilities (§6.2)                                                        |
+| `GET /health`                                          | status, version and the state of InfluxDB, prices and open data            |
+| `GET /stats`                                           | anonymous usage counts ([usage stats](2026-11-14-usage-stats.md))          |
+
+Paths are relative to `/api/v1`. `period` ∈ `day|week|month|year`; `date` is any date inside the
+period (local time); weeks start on Monday (ISO). Every response carries the app version in the
+`x-app-version` header (§12).
+
+The separate power-series endpoint planned for the MVP (§7.2) was not built: the Live page shows
+recent power, History shows energy per bucket.
+
+### 8.3 Server-side state
+
+Next to InfluxDB the API keeps a SQLite database (`node:sqlite`), `p1.db` in `DATA_DIR`
+(systemd's `StateDirectory` in production), with numbered migrations and a daily backup in
+`backups/`. Households are keyed by an HMAC hash of the signature, never by the signature itself.
+
+| Tables                                          | Holds                                                     |
+| ----------------------------------------------- | --------------------------------------------------------- |
+| `tariff_sets`, `tariff_versions`, `daily_costs` | tariffs per household with their history, and daily costs |
+| `app_usage`, `app_meta`                         | the last day of use per hashed household                  |
+| `weather_stations`, `gas_reference`             | KNMI stations and reference figures for the gas analysis  |
+| `gas_profiles`, `gas_locations`, `gas_day_ends` | the anonymous comparison and daily meter readings for gas |
+| `gas_settings`                                  | the household's shared gas analysis settings              |
+
+This is the only state that survives a restart; sessions, caches and rate limits stay in memory.
+
+### 8.4 Background jobs
+
+- **Prices:** day-ahead electricity (ENTSO-E) and gas (EnergyZero) prices, fetched at most hourly
+  with backoff, stored in the prices bucket. Runs only when its tokens are set.
+- **Open data:** KNMI weather and CBS figures for the gas analysis, cached in the open-data bucket
+  (in memory without one).
 
 ## 9. Caching and rate limiting
 
@@ -348,7 +414,10 @@ Limits reset on restart (in-memory); acceptable for MVP, Redis later if needed.
   Every 10 s it runs one Flux query (§7.1, filtered on the set of active signatures),
   updates the live cache and pushes a `live` event to each subscriber.
   Influx load is independent of the number of open browser tabs.
-- Heartbeat comment every 25 s to keep proxies from closing idle connections.
+- Heartbeat comment every 25 s to keep proxies from closing idle connections. The web app shows
+  this as the slowly beating live dot.
+- On connect the stream sends a `version` event with the app version, because `EventSource`
+  cannot read response headers (§12).
 - The client marks data stale when the latest point is older than 5 minutes and falls back to
   polling `GET /live` if SSE fails repeatedly.
 - The reverse proxy must not buffer SSE (`X-Accel-Buffering: no` / proxy setting).
@@ -358,30 +427,47 @@ Limits reset on restart (in-memory); acceptable for MVP, Redis later if needed.
 ### 11.1 Structure
 
 - **Welcome** (no signature stored): explanation, input for the dynamic part.
-- **Live**: current import/export power (big number + direction), today's import,
-  export and gas so far, freshness indicator ("live" / "no recent data since …").
-- **History**: period switcher day/week/month/year with previous/next; power line
-  chart and energy/gas bar charts; gap blocks marked.
-- **Settings**: change or remove signature, units/formatting preferences, about.
+- **Live**: current import/export power (big number + direction), recent power chart,
+  today's import, export, gas and costs so far, hourly gas chart, freshness indicator
+  ("live" / "no recent data since …").
+- **History**: period switcher day/week/month/year with previous/next; electricity, gas
+  and cost bar charts; gap blocks marked.
+- **Gas analysis** (only with gas): degree days, heating line, forecast and comparison.
+- **Settings**: signature, language, theme, tariffs, gas analysis settings, and About
+  (version, release notes, licenses).
+- **About**: its own item in the desktop side menu; on mobile it stays in Settings.
+
+All texts are in Dutch and English (`i18n/nl.json`, `i18n/en.json`). The title bar carries
+festive decorations by date.
 
 ### 11.2 Platform-adaptive UI
 
 - Ionic React with adaptive `mode`: iOS style on iOS, Material on Android/other.
-- Mobile: tab bar (Live, History, Settings).
+- Mobile: tab bar (Live, History, Gas analysis when present, Settings).
 - Desktop (≥ 992 px): `IonSplitPane` with a side menu and wider dashboard layout
   (multiple charts side by side).
 
 ### 11.3 Charts
 
-Proposed: **Apache ECharts** (tree-shaken import) — good touch/zoom support, handles
-null gaps and mixed bar/line well, themeable for light/dark. Alternative uPlot is
-smaller and faster but needs more custom work for bars and tooltips.
+**Apache ECharts** (tree-shaken import, SVG renderer) — good touch support, handles
+null gaps and mixed bar/line well, themeable for light/dark.
+
+- One instance per chart for the component's lifetime (`useEChart`); colours follow the
+  theme tokens.
+- No intro animation: Safari on iOS sometimes left an animated chart empty (#26).
+- Every chart shows the same dashed vertical hairline that follows the finger or mouse
+  (`live/hairline.ts`, #85). Charts that show one value per category use an axis tooltip;
+  the heating-line scatter keeps a tooltip per day with the hairline on its x-axis.
 
 ### 11.4 Local storage
 
-`localStorage` key `p1meter.settings` with `{ signature, theme, ... }`. Nothing else
-is persisted client-side except the service worker cache. Removing the signature
-clears cached API data as well.
+`localStorage` key `p1meter.settings` with `{ signature, theme, language, gas, ... }`.
+Nothing else is persisted client-side except the service worker cache and a marker for the
+"updated to version X" toast. Removing the signature clears cached API data as well.
+
+The gas analysis settings (except on/off) are also stored on the server per household, so
+all devices share them; last write wins
+([shared gas settings](2026-11-15-shared-gas-settings.md)).
 
 ## 12. PWA and offline
 
@@ -390,7 +476,11 @@ clears cached API data as well.
 - History responses: stale-while-revalidate in the service worker, max age 7 days;
   offline the UI shows the cached data with an "offline — data from …" banner.
 - Live data is never served from cache; offline shows "offline".
-- Update flow: new service worker → "new version available" toast → reload.
+- Update flow: automatic ([auto-update](2026-11-14-auto-update.md)). The client compares
+  the version in the `x-app-version` header and the SSE `version` event with its own and
+  then checks for a new service worker (at most once a minute). A new version installs and
+  reloads behind the splash screen, which says "Updating…", followed by an
+  "updated to version X" toast.
 
 ## 13. Security summary
 
@@ -413,14 +503,15 @@ Target: unprivileged Proxmox LXC container, Debian or Ubuntu LTS.
 - Process: systemd unit `p1-meter-app.service` running `apps/api` (which serves the
   web build), restart on failure, hardening options (`NoNewPrivileges`,
   `ProtectSystem=strict`, …).
-- Release: build on the dev server (`pnpm build`), copy the artifact with `rsync`
-  over SSH using a **dedicated deploy key**, switch the symlink, restart the service.
-  Rollback = previous symlink. Automation (GitHub Actions) later.
-- Reverse proxy: forwards a hostname to the container's API port, TLS there, SSE
+- Release: pull-based ([deployment](2026-11-09-deployment.md)). A merge into `main`
+  makes CI publish a package to the `main-latest` pre-release; a systemd timer on the LXC
+  checks every 2 minutes, installs it, restarts the service and checks `/api/v1/health`,
+  with an automatic rollback when it is unhealthy. No deploy keys or inbound access.
+- Reverse proxy: `https://p1-meter.sendlab.nl` → `10.0.0.51` (TLS) → LXC port 8080, SSE
   buffering disabled.
 - Logs: journald (pino JSON).
 
-Provisioning is done step by step together in a later issue.
+The runbook is [docs/operations.md](../operations.md).
 
 ## 15. Open questions and decisions
 
@@ -431,8 +522,8 @@ Provisioning is done step by step together in a later issue.
 | 3   | Other prefixes (`2005-POK-EMON-V00`, `DIY-SMARTMETER-V2`) | Not supported in MVP.                                                                          |
 | 4   | Future fields (voltage, current, per phase)               | Not in MVP; add via device profile + capability.                                               |
 | 5   | Neutral response vs. helpful UX                           | Same 404 for unknown and inactive (> 30 days) signatures.                                      |
-| 6   | Chart library                                             | ECharts.                                                                                       |
-| 7   | Reverse proxy and hostname                                | To be decided at deployment.                                                                   |
+| 6   | Chart library                                             | ECharts. Decided.                                                                              |
+| 7   | Reverse proxy and hostname                                | `p1-meter.sendlab.nl` via `10.0.0.51`. Decided (§14).                                          |
 | 8   | Dev without live data                                     | Optional replay data source that replays history as live.                                      |
 | 9   | Native apps (Google Play, App Store), nice to have — #4   | Capacitor around `apps/web`; requires a configurable API base URL and CORS for the app origin. |
 
