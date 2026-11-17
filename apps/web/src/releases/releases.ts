@@ -14,6 +14,12 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: '0.16.1',
+    date: '2026-11-17',
+    en: 'The server checks for updates through the release download link instead of the GitHub API.',
+    nl: 'De server zoekt naar updates via de downloadlink van de release in plaats van de GitHub-API.',
+  },
+  {
     version: '0.16.0',
     date: '2026-11-17',
     en: 'Tariff fields follow your energy invoice, with separate import and export sections and fixed costs excl. VAT.',
