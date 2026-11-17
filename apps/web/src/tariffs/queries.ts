@@ -46,5 +46,11 @@ export function useSaveTariffs(emonId: string | undefined) {
     onSuccess: (data) => client.setQueryData(key(emonId), data),
     onSettled: settle,
   });
-  return { save, restore };
+  const remove = useMutation({
+    mutationFn: ({ version, current }: { version: number; current: number }) =>
+      unwrap(api.deleteTariffVersion(version, current)),
+    onSuccess: (data) => client.setQueryData(key(emonId), data),
+    onSettled: settle,
+  });
+  return { save, restore, remove };
 }

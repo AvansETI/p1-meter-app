@@ -103,6 +103,42 @@ describe('CostService', () => {
     expect(Number(totals(result.own)[0])).toBeCloseTo(24 * 0.4);
   });
 
+  it('recomputes from the date of a period added between two others (#91)', async () => {
+    const { tariffs, service, now } = setup();
+    tariffs.save(SIG, { own: { periods: [period('2026-01-01', 0.3)] } }, 0);
+    const before = await service.days(SIG, caps, jan(2), jan(8), now);
+    for (const day of totals(before.own).map(Number)) expect(day).toBeCloseTo(24 * 0.3);
+    tariffs.save(
+      SIG,
+      {
+        own: {
+          periods: [
+            period('2026-01-01', 0.3),
+            period('2026-01-05', 0.4),
+            period('2026-01-07', 0.5),
+          ],
+        },
+      },
+      1,
+    );
+    const after = await service.days(SIG, caps, jan(2), jan(8), now);
+    const days = totals(after.own).map(Number);
+    for (const day of days.slice(0, 3)) expect(day).toBeCloseTo(24 * 0.3); // 2–4 January: unchanged
+    expect(days[3]).toBeCloseTo(24 * 0.4); // 5 January: the new period
+    expect(days[5]).toBeCloseTo(24 * 0.5);
+  });
+
+  it('follows the previous version after the current one is deleted (#91)', async () => {
+    const { tariffs, service, now } = setup();
+    tariffs.save(SIG, { own: { periods: [period('2026-01-01', 0.3)] } }, 0);
+    tariffs.save(SIG, { own: { periods: [period('2026-01-01', 0.4)] } }, 1);
+    const current = await service.days(SIG, caps, jan(5), jan(5), now);
+    expect(Number(totals(current.own)[0])).toBeCloseTo(24 * 0.4);
+    tariffs.delete(SIG, 2, 2);
+    const result = await service.days(SIG, caps, jan(5), jan(5), now);
+    expect(Number(totals(result.own)[0])).toBeCloseTo(24 * 0.3);
+  });
+
   it('returns both profiles and keeps days without prices out of the cache', async () => {
     const { tariffs, service, prices, now } = setup();
     tariffs.save(
