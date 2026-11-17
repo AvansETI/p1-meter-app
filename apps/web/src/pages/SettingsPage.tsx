@@ -178,7 +178,7 @@ export default function SettingsPage() {
           <IonItem>
             <IonLabel>{t('settings.language')}</IonLabel>
           </IonItem>
-          <IonItem lines="none">
+          <IonItem>
             {/* Language names in their own language, so they can be found in either. */}
             <IonSegment
               className="language-segment"
