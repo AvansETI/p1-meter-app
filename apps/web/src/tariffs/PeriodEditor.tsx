@@ -12,6 +12,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonTitle,
+  IonToggle,
   IonToolbar,
 } from '@ionic/react';
 import type { TariffPeriod } from '@p1/shared';
@@ -46,13 +47,13 @@ export default function PeriodEditor({
   }));
   const [invalid, setInvalid] = useState<Set<DraftField>>(new Set());
 
-  const set = (field: DraftField, value: string) =>
+  const set = (field: DraftField, value: string | boolean) =>
     setDraft((current) => ({ ...current, [field]: value }));
 
-  const amount = (field: AmountField, unit: string, help?: string) => (
+  const amount = (field: AmountField, unit: string, help?: string, label?: string) => (
     <IonItem key={field}>
       <IonInput
-        label={t(`tariffs.fields.${field}`)}
+        label={label ?? t(`tariffs.fields.${field}`)}
         labelPlacement="stacked"
         inputmode="decimal"
         value={draft[field]}
@@ -65,6 +66,24 @@ export default function PeriodEditor({
       </IonInput>
     </IonItem>
   );
+
+  const toggle = (field: 'refundMarkupOnExport' | 'fixedExclVat', help: string) => (
+    <IonItem key={field}>
+      {/* Label outside the toggle: the toggle's own label is cut off on one line. */}
+      <IonLabel className="ion-text-wrap">
+        <span className="tariffs__row-label">{t(`tariffs.fields.${field}`)}</span>
+        <IonNote className="tariffs__help">{help}</IonNote>
+      </IonLabel>
+      <IonToggle
+        slot="end"
+        aria-label={t(`tariffs.fields.${field}`)}
+        checked={draft[field]}
+        onIonChange={(event) => set(field, event.detail.checked)}
+      />
+    </IonItem>
+  );
+
+  const dynamic = draft.electricityType === 'dynamic';
 
   const submit = () => {
     const result = fromDraft(draft);
@@ -130,7 +149,7 @@ export default function PeriodEditor({
 
         <IonList inset>
           <IonListHeader>{t('tariffs.electricity')}</IonListHeader>
-          <IonItem lines="none">
+          <IonItem>
             <IonSegment
               value={draft.electricityType}
               onIonChange={(event) => set('electricityType', String(event.detail.value))}
@@ -142,32 +161,67 @@ export default function PeriodEditor({
               ))}
             </IonSegment>
           </IonItem>
+          <IonListHeader className="tariffs__subheader">{t('tariffs.import')}</IonListHeader>
           {draft.electricityType === 'single' && amount('perKwh', '€/kWh', t('tariffs.inclHelp'))}
           {draft.electricityType === 'double' && [
             amount('normalPerKwh', '€/kWh', t('tariffs.inclHelp')),
             amount('offPeakPerKwh', '€/kWh', t('tariffs.offPeakHelp')),
           ]}
-          {draft.electricityType === 'dynamic' && [
+          {dynamic && [
             amount('markupPerKwh', '€/kWh', t('tariffs.markupHelp')),
             amount('energyTaxPerKwh', '€/kWh', t('tariffs.energyTaxHelp')),
             amount('vatPercent', '%'),
           ]}
+          {hasExport && (
+            <>
+              <IonListHeader className="tariffs__subheader">{t('tariffs.export')}</IonListHeader>
+              {dynamic ? (
+                <>
+                  <IonItem>
+                    <IonLabel className="ion-text-wrap">
+                      <span className="tariffs__row-label">{t('tariffs.exportPrice')}</span>
+                      <IonNote className="tariffs__help">{t('tariffs.exportPriceHelp')}</IonNote>
+                    </IonLabel>
+                  </IonItem>
+                  {amount(
+                    'feePerKwh',
+                    '€/kWh',
+                    t('tariffs.dynamicFeeHelp'),
+                    t('tariffs.fields.dynamicFeePerKwh'),
+                  )}
+                  {toggle('refundMarkupOnExport', t('tariffs.refundMarkupHelp'))}
+                  {draft.dynamicMarkupPerKwh !== '' && (
+                    <IonItem>
+                      <IonLabel className="ion-text-wrap">
+                        <span className="tariffs__row-label">
+                          {t('tariffs.legacyMarkup', { amount: draft.dynamicMarkupPerKwh })}
+                        </span>
+                        <IonNote className="tariffs__help">{t('tariffs.legacyMarkupHelp')}</IonNote>
+                      </IonLabel>
+                      <IonButton
+                        slot="end"
+                        fill="clear"
+                        onClick={() => set('dynamicMarkupPerKwh', '')}
+                      >
+                        {t('tariffs.legacyMarkupRemove')}
+                      </IonButton>
+                    </IonItem>
+                  )}
+                </>
+              ) : (
+                [
+                  amount('compensationPerKwh', '€/kWh', t('tariffs.compensationHelp')),
+                  amount('feePerKwh', '€/kWh', t('tariffs.feeHelp')),
+                ]
+              )}
+            </>
+          )}
         </IonList>
-
-        {hasExport && (
-          <IonList inset>
-            <IonListHeader>{t('tariffs.export')}</IonListHeader>
-            {amount('compensationPerKwh', '€/kWh', t('tariffs.compensationHelp'))}
-            {amount('feePerKwh', '€/kWh', t('tariffs.feeHelp'))}
-            {draft.electricityType === 'dynamic' &&
-              amount('dynamicMarkupPerKwh', '€/kWh', t('tariffs.dynamicMarkupHelp'))}
-          </IonList>
-        )}
 
         {hasGas && (
           <IonList inset>
             <IonListHeader>{t('tariffs.gas')}</IonListHeader>
-            <IonItem lines="none">
+            <IonItem>
               <IonSegment
                 value={draft.gasType}
                 onIonChange={(event) => set('gasType', String(event.detail.value))}
@@ -190,8 +244,22 @@ export default function PeriodEditor({
 
         <IonList inset>
           <IonListHeader>{t('tariffs.fixed')}</IonListHeader>
+          {toggle('fixedExclVat', t('tariffs.fixedExclVatHelp'))}
           {amount('supplierPerMonth', '€/mnd', t('tariffs.supplierHelp'))}
-          {amount('gridPerMonth', '€/mnd', t('tariffs.gridHelp'))}
+          <IonItem lines="none">
+            <IonSegment
+              value={draft.gridUnit}
+              aria-label={t('tariffs.gridUnit')}
+              onIonChange={(event) => set('gridUnit', String(event.detail.value))}
+            >
+              {(['day', 'month'] as const).map((unit) => (
+                <IonSegmentButton key={unit} value={unit}>
+                  <IonLabel>{t(`tariffs.gridUnits.${unit}`)}</IonLabel>
+                </IonSegmentButton>
+              ))}
+            </IonSegment>
+          </IonItem>
+          {amount('grid', draft.gridUnit === 'day' ? '€/dag' : '€/mnd', t('tariffs.gridHelp'))}
           {amount('taxReductionPerYear', '€/jaar', t('tariffs.taxReductionHelp'))}
         </IonList>
         <IonNote className="tariffs__note">{t('tariffs.statementHint')}</IonNote>

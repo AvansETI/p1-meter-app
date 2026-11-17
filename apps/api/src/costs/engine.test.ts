@@ -197,6 +197,43 @@ describe('dynamic tariff', () => {
     expect(days[1]!.cost).toBeCloseTo((3 * (0.2 + 0.02) + 1 * 0.1) * 1.21);
   });
 
+  describe('selling fee and refunded markup (#88)', () => {
+    const invoice = (exported: Partial<TariffPeriod['export']>): TariffPeriod => ({
+      ...dynamic,
+      export: { compensationPerKwh: 0, feePerKwh: 0, ...exported },
+    });
+    const month = (year: number) => [
+      usage(`${year}-05-01`, [
+        q(`${year}-05-01`, 8, 0, 6, 0, 0.0111),
+        q(`${year}-05-01`, 13, 0, 0, 3, 0.148),
+        q(`${year}-05-01`, 20, 0, 1, 0, 0.25),
+      ]),
+    ];
+
+    it('cancel out under net metering when both equal the import markup', () => {
+      const [plain] = run([invoice({})], month(2026));
+      const [both] = run([invoice({ feePerKwh: 0.02, refundMarkupOnExport: true })], month(2026));
+      expect(both!.cost).toBeCloseTo(plain!.cost, 10);
+    });
+
+    it('charges the selling fee with VAT, before and after net metering ends', () => {
+      for (const year of [2026, 2027]) {
+        const [plain] = run([invoice({})], month(year));
+        const [fee] = run([invoice({ feePerKwh: 0.0205 })], month(year));
+        expect(fee!.cost - plain!.cost).toBeCloseTo(3 * 0.0205 * 1.21, 10);
+      }
+    });
+
+    it('refunds the markup only while net metering applies', () => {
+      const [before] = run([invoice({ refundMarkupOnExport: true })], month(2026));
+      const [plainBefore] = run([invoice({})], month(2026));
+      expect(plainBefore!.cost - before!.cost).toBeCloseTo(3 * 0.02 * 1.21, 10);
+      const [after] = run([invoice({ refundMarkupOnExport: true })], month(2027));
+      const [plainAfter] = run([invoice({})], month(2027));
+      expect(after!.cost).toBeCloseTo(plainAfter!.cost, 10);
+    });
+  });
+
   it('is unknown when a price is missing for a quarter with usage', () => {
     const result = dayCost(
       usage('2027-06-01', [q('2027-06-01', 12, 0, 1), q('2027-06-01', 13, 0, 0, 0)]),
@@ -238,6 +275,19 @@ describe('gas, fixed costs and tax reduction', () => {
       taxReductionEur: 1,
     });
     expect(cost(result).totalEur).toBeCloseTo(0.3 + 3 + 1 - 1);
+  });
+
+  it('adds VAT to fixed costs entered excl. VAT, with grid costs per day (#88)', () => {
+    const invoice: TariffPeriod = {
+      ...full,
+      fixed: { supplierPerMonth: 4.95, gridPerDay: 1.08, exclVat: true },
+      taxReductionPerYear: 519.8,
+    };
+    const result = cost(
+      dayCost(usage('2026-05-10', [q('2026-05-10', 12, 0, 0)]), [invoice], emptyBalance(2026)),
+    );
+    expect(result.fixedEur).toBeCloseTo((4.95 / 31 + 1.08) * 1.21, 10);
+    expect(result.taxReductionEur).toBeCloseTo((519.8 * 1.21) / 365, 10);
   });
 
   it('spreads the tax reduction over 366 days in a leap year', () => {

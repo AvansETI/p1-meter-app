@@ -556,6 +556,28 @@ ion-menu.app-side-menu ion-item.selected {
   color: var(--ion-color-danger);
 }
 
+/* "Afname" and "Teruglevering" inside the electricity list (#88). */
+.tariffs__subheader {
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
+/* Toggle and text rows use the size of the stacked input labels around them; set on an inner
+   element, because Ionic's own label style wins over a class on ion-label. */
+.tariffs__row-label {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Help text under a toggle or text row, like the helper text of an input. */
+.tariffs__help {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  white-space: normal;
+}
+
 .gas-settings__error {
   margin: 16px 20px 0;
   color: var(--ion-color-danger);
