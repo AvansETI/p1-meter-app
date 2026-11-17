@@ -11,6 +11,9 @@ Design: [docs/design/2026-11-09-deployment.md](design/2026-11-09-deployment.md).
    to the rolling pre-release **`main-latest`** (`manifest.json` + `p1-meter-app-<sha>.tar.gz`).
 3. Within ~2 minutes the timer on the LXC installs it, restarts the app and checks
    `/api/v1/health`. If the check fails, the previous release is restored automatically.
+   The timer reads the release download link (`github.com/.../releases/download/main-latest/`),
+   not the GitHub API, whose unauthenticated limit of 60 calls per hour is shared with the
+   other updaters on the network (#87).
 
 ## First-time setup
 
@@ -107,6 +110,7 @@ stays on "geen recente data" through the public URL but works on
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Update log: "INFLUX_TOKEN is empty"   | fill in the token in `/etc/p1-meter-app/env`                                                                                 |
 | Update log: "checksum mismatch"       | download corrupted or release being replaced; the next run retries                                                           |
+| Update log: "answered HTTP 403/429"   | GitHub throttles this IP; the next run retries. The updater does not use the API (#87), so this is rare                      |
 | Update log: "failed health check"     | `journalctl -u p1-meter-app -n 100` for the error; the previous release is running                                           |
 | App log: "Invalid configuration"      | a value in `/etc/p1-meter-app/env` is wrong; the log names it                                                                |
 | Health shows `"influx":"unavailable"` | outbound HTTPS to influxdb.example.org, or the token                                                                         |
