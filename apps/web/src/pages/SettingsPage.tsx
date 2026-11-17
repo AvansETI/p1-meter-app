@@ -156,7 +156,7 @@ export default function SettingsPage() {
           <IonItem>
             <IonLabel>{t('settings.theme')}</IonLabel>
           </IonItem>
-          <IonItem lines="none">
+          <IonItem>
             <IonSegment
               value={settings.theme}
               onIonChange={(event) => {

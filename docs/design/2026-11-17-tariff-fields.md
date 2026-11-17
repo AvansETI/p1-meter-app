@@ -128,7 +128,7 @@ Stroom
     Btw
   Teruglevering
     Vergoeding: marktprijs (EPEX) per kwartier                         (text)
-    Verkoopvergoeding / terugleverkosten per kWh (excl. btw)
+    Verkoopvergoeding per kWh (excl. btw)
     [ ] Inkoopvergoeding terug over teruggeleverde kWh (salderen, t/m 2026)
 Vaste kosten
   [ ] Bedragen excl. btw (zoals op je factuur)

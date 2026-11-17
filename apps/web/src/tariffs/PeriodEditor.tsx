@@ -70,8 +70,8 @@ export default function PeriodEditor({
   const toggle = (field: 'refundMarkupOnExport' | 'fixedExclVat', help: string) => (
     <IonItem key={field}>
       {/* Label outside the toggle: the toggle's own label is cut off on one line. */}
-      <IonLabel className="ion-text-wrap tariffs__toggle-label">
-        {t(`tariffs.fields.${field}`)}
+      <IonLabel className="ion-text-wrap">
+        <span className="tariffs__row-label">{t(`tariffs.fields.${field}`)}</span>
         <IonNote className="tariffs__help">{help}</IonNote>
       </IonLabel>
       <IonToggle
@@ -149,7 +149,7 @@ export default function PeriodEditor({
 
         <IonList inset>
           <IonListHeader>{t('tariffs.electricity')}</IonListHeader>
-          <IonItem lines="none">
+          <IonItem>
             <IonSegment
               value={draft.electricityType}
               onIonChange={(event) => set('electricityType', String(event.detail.value))}
@@ -178,8 +178,8 @@ export default function PeriodEditor({
               {dynamic ? (
                 <>
                   <IonItem>
-                    <IonLabel className="ion-text-wrap tariffs__toggle-label">
-                      {t('tariffs.exportPrice')}
+                    <IonLabel className="ion-text-wrap">
+                      <span className="tariffs__row-label">{t('tariffs.exportPrice')}</span>
                       <IonNote className="tariffs__help">{t('tariffs.exportPriceHelp')}</IonNote>
                     </IonLabel>
                   </IonItem>
@@ -192,8 +192,10 @@ export default function PeriodEditor({
                   {toggle('refundMarkupOnExport', t('tariffs.refundMarkupHelp'))}
                   {draft.dynamicMarkupPerKwh !== '' && (
                     <IonItem>
-                      <IonLabel className="ion-text-wrap tariffs__toggle-label">
-                        {t('tariffs.legacyMarkup', { amount: draft.dynamicMarkupPerKwh })}
+                      <IonLabel className="ion-text-wrap">
+                        <span className="tariffs__row-label">
+                          {t('tariffs.legacyMarkup', { amount: draft.dynamicMarkupPerKwh })}
+                        </span>
                         <IonNote className="tariffs__help">{t('tariffs.legacyMarkupHelp')}</IonNote>
                       </IonLabel>
                       <IonButton
@@ -219,7 +221,7 @@ export default function PeriodEditor({
         {hasGas && (
           <IonList inset>
             <IonListHeader>{t('tariffs.gas')}</IonListHeader>
-            <IonItem lines="none">
+            <IonItem>
               <IonSegment
                 value={draft.gasType}
                 onIonChange={(event) => set('gasType', String(event.detail.value))}
