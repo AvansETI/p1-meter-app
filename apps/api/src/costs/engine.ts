@@ -1,5 +1,6 @@
 import {
   addDays,
+  FIXED_COSTS_VAT_PERCENT,
   formatPlainDate,
   periodOn,
   weekday,
@@ -109,7 +110,12 @@ function electricity(
   const netMetering = usage.date.year <= LAST_NET_METERING_YEAR;
   const e = period.electricity;
   const { compensationPerKwh: compensation, feePerKwh: fee } = period.export;
-  const exportMarkup = period.export.dynamicMarkupPerKwh ?? 0;
+  // Dynamic export earns the day-ahead price, plus the import markup back while net metering
+  // applies (if the supplier does so), plus a legacy markup from before #88.
+  const exportMarkup =
+    (e.type === 'dynamic' && netMetering && period.export.refundMarkupOnExport
+      ? e.markupPerKwh
+      : 0) + (period.export.dynamicMarkupPerKwh ?? 0);
   const balance = { ...start };
   const quarterEur: number[] = [];
 
@@ -137,17 +143,21 @@ function electricity(
       const vat = 1 + e.vatPercent / 100;
       const supply = q.importKwh * (q.price + e.markupPerKwh);
       const earned = q.exportKwh * (q.price + exportMarkup);
-      cost = netMetering
-        ? // Supply is settled per quarter; energy tax (and VAT) only on the year's net import.
-          (supply - earned + e.energyTaxPerKwh * (pos(balance.total) - pos(before.total))) * vat
-        : q.importKwh * (q.price + e.markupPerKwh + e.energyTaxPerKwh) * vat - earned;
+      // The selling fee is excl. VAT for dynamic contracts, like the invoice (#88).
+      cost =
+        (netMetering
+          ? // Supply is settled per quarter; energy tax (and VAT) only on the year's net import.
+            (supply - earned + e.energyTaxPerKwh * (pos(balance.total) - pos(before.total))) * vat
+          : q.importKwh * (q.price + e.markupPerKwh + e.energyTaxPerKwh) * vat - earned) +
+        q.exportKwh * fee * vat;
     } else {
       const price = e.type === 'single' ? e.perKwh : offPeak ? e.offPeakPerKwh : e.normalPerKwh;
       if (!netMetering) cost = q.importKwh * price - q.exportKwh * compensation;
       else if (e.type === 'single') cost = netted(before.total, balance.total, price, compensation);
       else cost = netted(before.band, balance[band], price, compensation);
+      cost += q.exportKwh * fee;
     }
-    quarterEur.push(cost + q.exportKwh * fee);
+    quarterEur.push(cost);
   }
 
   // Double tariff: at the end of the year a surplus in one band nets against the other band's
@@ -207,9 +217,13 @@ export function dayCost(usage: DayUsage, periods: TariffPeriod[], previous: Bala
         gasM3 * (usage.gasPrice + g.markupPerM3 + g.energyTaxPerM3) * (1 + g.vatPercent / 100);
   }
 
+  // Fixed costs may be entered excl. VAT and grid costs per day, as on the invoice (#88).
+  const { supplierPerMonth, gridPerMonth, gridPerDay, exclVat } = period.fixed;
+  const fixedVat = exclVat ? 1 + FIXED_COSTS_VAT_PERCENT / 100 : 1;
+  const days = daysInMonth(usage.date);
   const fixedEur =
-    (period.fixed.supplierPerMonth + period.fixed.gridPerMonth) / daysInMonth(usage.date);
-  const taxReductionEur = period.taxReductionPerYear / daysInYear(usage.date.year);
+    (supplierPerMonth / days + (gridPerDay ?? (gridPerMonth ?? 0) / days)) * fixedVat;
+  const taxReductionEur = (period.taxReductionPerYear * fixedVat) / daysInYear(usage.date.year);
   const electricityEur = power.quarterEur.reduce((a, b) => a + b, 0);
   return {
     cost: {

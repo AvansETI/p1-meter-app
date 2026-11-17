@@ -16,6 +16,9 @@ export interface PeriodDraft {
   vatPercent: string;
   compensationPerKwh: string;
   feePerKwh: string;
+  /** Dynamic: the import markup is earned back on export while net metering applies (#88). */
+  refundMarkupOnExport: boolean;
+  /** Legacy markup from before #88 that could not be converted; empty when there is none. */
   dynamicMarkupPerKwh: string;
   gasType: 'none' | 'fixed' | 'dynamic';
   perM3: string;
@@ -23,7 +26,11 @@ export interface PeriodDraft {
   energyTaxPerM3: string;
   gasVatPercent: string;
   supplierPerMonth: string;
-  gridPerMonth: string;
+  /** Grid costs per `gridUnit`. */
+  grid: string;
+  gridUnit: 'day' | 'month';
+  /** Fixed amounts excl. VAT, as on the invoice. */
+  fixedExclVat: boolean;
   taxReductionPerYear: string;
 }
 
@@ -39,6 +46,7 @@ export const emptyDraft = (validFrom: string, withGas: boolean): PeriodDraft => 
   vatPercent: '21',
   compensationPerKwh: '0',
   feePerKwh: '0',
+  refundMarkupOnExport: false,
   dynamicMarkupPerKwh: '',
   gasType: withGas ? 'fixed' : 'none',
   perM3: '',
@@ -46,7 +54,9 @@ export const emptyDraft = (validFrom: string, withGas: boolean): PeriodDraft => 
   energyTaxPerM3: '',
   gasVatPercent: '21',
   supplierPerMonth: '',
-  gridPerMonth: '',
+  grid: '',
+  gridUnit: 'month',
+  fixedExclVat: false,
   taxReductionPerYear: '',
 });
 
@@ -59,9 +69,28 @@ export function parseAmount(value: string): number {
 const show = (value: number | undefined) =>
   value === undefined ? '' : String(value).replace('.', ',');
 
+/** Avoids float noise such as 0.030000000000000002 when adding amounts. */
+const round = (value: number) => Math.round(value * 1e6) / 1e6;
+
+/**
+ * The export of a period as the form edits it. A legacy `dynamicMarkupPerKwh` (before #88) is
+ * converted where its meaning is clear (docs/design/2026-11-17-tariff-fields.md §5).
+ */
+function exportFields(period: TariffPeriod) {
+  const e = period.electricity;
+  const { feePerKwh, refundMarkupOnExport, dynamicMarkupPerKwh: legacy } = period.export;
+  const converted = { fee: feePerKwh, refund: refundMarkupOnExport ?? false, legacy: undefined };
+  if (legacy === undefined || legacy === 0 || e.type !== 'dynamic') return converted;
+  if (legacy === e.markupPerKwh) return { ...converted, refund: true };
+  if (legacy < 0) return { ...converted, fee: round(feePerKwh - legacy) };
+  return { ...converted, legacy };
+}
+
 export function toDraft(period: TariffPeriod): PeriodDraft {
   const e = period.electricity;
   const g = period.gas;
+  const exported = exportFields(period);
+  const f = period.fixed;
   return {
     validFrom: period.validFrom,
     name: period.name ?? '',
@@ -73,22 +102,35 @@ export function toDraft(period: TariffPeriod): PeriodDraft {
     energyTaxPerKwh: e.type === 'dynamic' ? show(e.energyTaxPerKwh) : '',
     vatPercent: e.type === 'dynamic' ? show(e.vatPercent) : '21',
     compensationPerKwh: show(period.export.compensationPerKwh),
-    feePerKwh: show(period.export.feePerKwh),
-    dynamicMarkupPerKwh: show(period.export.dynamicMarkupPerKwh),
+    feePerKwh: show(exported.fee),
+    refundMarkupOnExport: exported.refund,
+    dynamicMarkupPerKwh: show(exported.legacy),
     gasType: g ? g.type : 'none',
     perM3: g?.type === 'fixed' ? show(g.perM3) : '',
     markupPerM3: g?.type === 'dynamic' ? show(g.markupPerM3) : '',
     energyTaxPerM3: g?.type === 'dynamic' ? show(g.energyTaxPerM3) : '',
     gasVatPercent: g?.type === 'dynamic' ? show(g.vatPercent) : '21',
-    supplierPerMonth: show(period.fixed.supplierPerMonth),
-    gridPerMonth: show(period.fixed.gridPerMonth),
+    supplierPerMonth: show(f.supplierPerMonth),
+    grid: show(f.gridPerDay ?? f.gridPerMonth),
+    gridUnit: f.gridPerDay === undefined ? 'month' : 'day',
+    fixedExclVat: f.exclVat ?? false,
     taxReductionPerYear: show(period.taxReductionPerYear),
   };
 }
 
 export type DraftField = keyof PeriodDraft;
-/** Fields typed as amounts (everything except the date and the type choices). */
-export type AmountField = Exclude<DraftField, 'validFrom' | 'name' | 'electricityType' | 'gasType'>;
+/** Fields typed as amounts (everything except the date, the choices and the switches). */
+export type AmountField = Exclude<
+  DraftField,
+  | 'validFrom'
+  | 'name'
+  | 'electricityType'
+  | 'gasType'
+  | 'gridUnit'
+  | 'refundMarkupOnExport'
+  | 'fixedExclVat'
+  | 'dynamicMarkupPerKwh'
+>;
 
 /** Converts and validates; returns the period or the fields that are wrong. */
 export function fromDraft(
@@ -121,19 +163,30 @@ export function fromDraft(
             vatPercent: n(draft.gasVatPercent),
           }
         : undefined;
+  const dynamic = draft.electricityType === 'dynamic';
+  // Hidden for dynamic contracts; keep a valid typed value, so switching back does not lose it.
+  const compensation = n(draft.compensationPerKwh);
   const candidate = {
     validFrom: draft.validFrom,
     ...(draft.name.trim() !== '' && { name: draft.name.trim() }),
     electricity,
     export: {
-      compensationPerKwh: n(draft.compensationPerKwh),
+      compensationPerKwh: dynamic && !(compensation >= 0) ? 0 : compensation,
       feePerKwh: n(draft.feePerKwh),
-      ...(draft.electricityType === 'dynamic' && draft.dynamicMarkupPerKwh.trim() !== ''
-        ? { dynamicMarkupPerKwh: n(draft.dynamicMarkupPerKwh) }
-        : {}),
+      ...(dynamic && draft.refundMarkupOnExport && { refundMarkupOnExport: true }),
+      ...(dynamic &&
+        draft.dynamicMarkupPerKwh.trim() !== '' && {
+          dynamicMarkupPerKwh: n(draft.dynamicMarkupPerKwh),
+        }),
     },
     ...(gas && { gas }),
-    fixed: { supplierPerMonth: n(draft.supplierPerMonth), gridPerMonth: n(draft.gridPerMonth) },
+    fixed: {
+      supplierPerMonth: n(draft.supplierPerMonth),
+      ...(draft.gridUnit === 'day'
+        ? { gridPerDay: n(draft.grid) }
+        : { gridPerMonth: n(draft.grid) }),
+      ...(draft.fixedExclVat && { exclVat: true }),
+    },
     taxReductionPerYear: n(draft.taxReductionPerYear),
   };
 
@@ -150,8 +203,9 @@ export function fromDraft(
     else if (group === 'export' && key) fields.add(key as DraftField);
     else if (group === 'gas' && key) {
       fields.add((key === 'vatPercent' ? 'gasVatPercent' : key) as DraftField);
-    } else if (group === 'fixed' && key) fields.add(key as DraftField);
-    else if (group === 'taxReductionPerYear') fields.add('taxReductionPerYear');
+    } else if (group === 'fixed' && key) {
+      fields.add(key === 'gridPerMonth' || key === 'gridPerDay' ? 'grid' : (key as DraftField));
+    } else if (group === 'taxReductionPerYear') fields.add('taxReductionPerYear');
   }
   return { ok: false, fields: [...fields] };
 }

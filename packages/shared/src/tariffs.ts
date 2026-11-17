@@ -19,13 +19,35 @@ export const ElectricityTariffSchema = z.discriminatedUnion('type', [
 ]);
 
 export const ExportTariffSchema = z.object({
-  /** Feed-in compensation per kWh (excess under net metering; all export from 2027). */
+  /**
+   * Single/double: feed-in compensation per kWh, incl. VAT (excess under net metering; all
+   * export from 2027). Not used for dynamic contracts: export earns the day-ahead price.
+   */
   compensationPerKwh: euro,
-  /** Feed-in costs per kWh charged by the supplier (from 2027). */
+  /** Selling fee per exported kWh. Single/double: incl. VAT; dynamic: excl. VAT (#88). */
   feePerKwh: euro,
-  /** Dynamic contracts: export earns the day-ahead price plus this (may be negative). */
+  /** Dynamic: exported kWh earn the import markup back while net metering applies (#88). */
+  refundMarkupOnExport: z.boolean().optional(),
+  /** Legacy (before #88): export earns the day-ahead price plus this. No longer editable. */
   dynamicMarkupPerKwh: markup.optional(),
 });
+
+/** Fixed costs as entered: incl. or excl. VAT, grid costs per month or per day (#88). */
+export const FixedCostsSchema = z
+  .object({
+    supplierPerMonth: euro,
+    gridPerMonth: euro.optional(),
+    gridPerDay: euro.optional(),
+    /** Amounts (also the tax reduction) excl. VAT, as on the invoice. Absent = incl. VAT. */
+    exclVat: z.boolean().optional(),
+  })
+  .refine((f) => (f.gridPerMonth === undefined) !== (f.gridPerDay === undefined), {
+    message: 'exactly one of gridPerMonth and gridPerDay',
+    path: ['gridPerMonth'],
+  });
+
+/** VAT rate applied to fixed costs entered excl. VAT. */
+export const FIXED_COSTS_VAT_PERCENT = 21;
 
 export const GasTariffSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('fixed'), perM3: euro }),
@@ -44,7 +66,8 @@ export const TariffPeriodSchema = z.object({
   electricity: ElectricityTariffSchema,
   export: ExportTariffSchema,
   gas: GasTariffSchema.optional(),
-  fixed: z.object({ supplierPerMonth: euro, gridPerMonth: euro }),
+  fixed: FixedCostsSchema,
+  /** Follows `fixed.exclVat`. */
   taxReductionPerYear: euro,
 });
 export type TariffPeriod = z.infer<typeof TariffPeriodSchema>;

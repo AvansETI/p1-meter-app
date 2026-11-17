@@ -8,8 +8,8 @@
 ## 1. Goal
 
 Every merge into `main` runs in production without manual steps:
-**https://p1-meter.sendlab.nl** → reverse proxy (`10.0.0.51`, SSL offloading, Let's Encrypt,
-HTTP → HTTPS) → **`http://192.168.5.131:8080`** (LXC, latest Ubuntu LTS).
+**https://p1-meter.sendlab.nl** → reverse proxy (`192.0.2.1`, SSL offloading, Let's Encrypt,
+HTTP → HTTPS) → **`http://192.0.2.20:8080`** (LXC, latest Ubuntu LTS).
 
 ## 2. Overview
 
@@ -17,7 +17,7 @@ HTTP → HTTPS) → **`http://192.168.5.131:8080`** (LXC, latest Ubuntu LTS).
  merge PR → main
         │
         ▼
- GitHub Actions (hosted)          GitHub Releases                       LXC 192.168.5.131
+ GitHub Actions (hosted)          GitHub Releases                       LXC 192.0.2.20
  ┌───────────────────────┐        ┌───────────────────────────┐        ┌──────────────────────────────┐
  │ ci (lint/test/build)  │──────▶ │ release "main-latest"     │ ◀──────│ p1-meter-update.timer (2 min) │
  │ package job:          │ upload │  manifest.json             │  poll  │  download + sha256 check      │
@@ -68,8 +68,8 @@ API_HOST=0.0.0.0
 API_PORT=8080
 LOG_LEVEL=info
 WEB_DIST=/opt/p1-meter-app/current/web/dist
-TRUST_PROXY=10.0.0.51
-INFLUX_URL=https://influxdb.sendlab.nl
+TRUST_PROXY=192.0.2.1
+INFLUX_URL=https://influxdb.example.org
 INFLUX_ORG=Sendlab
 INFLUX_BUCKET=p1-smartmeters
 INFLUX_TOKEN=            # filled in by the product owner on the LXC only
@@ -130,7 +130,7 @@ install command downloads them from the `main` branch on GitHub.
 
 ## 6. Reverse proxy and client IP
 
-- The proxy at `10.0.0.51` forwards to `192.168.5.131:8080`; `TRUST_PROXY=10.0.0.51` lets the
+- The proxy at `192.0.2.1` forwards to `192.0.2.20:8080`; `TRUST_PROXY=192.0.2.1` lets the
   API use `X-Forwarded-For` for rate limiting and lock-out.
 - The two are on different subnets. If a router does NAT in between, requests arrive from the
   router's address instead. To verify, the request log also records the raw socket address
@@ -138,7 +138,7 @@ install command downloads them from the `main` branch on GitHub.
   adjust `TRUST_PROXY` if needed.
 - SSE: the API sends `X-Accel-Buffering: no`; if the live page stays "stale" behind the
   proxy, disable proxy buffering for this host in the proxy settings.
-- Optional hardening: allow port 8080 only from `10.0.0.51` (`ufw`), so nobody bypasses the
+- Optional hardening: allow port 8080 only from `192.0.2.1` (`ufw`), so nobody bypasses the
   proxy. Offered by the install script as a question, default **on**.
 
 ## 7. Runbook (`docs/operations.md`)

@@ -1,7 +1,7 @@
 # Operations runbook
 
-Production: **https://p1-meter.sendlab.nl** → reverse proxy `10.0.0.51` (SSL offloading,
-Let's Encrypt, HTTP → HTTPS) → LXC **`http://192.168.5.131:8080`**.
+Production: **https://p1-meter.sendlab.nl** → reverse proxy `192.0.2.1` (SSL offloading,
+Let's Encrypt, HTTP → HTTPS) → LXC **`http://192.0.2.20:8080`**.
 Design: [docs/design/2026-11-09-deployment.md](design/2026-11-09-deployment.md).
 
 ## How a change reaches production
@@ -14,7 +14,7 @@ Design: [docs/design/2026-11-09-deployment.md](design/2026-11-09-deployment.md).
 
 ## First-time setup
 
-On the LXC (Ubuntu LTS, outbound HTTPS to github.com, nodejs.org and influxdb.sendlab.nl):
+On the LXC (Ubuntu LTS, outbound HTTPS to github.com, nodejs.org and influxdb.example.org):
 
 ```sh
 curl -fsSLO https://raw.githubusercontent.com/AvansETI/p1-meter-app/main/scripts/deploy/install.sh
@@ -25,7 +25,7 @@ sudo p1-meter-update                 # install the current build now
 ```
 
 From the LXC the public InfluxDB name is not reachable; use the internal address
-(`INFLUX_URL=http://192.168.5.30:8086`). **The env file is read only at start**: after editing it,
+(`INFLUX_URL=http://192.0.2.10:8086`). **The env file is read only at start**: after editing it,
 run `sudo systemctl restart p1-meter-app`.
 
 The install script is idempotent. It is only needed for the first setup: systemd units and the
@@ -82,13 +82,13 @@ curl -s -o /dev/null -w "%{http_code}\n" https://p1-meter.sendlab.nl/sw.js   # 2
 ## Client IP (reverse proxy)
 
 Rate limiting and the lock-out after failed EMON ID lookups work per client IP. The API trusts
-`X-Forwarded-For` only from `TRUST_PROXY` (`10.0.0.51`). Check after deploying:
+`X-Forwarded-For` only from `TRUST_PROXY` (`192.0.2.1`). Check after deploying:
 
 ```sh
 journalctl -u p1-meter-app -n 20 -o cat | grep remoteAddress
 ```
 
-- `remoteAddress` must be `10.0.0.51` (the proxy) and `ip` the visitor's public IP.
+- `remoteAddress` must be `192.0.2.1` (the proxy) and `ip` the visitor's public IP.
 - If `remoteAddress` is another address (NAT between proxy and LXC), set `TRUST_PROXY` to that
   address in `/etc/p1-meter-app/env` and restart the app.
 - If `ip` equals `remoteAddress`, the proxy does not send `X-Forwarded-For` or `TRUST_PROXY`
@@ -98,7 +98,7 @@ journalctl -u p1-meter-app -n 20 -o cat | grep remoteAddress
 
 The live page uses server-sent events. The API sends `X-Accel-Buffering: no`. If the live page
 stays on "geen recente data" through the public URL but works on
-`http://192.168.5.131:8080`, disable response buffering for this host in the proxy (for nginx:
+`http://192.0.2.20:8080`, disable response buffering for this host in the proxy (for nginx:
 `proxy_buffering off;` in the advanced settings).
 
 ## Troubleshooting
@@ -109,6 +109,6 @@ stays on "geen recente data" through the public URL but works on
 | Update log: "checksum mismatch"       | download corrupted or release being replaced; the next run retries                                                           |
 | Update log: "failed health check"     | `journalctl -u p1-meter-app -n 100` for the error; the previous release is running                                           |
 | App log: "Invalid configuration"      | a value in `/etc/p1-meter-app/env` is wrong; the log names it                                                                |
-| Health shows `"influx":"unavailable"` | outbound HTTPS to influxdb.sendlab.nl, or the token                                                                          |
+| Health shows `"influx":"unavailable"` | outbound HTTPS to influxdb.example.org, or the token                                                                         |
 | Health `prices`: `backoff`            | ENTSO-E or EnergyZero failed; retried after Retry-After or 1–24 h. `journalctl -u p1-meter-app -o cat \| grep 'backing off'` |
 | Health `prices`: `retrying`           | writing to the price bucket failed (e.g. timeout during the InfluxDB backup); retried after 10 min                           |
