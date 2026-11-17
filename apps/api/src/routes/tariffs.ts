@@ -85,5 +85,35 @@ export const tariffRoutes: FastifyPluginCallback<TariffRouteOptions> = (app, opt
     },
   );
 
+  // Deletes a version; deleting the current one makes the previous version current (#91).
+  app.delete<{ Params: { version: string } }>(
+    '/tariffs/versions/:version',
+    async (request, reply) => {
+      const h = await household(request, reply);
+      if (!h) return reply;
+      const version = Number(request.params.version);
+      const expected = Number(request.headers['if-match']);
+      if (!Number.isInteger(version) || !Number.isInteger(expected)) {
+        return fail(reply, 400, 'invalid_format');
+      }
+      if (writes.add(h.signature) > writesPerHour) {
+        reply.header('retry-after', writes.retryAfterSec(h.signature));
+        return fail(reply, 429, 'rate_limited');
+      }
+      try {
+        const state = tariffs.delete(h.signature, version, expected);
+        if (!state) return fail(reply, 404, 'not_found');
+        app.log.info(
+          { signature: h.signature, deleted: version, version: state.version },
+          'tariff version deleted',
+        );
+        return toResponse(state);
+      } catch (error) {
+        if (error instanceof VersionConflictError) return fail(reply, 409, 'conflict');
+        throw error;
+      }
+    },
+  );
+
   done();
 };

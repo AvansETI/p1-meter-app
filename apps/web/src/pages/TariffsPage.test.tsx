@@ -1,4 +1,4 @@
-import type { TariffPeriod, TariffsResponse } from '@p1/shared';
+import type { TariffPeriod, TariffVersion, TariffsResponse } from '@p1/shared';
 import { IonApp } from '@ionic/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -22,7 +22,7 @@ const period: TariffPeriod = {
   taxReductionPerYear: 600,
 };
 
-function setup(tariffs: TariffsResponse) {
+function setup(tariffs: TariffsResponse, versions: TariffVersion[] = []) {
   vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     const json = (body: unknown) =>
@@ -31,6 +31,7 @@ function setup(tariffs: TariffsResponse) {
     if (url.startsWith('/api/v1/session')) return json(sessionResponse(caps));
     if (url.startsWith('/api/v1/capabilities')) return json(capabilities(caps));
     if (url === '/api/v1/tariffs') return json(tariffs);
+    if (url === '/api/v1/tariffs/versions') return json(versions);
     return Promise.reject(new Error(`unexpected ${url}`));
   });
   render(
@@ -75,6 +76,76 @@ describe('TariffsPage', () => {
     expect(screen.getByText('Enkel tarief · € 0,30/kWh')).toBeTruthy();
     expect(screen.getByText('Vergelijken met: Dynamisch ANWB')).toBeTruthy();
     expect(screen.getByText('Eerdere versies')).toBeTruthy();
+  });
+
+  it('shows periods newest first, also when one lies between others (#91)', async () => {
+    setup({
+      profiles: {
+        own: {
+          periods: [
+            period,
+            { ...period, validFrom: '2026-07-01' },
+            { ...period, validFrom: '2026-03-01' },
+          ],
+        },
+      },
+      version: 4,
+      updatedAt: '2026-11-09T10:00:00Z',
+    });
+    await screen.findByText('Vanaf 1 juli 2026');
+    const order = screen
+      .getAllByText(/^Vanaf /)
+      .map((el) => el.textContent)
+      .filter((text) => text?.endsWith('2026'));
+    expect(order).toEqual(['Vanaf 1 juli 2026', 'Vanaf 1 maart 2026', 'Vanaf 1 januari 2026']);
+  });
+
+  describe('deleting a version (#91)', () => {
+    const version = (n: number): TariffVersion => ({
+      version: n,
+      createdAt: `2026-11-1${n}T10:00:00Z`,
+      ownPeriods: 1,
+      comparePeriods: null,
+      compareName: null,
+    });
+    const openVersions = async (versions: TariffVersion[]) => {
+      setup(
+        { profiles: { own: { periods: [period] } }, version: 3, updatedAt: '2026-11-13T10:00:00Z' },
+        versions,
+      );
+      fireEvent.click(await screen.findByText('Eerdere versies'));
+    };
+
+    /** Trash-can buttons in the versions dialog (Ionic moves aria-label into the button). */
+    const trashCans = () =>
+      [...document.querySelectorAll('ion-modal ion-button')].filter((b) =>
+        b.querySelector('ion-icon'),
+      ) as HTMLElement[];
+
+    it('offers a trash can for every version, also the current one', async () => {
+      await openVersions([version(3), version(2), version(1)]);
+      await screen.findByText('Versie 2');
+      await waitFor(() => expect(trashCans()).toHaveLength(3));
+    });
+
+    it('offers no trash can when only one version is left', async () => {
+      await openVersions([version(3)]);
+      await screen.findByText('Versie 3 · huidig');
+      expect(trashCans()).toHaveLength(0);
+    });
+
+    it('asks for confirmation and names the version that becomes current', async () => {
+      await openVersions([version(3), version(1)]);
+      await screen.findByText('Versie 1');
+      await waitFor(() => expect(trashCans()).toHaveLength(2));
+      fireEvent.click(trashCans()[0]!);
+      expect(await screen.findByText('Versie 3 verwijderen?')).toBeTruthy();
+      expect(
+        screen.getByText(
+          'Versie 1 wordt weer de huidige versie; de kosten worden daarmee opnieuw berekend.',
+        ),
+      ).toBeTruthy();
+    });
   });
 });
 

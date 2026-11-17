@@ -57,8 +57,9 @@ function PeriodList({
   onAdd: () => void;
 }) {
   const { t } = useTranslation();
-  // Newest first: that is the one that applies now.
-  const newestFirst = [...periods].reverse();
+  // Newest first: that is the one that applies now. Sorted here as well, so the list is always
+  // in date order, also right after a period with a date between others was added (#91).
+  const newestFirst = [...periods].sort((a, b) => b.validFrom.localeCompare(a.validFrom));
   return (
     <>
       {newestFirst.map((period) => (
@@ -109,7 +110,7 @@ export default function TariffsPage() {
   const hasGas = ready && state.capabilities.hasGas;
 
   const query = useTariffs(settings.emonId, ready);
-  const { save, restore } = useSaveTariffs(settings.emonId);
+  const { save, restore, remove } = useSaveTariffs(settings.emonId);
   const [showVersions, setShowVersions] = useState(false);
   const versions = useTariffVersions(settings.emonId, ready && showVersions);
 
@@ -118,10 +119,15 @@ export default function TariffsPage() {
   const [naming, setNaming] = useState(false);
   const [removingCompare, setRemovingCompare] = useState(false);
   const [restoring, setRestoring] = useState<number | null>(null);
+  const [removing, setRemoving] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const data = query.data;
   const profiles = data?.profiles;
+
+  /** The version that becomes current when `version` (the current one) is deleted. */
+  const previousVersion = (version: number) =>
+    versions.data?.find((v) => v.version < version)?.version;
 
   const failed = (error: unknown) => {
     const code = error instanceof ApiError ? error.code : 'upstream_unavailable';
@@ -351,6 +357,18 @@ export default function TariffsPage() {
                       {t('tariffs.restore')}
                     </IonButton>
                   )}
+                  {/* The only version cannot be deleted: the tariffs would have no version. */}
+                  {(versions.data?.length ?? 0) > 1 && (
+                    <IonButton
+                      slot="end"
+                      fill="clear"
+                      color="medium"
+                      aria-label={t('tariffs.deleteVersionLabel', { version: version.version })}
+                      onClick={() => setRemoving(version.version)}
+                    >
+                      <IonIcon icon={trashOutline} slot="icon-only" aria-hidden="true" />
+                    </IonButton>
+                  )}
                 </IonItem>
               ))}
             </IonList>
@@ -448,6 +466,34 @@ export default function TariffsPage() {
             },
           ]}
           onDidDismiss={() => setRestoring(null)}
+        />
+
+        <IonAlert
+          isOpen={removing !== null}
+          header={t('tariffs.deleteVersion', { version: removing })}
+          message={
+            removing !== null && removing === data?.version
+              ? t('tariffs.deleteCurrentVersionText', { version: previousVersion(removing) })
+              : ''
+          }
+          buttons={[
+            { text: t('common.cancel'), role: 'cancel' },
+            {
+              text: t('tariffs.delete'),
+              role: 'destructive',
+              handler: () => {
+                if (removing === null || !data) return;
+                remove.mutate(
+                  { version: removing, current: data.version },
+                  {
+                    onSuccess: () => setMessage(t('tariffs.versionDeleted', { version: removing })),
+                    onError: failed,
+                  },
+                );
+              },
+            },
+          ]}
+          onDidDismiss={() => setRemoving(null)}
         />
 
         <IonToast

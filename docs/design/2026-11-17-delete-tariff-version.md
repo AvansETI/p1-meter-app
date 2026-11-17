@@ -1,7 +1,7 @@
 # Delete a tariff version
 
 - Issue: #91
-- Status: **draft** (2026-11-17)
+- Status: **approved** (2026-11-17)
 - Date: 2026-11-17
 - Builds on: [costs](2026-11-09-costs.md) §5 (tariff storage, versions), §6 (cost cache)
 
