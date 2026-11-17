@@ -45,14 +45,17 @@ export class TariffRepository {
     try {
       const current = this.get(signature).version;
       if (current !== expectedVersion) throw new VersionConflictError(`version is ${current}`);
-      const version = current + 1;
+      // Never reuse a number, also not one of a deleted current version (#91).
+      const version = Math.max(current, this.lastVersion(signature)) + 1;
       this.db
         .prepare(
-          `INSERT INTO tariff_sets (signature, profiles, version, updated_at) VALUES (?, ?, ?, ?)
+          `INSERT INTO tariff_sets (signature, profiles, version, updated_at, last_version)
+           VALUES (?, ?, ?, ?, ?)
            ON CONFLICT(signature) DO UPDATE SET profiles = excluded.profiles,
-             version = excluded.version, updated_at = excluded.updated_at`,
+             version = excluded.version, updated_at = excluded.updated_at,
+             last_version = excluded.last_version`,
         )
-        .run(signature, json, version, at);
+        .run(signature, json, version, at, version);
       this.db
         .prepare(
           'INSERT INTO tariff_versions (signature, version, profiles, created_at) VALUES (?, ?, ?, ?)',
@@ -64,6 +67,67 @@ export class TariffRepository {
       this.db.exec('ROLLBACK');
       throw error;
     }
+  }
+
+  /**
+   * Deletes a version (#91). Deleting the current version makes the newest remaining version
+   * current again, with its own number. Returns the state afterwards; undefined when the version
+   * does not exist. Throws VersionConflictError when `expectedVersion` is not current, or when
+   * the current version is the only one.
+   */
+  delete(signature: string, version: number, expectedVersion: number): StoredTariffs | undefined {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const current = this.get(signature);
+      if (current.version !== expectedVersion) {
+        throw new VersionConflictError(`version is ${current.version}`);
+      }
+      const exists = this.db
+        .prepare('SELECT 1 FROM tariff_versions WHERE signature = ? AND version = ?')
+        .get(signature, version);
+      if (!exists) {
+        this.db.exec('ROLLBACK');
+        return undefined;
+      }
+      let result = current;
+      if (version === current.version) {
+        const previous = this.db
+          .prepare(
+            `SELECT version, profiles, created_at FROM tariff_versions
+             WHERE signature = ? AND version < ? ORDER BY version DESC LIMIT 1`,
+          )
+          .get(signature, version) as
+          { version: number; profiles: string; created_at: string } | undefined;
+        if (!previous) throw new VersionConflictError('the only version cannot be deleted');
+        this.db
+          .prepare(
+            `UPDATE tariff_sets SET profiles = ?, version = ?, updated_at = ?,
+               last_version = max(coalesce(last_version, version), ?)
+             WHERE signature = ?`,
+          )
+          .run(previous.profiles, previous.version, previous.created_at, version, signature);
+        result = {
+          profiles: TariffProfilesSchema.parse(JSON.parse(previous.profiles)),
+          version: previous.version,
+          updatedAt: previous.created_at,
+        };
+      }
+      this.db
+        .prepare('DELETE FROM tariff_versions WHERE signature = ? AND version = ?')
+        .run(signature, version);
+      this.db.exec('COMMIT');
+      return result;
+    } catch (error) {
+      this.db.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  private lastVersion(signature: string): number {
+    const row = this.db
+      .prepare('SELECT last_version FROM tariff_sets WHERE signature = ?')
+      .get(signature) as { last_version: number | null } | undefined;
+    return row?.last_version ?? 0;
   }
 
   versions(signature: string): TariffVersion[] {

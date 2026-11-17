@@ -74,6 +74,10 @@ const MIGRATIONS: string[] = [
      settings   TEXT NOT NULL,
      updated_at TEXT NOT NULL
    );`,
+  // Deleting tariff versions (#91): the highest number ever handed out, so numbers are never
+  // reused after the current version is deleted.
+  `ALTER TABLE tariff_sets ADD COLUMN last_version INTEGER;
+   UPDATE tariff_sets SET last_version = version;`,
 ];
 
 /** Opens (and migrates) the app database in `dir` (docs/design/2026-11-09-costs.md §5). */

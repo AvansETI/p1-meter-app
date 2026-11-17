@@ -38,7 +38,12 @@ async function setup() {
       payload: { emonId: 'A1B2C3-000000' },
     })
   ).json<{ sessionId: string }>();
-  const call = (method: 'GET' | 'PUT' | 'POST', url: string, payload?: unknown, version?: number) =>
+  const call = (
+    method: 'GET' | 'PUT' | 'POST' | 'DELETE',
+    url: string,
+    payload?: unknown,
+    version?: number,
+  ) =>
     app.inject({
       method,
       url: `/api/v1${url}`,
@@ -93,6 +98,72 @@ describe('tariff routes', () => {
       profiles: { own: { periods: [{ validFrom: '2026-01-01' }] } },
     });
     expect((await call('POST', '/tariffs/versions/99/restore')).statusCode).toBe(404);
+  });
+
+  describe('deleting a version (#91)', () => {
+    const saveThree = async (call: Awaited<ReturnType<typeof setup>>['call']) => {
+      for (const [v, date] of [
+        [0, '2025-01-01'],
+        [1, '2026-01-01'],
+        [2, '2026-06-01'],
+      ] as const) {
+        await call('PUT', '/tariffs', { profiles: { own: { periods: [period(date)] } } }, v);
+      }
+    };
+    const listed = async (call: Awaited<ReturnType<typeof setup>>['call']) =>
+      (await call('GET', '/tariffs/versions'))
+        .json<Array<{ version: number }>>()
+        .map((v) => v.version);
+
+    it('deletes an earlier version without changing the tariffs in use', async () => {
+      const { call } = await setup();
+      await saveThree(call);
+      const deleted = await call('DELETE', '/tariffs/versions/2', undefined, 3);
+      expect(deleted.json()).toMatchObject({
+        version: 3,
+        profiles: { own: { periods: [{ validFrom: '2026-06-01' }] } },
+      });
+      expect(await listed(call)).toEqual([3, 1]);
+    });
+
+    it('makes the previous version current and never reuses a number', async () => {
+      const { call } = await setup();
+      await saveThree(call);
+      await call('DELETE', '/tariffs/versions/2', undefined, 3);
+      const deleted = await call('DELETE', '/tariffs/versions/3', undefined, 3);
+      expect(deleted.json()).toMatchObject({
+        version: 1,
+        profiles: { own: { periods: [{ validFrom: '2025-01-01' }] } },
+      });
+      expect((await call('GET', '/tariffs')).json()).toMatchObject({ version: 1 });
+      expect(await listed(call)).toEqual([1]);
+      const saved = await call('PUT', '/tariffs', { profiles: { own: { periods: [] } } }, 1);
+      expect(saved.json()).toMatchObject({ version: 4 });
+    });
+
+    it('refuses the only version, a stale version and an unknown one', async () => {
+      const { call } = await setup();
+      await call('PUT', '/tariffs', { profiles: { own: { periods: [] } } }, 0);
+      expect((await call('DELETE', '/tariffs/versions/1', undefined, 1)).statusCode).toBe(409);
+      expect((await call('DELETE', '/tariffs/versions/1', undefined, 0)).statusCode).toBe(409);
+      expect((await call('DELETE', '/tariffs/versions/9', undefined, 1)).statusCode).toBe(404);
+      expect((await call('DELETE', '/tariffs/versions/1')).statusCode).toBe(400);
+      expect(await listed(call)).toEqual([1]);
+    });
+
+    it('counts as a tariff write', async () => {
+      const { call } = await setup();
+      for (let v = 0; v < TARIFF_WRITES_PER_HOUR; v++) {
+        await call('PUT', '/tariffs', { profiles: { own: { periods: [] } } }, v);
+      }
+      const response = await call(
+        'DELETE',
+        '/tariffs/versions/1',
+        undefined,
+        TARIFF_WRITES_PER_HOUR,
+      );
+      expect(response.statusCode).toBe(429);
+    });
   });
 
   it('limits saves per household per hour', async () => {

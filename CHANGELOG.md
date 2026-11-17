@@ -4,6 +4,10 @@ All versions, newest first, with a one-sentence summary. The full notes are on t
 [GitHub releases](https://github.com/AvansETI/p1-meter-app/releases) page. Generated from `apps/web/src/releases/releases.ts`
 by `pnpm changelog`; do not edit by hand.
 
+## [0.17.0] - 2026-11-17
+
+Delete any version of your tariffs with the trash can; tariff periods are always listed newest first.
+
 ## [0.16.1] - 2026-11-17
 
 The server checks for updates through the release download link instead of the GitHub API.
@@ -112,6 +116,7 @@ Automatic deployment to production at p1-meter.sendlab.nl.
 
 First release: an installable app with EMON ID entry and a live dashboard for electricity and gas.
 
+[0.17.0]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.17.0
 [0.16.1]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.16.1
 [0.16.0]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.16.0
 [0.15.1]: https://github.com/AvansETI/p1-meter-app/releases/tag/v0.15.1

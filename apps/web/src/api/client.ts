@@ -162,6 +162,15 @@ export class ApiClient {
     );
   }
 
+  /** Deletes a version against the current version `current` (#91). */
+  deleteTariffVersion(version: number, current: number): Promise<ApiResult<TariffsResponse>> {
+    return this.authorized(
+      `/tariffs/versions/${version}`,
+      { method: 'DELETE', headers: { 'if-match': String(current) } },
+      TariffsResponseSchema,
+    );
+  }
+
   getHistory(period: Period, date: string): Promise<ApiResult<History>> {
     const query = new URLSearchParams({ period, date }).toString();
     return this.authorized(`/history?${query}`, {}, HistorySchema);
