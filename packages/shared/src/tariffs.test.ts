@@ -40,8 +40,44 @@ describe('TariffProfilesSchema', () => {
     ['negative price', { own: { periods: [period('2026-01-01', -1)] } }],
     ['bad date', { own: { periods: [period('2026-1-1')] } }],
     ['empty compare name', { own: { periods: [] }, compare: { name: ' ', periods: [] } }],
+    [
+      'grid costs per day and per month',
+      {
+        own: {
+          periods: [
+            {
+              ...period('2026-01-01'),
+              fixed: { supplierPerMonth: 7, gridPerMonth: 40, gridPerDay: 1 },
+            },
+          ],
+        },
+      },
+    ],
+    [
+      'no grid costs',
+      { own: { periods: [{ ...period('2026-01-01'), fixed: { supplierPerMonth: 7 } }] } },
+    ],
   ])('rejects %s', (_name, value) => {
     expect(TariffProfilesSchema.safeParse(value).success).toBe(false);
+  });
+});
+
+it('accepts fixed costs excl. VAT with grid costs per day and a refunded markup (#88)', () => {
+  const parsed = TariffProfilesSchema.parse({
+    own: {
+      periods: [
+        {
+          ...period('2026-01-01'),
+          export: { compensationPerKwh: 0, feePerKwh: 0.0205, refundMarkupOnExport: true },
+          fixed: { supplierPerMonth: 4.95, gridPerDay: 1.08, exclVat: true },
+        },
+      ],
+    },
+  });
+  expect(parsed.own.periods[0]?.fixed).toEqual({
+    supplierPerMonth: 4.95,
+    gridPerDay: 1.08,
+    exclVat: true,
   });
 });
 

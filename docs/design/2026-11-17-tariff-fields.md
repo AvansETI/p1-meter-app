@@ -1,7 +1,7 @@
 # Tariff fields that match the invoice
 
 - Issue: #88
-- Status: **draft** (2026-11-17)
+- Status: **approved** (2026-11-17)
 - Date: 2026-11-17
 - Builds on: [costs](2026-11-09-costs.md) §2 (tariff model), §3 (net metering)
 
