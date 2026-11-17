@@ -14,6 +14,12 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: '0.17.0',
+    date: '2026-11-17',
+    en: 'Delete any version of your tariffs with the trash can; tariff periods are always listed newest first.',
+    nl: 'Verwijder elke versie van je tarieven met de prullenbak; tariefperiodes staan altijd van nieuw naar oud.',
+  },
+  {
     version: '0.16.1',
     date: '2026-11-17',
     en: 'The server checks for updates through the release download link instead of the GitHub API.',
