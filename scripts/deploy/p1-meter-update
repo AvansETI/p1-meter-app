@@ -11,6 +11,9 @@ set -euo pipefail
 
 REPO="${P1_REPO:-AvansETI/p1-meter-app}"
 RELEASE_TAG="${P1_RELEASE_TAG:-main-latest}"
+# The release download link, not the GitHub API: unauthenticated API calls are limited to 60 per
+# hour per public IP, shared with the other updaters on the network (#87).
+BASE_URL="${P1_BASE_URL:-https://github.com/$REPO/releases/download/$RELEASE_TAG}"
 APP_DIR="${P1_APP_DIR:-/opt/p1-meter-app}"
 NODE_DIR="${P1_NODE_DIR:-/opt/node}"
 ENV_FILE="${P1_ENV_FILE:-/etc/p1-meter-app/env}"
@@ -150,9 +153,13 @@ prune_releases() {
     done
 }
 
-asset_url() {
-  jq -r --arg name "$1" '.assets[] | select(.name == $name) | .browser_download_url' \
-    "$workdir/release.json"
+# Downloads a release file to $2; returns 0, or 2 when the file is not published (yet).
+download() {
+  local code
+  code="$(curl -sSL --max-time "$3" -w '%{http_code}' -o "$2" "$BASE_URL/$1")" ||
+    die "cannot reach $BASE_URL"
+  [ "$code" = 404 ] && return 2
+  [ "$code" = 200 ] || die "download of $1 answered HTTP $code"
 }
 
 rollback() {
@@ -168,16 +175,11 @@ rollback() {
 }
 
 update() {
-  local manifest="$workdir/manifest.json" package sha file sum url dest previous
+  local manifest="$workdir/manifest.json" package sha file sum dest previous
   if [ -n "$local_manifest" ]; then
     cp "$local_manifest" "$manifest"
   else
-    curl -fsSL --max-time 30 -H 'Accept: application/vnd.github+json' \
-      -o "$workdir/release.json" "https://api.github.com/repos/$REPO/releases/tags/$RELEASE_TAG" ||
-      die "cannot read release $RELEASE_TAG"
-    url="$(asset_url manifest.json)"
-    [ -n "$url" ] || { log "no manifest published yet"; exit 0; }
-    curl -fsSL --max-time 30 -o "$manifest" "$url"
+    download manifest.json "$manifest" 30 || { log "no manifest published yet"; exit 0; }
   fi
 
   sha="$(jq -r .sha "$manifest")"
@@ -195,9 +197,7 @@ update() {
   if [ -n "$local_package" ]; then
     cp "$local_package" "$package"
   else
-    url="$(asset_url "$file")"
-    [ -n "$url" ] || { log "package $file not published yet"; exit 0; }
-    curl -fsSL --max-time 300 -o "$package" "$url"
+    download "$file" "$package" 300 || { log "package $file not published yet"; exit 0; }
   fi
   echo "$sum  $package" | sha256sum -c --quiet || die "checksum mismatch for $file"
 
