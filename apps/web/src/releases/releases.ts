@@ -14,6 +14,12 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    version: '0.16.0',
+    date: '2026-11-17',
+    en: 'Tariff fields follow your energy invoice, with separate import and export sections and fixed costs excl. VAT.',
+    nl: 'De tariefvelden volgen je energiefactuur, met aparte kopjes voor afname en teruglevering en vaste kosten excl. btw.',
+  },
+  {
     version: '0.15.1',
     date: '2026-11-16',
     en: 'Every chart shows a hairline that follows your finger or mouse.',
