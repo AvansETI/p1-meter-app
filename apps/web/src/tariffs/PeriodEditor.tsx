@@ -69,16 +69,17 @@ export default function PeriodEditor({
 
   const toggle = (field: 'refundMarkupOnExport' | 'fixedExclVat', help: string) => (
     <IonItem key={field}>
+      {/* Label outside the toggle: the toggle's own label is cut off on one line. */}
+      <IonLabel className="ion-text-wrap tariffs__toggle-label">
+        {t(`tariffs.fields.${field}`)}
+        <IonNote className="tariffs__help">{help}</IonNote>
+      </IonLabel>
       <IonToggle
+        slot="end"
+        aria-label={t(`tariffs.fields.${field}`)}
         checked={draft[field]}
         onIonChange={(event) => set(field, event.detail.checked)}
-        justify="space-between"
-      >
-        <IonLabel className="ion-text-wrap">
-          {t(`tariffs.fields.${field}`)}
-          <IonNote className="tariffs__help">{help}</IonNote>
-        </IonLabel>
-      </IonToggle>
+      />
     </IonItem>
   );
 
@@ -177,7 +178,7 @@ export default function PeriodEditor({
               {dynamic ? (
                 <>
                   <IonItem>
-                    <IonLabel className="ion-text-wrap">
+                    <IonLabel className="ion-text-wrap tariffs__toggle-label">
                       {t('tariffs.exportPrice')}
                       <IonNote className="tariffs__help">{t('tariffs.exportPriceHelp')}</IonNote>
                     </IonLabel>
@@ -191,7 +192,7 @@ export default function PeriodEditor({
                   {toggle('refundMarkupOnExport', t('tariffs.refundMarkupHelp'))}
                   {draft.dynamicMarkupPerKwh !== '' && (
                     <IonItem>
-                      <IonLabel className="ion-text-wrap">
+                      <IonLabel className="ion-text-wrap tariffs__toggle-label">
                         {t('tariffs.legacyMarkup', { amount: draft.dynamicMarkupPerKwh })}
                         <IonNote className="tariffs__help">{t('tariffs.legacyMarkupHelp')}</IonNote>
                       </IonLabel>

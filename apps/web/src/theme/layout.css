@@ -562,6 +562,11 @@ ion-menu.app-side-menu ion-item.selected {
   font-size: 0.95rem;
 }
 
+/* Toggle and text rows use the size of the stacked input labels around them. */
+.tariffs__toggle-label {
+  font-size: 0.85rem;
+}
+
 /* Help text under a toggle or text row, like the helper text of an input. */
 .tariffs__help {
   display: block;
