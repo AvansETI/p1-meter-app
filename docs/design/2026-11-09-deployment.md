@@ -89,7 +89,11 @@ INFLUX_TOKEN=            # filled in by the product owner on the LXC only
 Timer every 2 minutes (and 1 minute after boot). The oneshot service runs
 `/usr/local/sbin/p1-meter-update` as root:
 
-1. Fetch `manifest.json` from the `main-latest` release (GitHub API, HTTPS, timeout).
+1. Fetch `manifest.json` from the `main-latest` release through its download link
+   `https://github.com/<repo>/releases/download/main-latest/manifest.json` (HTTPS, timeout);
+   the package uses the same pattern. Not through the GitHub API: unauthenticated API calls are
+   limited to 60 per hour per public IP, and the updaters on the network share that limit
+   (#87). A 404 means nothing is published yet: log it and exit normally.
 2. Same `sha` as `current` → exit.
 3. Download the package, verify `sha256` against the manifest; mismatch → abort.
 4. Node version from the manifest not in `/opt/node/<version>` → download from nodejs.org,

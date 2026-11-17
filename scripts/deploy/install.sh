@@ -37,7 +37,7 @@ apt-get update -qq
 apt-get install -y -qq curl ca-certificates xz-utils jq >/dev/null
 
 say "Checking outbound connections"
-for url in https://api.github.com https://nodejs.org/dist/; do
+for url in https://github.com https://nodejs.org/dist/; do
   if curl -fsS --max-time 10 -o /dev/null "$url"; then echo "    ok   $url"; else warn "cannot reach $url"; fi
 done
 
